@@ -349,6 +349,10 @@ const specTable =
 const options = (list, selected) => list.map((x) => `<option${x.name === selected ? " selected" : ""}>${escape(x.name)}</option>`).join("");
 const playersGroups = benchSummary.groups.filter((g) => g.source === "players");
 
+// Sculk, a server host, sponsors Horizon (Ludovic, 2026-10-26): its banner on Home and on the hosting
+// docs. A labelled plain link to a file served from /media: no script, no pixel, nothing remote.
+const partner = `<aside class="partner" aria-label="Partner"><p class="partner-label">Partner</p><a class="partner-link" href="https://my.sculkhosting.com/ref/horizon" target="_blank" rel="sponsored noopener"><img src="/media/sculk-banner.webp" width="1600" height="588" loading="lazy" decoding="async" alt="Sculk server hosting: your Minecraft server, 24/7 online, ready in about 60 seconds. Get my server, with the promo code HORIZON15."></a></aside>`;
+
 const values = {
   CSS: `/assets/${cssName}`,
   STYLE: inlineCss,
@@ -395,6 +399,7 @@ const values = {
   HUB_VERSION: escape(game[0]?.tag_name || ""),
   HUB_CREDIT: creditHtml(creditFrom(contributors, kiraCredit)),
   YEAR: String(new Date().getUTCFullYear()),
+  PARTNER: partner,
 };
 
 // --- The documentation ---------------------------------------------------------------------
@@ -482,6 +487,7 @@ const docPages = renderedDocs.map((d, i) => {
       DOC_NAV: docNav(d),
       DOC_TOC: toc.length >= 4 ? `        <nav class="docs-toc" aria-label="On this page"><p>On this page</p><ul>${toc.map((h) => `<li><a href="#${h.id}">${escape(h.text)}</a></li>`).join("")}</ul></nav>` : "",
       DOC_BODY: d.html,
+      DOC_PARTNER: d.slug === "hosting" ? `        ${partner}` : "",
       DOC_PAGER: pagerLink(renderedDocs[i - 1], "prev") + pagerLink(renderedDocs[i + 1], "next"),
       // The API portal is the game's public repository; the other pages are this private one's, so no edit link.
       DOC_EDIT: d.slug === "api" || d.slug.startsWith("api/") ? `<a href="https://github.com/${REPO}/blob/main/${d.file}">Edit this page on GitHub</a> · ` : "",
