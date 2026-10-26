@@ -1,5 +1,5 @@
-# Railway builds this with the service's root directory set to `website`.
-# Stage 1 renders dist/ from src/ and the README on main (no npm dependencies needed).
+# Railway builds this repository with the Dockerfile at its root.
+# Stage 1 renders dist/ from src/ and the game repository's files on its main (no npm dependencies needed).
 FROM node:22-alpine AS build
 WORKDIR /site
 COPY build.mjs ./

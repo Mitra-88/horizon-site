@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { boardFrom, boardHtml, creditFrom, creditHtml, fixesIn, itemOf, journalFrom, journalHtml, journalJson, overviewHtml, progress, roadmapHtml, slimIssue, suggestItemsHtml } from "./hub.js";
 
-const roadmap = JSON.parse(readFileSync(new URL("../data/roadmap.json", import.meta.url), "utf8"));
+const roadmap = JSON.parse(readFileSync(new URL("./fixtures/roadmap.json", import.meta.url), "utf8"));
 
 const pr = (number, extra = {}) => ({ number, title: `PR ${number}`, state: "open", pull_request: { merged_at: null }, user: { login: "a" }, labels: [], assignees: [], body: "", ...extra });
 const issue = (number, extra = {}) => ({ number, title: `Issue ${number}`, state: "open", user: { login: "b" }, labels: [{ name: "bug" }], assignees: [], ...extra });

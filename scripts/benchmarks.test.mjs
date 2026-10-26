@@ -1,4 +1,5 @@
-// node --test (npm test in website/). The fixtures are shared with the telemetry server's summary test.
+// node --test (npm test). The fixtures are the telemetry server's (crates/horizon-telemetry-server/tests/fixtures/
+// benchmarks/ in the game's repository); the copy here must stay the same, which the last test checks when online.
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
@@ -88,4 +89,29 @@ test("a display cap on our run is kept, and the comparison says at least", async
   const h = { capped_fps: 144, medians: { avg_fps: 144 } };
   assert.equal(compareRows(fps, h, { medians: { avg_fps: 120 } }).text, "at least 1.2x faster");
   assert.equal(compareRows(fps, h, { medians: { avg_fps: 200 } }).wins, "none");
+});
+
+// The server's copy on the game's main: both sides must make the same groups from the same items. Skipped offline.
+test("the fixtures are the telemetry server's", async (t) => {
+  const repo = process.env.HORIZON_CHECKOUT;
+  for (const name of ["items.jsonl", "expected.json"]) {
+    const ours = readFileSync(fixture(name), "utf8");
+    let theirs = null;
+    if (repo) {
+      for (const dir of ["crates/horizon-telemetry-server/tests/fixtures/benchmarks", "website/scripts/fixtures/benchmarks"]) {
+        try { theirs = readFileSync(`${repo}/${dir}/${name}`, "utf8"); break; } catch {}
+      }
+    } else {
+      for (const dir of ["crates/horizon-telemetry-server/tests/fixtures/benchmarks", "website/scripts/fixtures/benchmarks"]) {
+        try {
+          const res = await fetch(`https://raw.githubusercontent.com/ludovic111/horizon/main/${dir}/${name}`, { signal: AbortSignal.timeout(10000) });
+          if (res.ok) { theirs = await res.text(); break; }
+        } catch {
+          return t.skip("GitHub unreachable");
+        }
+      }
+    }
+    assert.ok(theirs !== null, `${name}: not in the game's repository`);
+    assert.equal(ours, theirs, `${name} differs from the telemetry server's: copy it from the game's repository`);
+  }
 });

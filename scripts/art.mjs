@@ -8,7 +8,8 @@ import { fileURLToPath } from "node:url";
 import sharp from "sharp";
 
 const site = join(dirname(fileURLToPath(import.meta.url)), "..");
-const repo = join(site, "..");
+// The game's repository, for the design tokens and the fonts: HORIZON_CHECKOUT, or ../horizon beside this one.
+export const repo = process.env.HORIZON_CHECKOUT || join(site, "..", "horizon");
 
 // The same small fixed random sequence as art.rs (xorshift), so the art is the same every time.
 function rng(seed) {

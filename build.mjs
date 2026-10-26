@@ -2,10 +2,11 @@
 // the community links and contributors baked in, the documentation (docs/*.md, one page each, listed in
 // docs/nav.json), plus public/ and fingerprinted CSS and JS. No dependencies.
 //
-// Railway builds only website/, so the README and links.json come from the repo when they
-// are next to it (a local checkout) and from main on GitHub otherwise. The documentation lives in website/, except the
-// API portal (docs/api/), read the same way as the README. The latest releases and
-// the contributors are baked in when GitHub answers, so the page reads well before (or without) JavaScript.
+// Horizon's own files (the README, launcher/links.json, the API portal in docs/api/, the design tokens and the roadmap)
+// live in the game's repository, ludovic111/horizon, which is public: they come from its main on GitHub, pinned to one
+// commit so every file is from the same one, or from a local checkout with HORIZON_CHECKOUT=<path>. The rest of the
+// documentation lives here. The latest releases and the contributors are baked in when GitHub answers, so the page
+// reads well before (or without) JavaScript.
 import { readFile, writeFile, mkdir, rm, cp } from "node:fs/promises";
 import { existsSync } from "node:fs";
 import { createHash } from "node:crypto";
@@ -23,15 +24,40 @@ import { INDEX_URL, KINDS, SORTS, SUBMIT, listHtml, projectHtml, readIndex, sort
 const site = dirname(fileURLToPath(import.meta.url));
 const dist = join(site, "dist");
 const REPO = "ludovic111/horizon";
-const RAW = `https://raw.githubusercontent.com/${REPO}/main/`;
 const DEFAULT_LINKS = { discord: "https://discord.gg/HcTeMZxe5E", sponsor: "https://github.com/sponsors/ludovic111" };
 
-async function repoFile(path) {
-  const local = join(site, "..", path);
-  if (existsSync(local)) return [await readFile(local, "utf8"), "the checkout"];
-  const res = await fetch(RAW + path, { signal: AbortSignal.timeout(15000) });
-  if (!res.ok) throw new Error(`${path}: ${res.status} from GitHub`);
-  return [await res.text(), "main on GitHub"];
+const CHECKOUT = process.env.HORIZON_CHECKOUT;
+if (CHECKOUT && !existsSync(join(CHECKOUT, "README.md"))) throw new Error(`HORIZON_CHECKOUT=${CHECKOUT}: no README.md there`);
+
+// main's commit: raw.githubusercontent.com caches a branch's files for minutes, a commit's are fixed. Without an
+// answer from the API, main itself.
+let horizonRef = "main";
+if (!CHECKOUT) {
+  try {
+    const res = await fetch(`https://api.github.com/repos/${REPO}/commits/main`, {
+      headers: { Accept: "application/vnd.github.sha", ...(process.env.GITHUB_TOKEN ? { Authorization: `Bearer ${process.env.GITHUB_TOKEN}` } : {}) },
+      signal: AbortSignal.timeout(10000),
+    });
+    if (!res.ok) throw new Error(`${res.status}`);
+    horizonRef = (await res.text()).trim();
+  } catch (e) {
+    console.warn(`main's commit: ${e.message}; reading main`);
+  }
+}
+
+// A file of the game's repository: the first of `paths` that exists (a file that moved there lists its new path
+// first), with where it came from.
+async function repoFile(...paths) {
+  for (const path of paths) {
+    if (CHECKOUT) {
+      if (existsSync(join(CHECKOUT, path))) return [await readFile(join(CHECKOUT, path), "utf8"), `the checkout ${CHECKOUT}`];
+      continue;
+    }
+    const res = await fetch(`https://raw.githubusercontent.com/${REPO}/${horizonRef}/${path}`, { signal: AbortSignal.timeout(15000) });
+    if (res.ok) return [await res.text(), horizonRef === "main" ? "main on GitHub" : `main on GitHub (${horizonRef.slice(0, 9)})`];
+    if (res.status !== 404) throw new Error(`${path}: ${res.status} from GitHub`);
+  }
+  throw new Error(`${paths.join(" or ")}: not in ${CHECKOUT || `${REPO}@${horizonRef}`}`);
 }
 
 // The README: required, a site with a stale or missing parity table is worse than no deploy.
@@ -95,10 +121,12 @@ try {
   console.warn(`contributors: ${e.message}; the page will load them itself`);
 }
 
-// The hub's roadmap (data/roadmap.json, generated from roadmap/roadmap.toml by tools/roadmap.py) and the live state
+// The hub's roadmap (roadmap/roadmap.json in the game's repository, generated from roadmap/roadmap.toml by
+// tools/roadmap.py) and the live state
 // of the issues and pull requests its items link: the open ones and those closed lately, then (with a token) the
 // older ones in one GraphQL request. Without GitHub the hub shows the links without their state.
-const roadmap = JSON.parse(await readFile(join(site, "data", "roadmap.json"), "utf8"));
+const [roadmapText] = await repoFile("roadmap/roadmap.json", "website/data/roadmap.json");
+const roadmap = JSON.parse(roadmapText);
 const linked = new Set(roadmap.items.flatMap((i) => (i.links || []).map((l) => Number((l.match(/^#(\d+)$/) || [])[1])).filter(Boolean)));
 let hubLive = [];
 try {
@@ -248,9 +276,10 @@ for (const file of modules) {
   await writeFile(join(dist, "assets", names[file]), code);
 }
 const jsName = names["main.js"];
-// The design tokens come first: src/tokens.css is generated from crates/horizon-theme
+// The design tokens come first: the game's repository generates them from crates/horizon-theme
 // (`cargo run -p xtask -- tokens`), so the page shares the launcher's and the game's values.
-const css = (await readFile(join(site, "src/tokens.css"), "utf8")) + "\n" + (await readFile(join(site, "src/style.css"), "utf8"));
+const [tokens] = await repoFile("crates/horizon-theme/tokens.css", "website/src/tokens.css");
+const css = tokens + "\n" + (await readFile(join(site, "src/style.css"), "utf8"));
 // The stylesheet is inlined into the page, so the first paint needs no second request.
 const cssName = `style.${fingerprint(css)}.css`;
 await writeFile(join(dist, "assets", cssName), css);
@@ -369,7 +398,7 @@ const values = {
 };
 
 // --- The documentation ---------------------------------------------------------------------
-// website/docs/<slug>.md: "# Title", a one-paragraph lede, then the body. docs/nav.json orders them in groups.
+// docs/<slug>.md: "# Title", a one-paragraph lede, then the body. docs/nav.json orders them in groups.
 // The API portal is the repository's docs/api/ (the pages and their generated references): nav.json lists it as
 // `api` (its README, /docs/api) and `api/<page>` (/docs/api/<page>). Its links are written for GitHub, so links
 // between its pages become the site's and every other relative link goes to the file on GitHub.
@@ -393,7 +422,7 @@ const docs = [];
 for (const { group, pages: slugs } of docsNav) {
   for (const slug of slugs) {
     const api = slug === "api" || slug.startsWith("api/");
-    const file = api ? apiSource(slug) : `website/docs/${slug}.md`;
+    const file = api ? apiSource(slug) : `docs/${slug}.md`;
     let text = (api ? (await repoFile(file))[0] : await readFile(join(site, "docs", `${slug}.md`), "utf8")).replace(/\r\n?/g, "\n");
     if (api) text = apiLinks(text.replace(/^<!--[\s\S]*?-->\n/, ""), file);
     const m = text.match(/^# (.+)\n\n((?:[^\n]+\n)+)\n/);
@@ -454,7 +483,8 @@ const docPages = renderedDocs.map((d, i) => {
       DOC_TOC: toc.length >= 4 ? `        <nav class="docs-toc" aria-label="On this page"><p>On this page</p><ul>${toc.map((h) => `<li><a href="#${h.id}">${escape(h.text)}</a></li>`).join("")}</ul></nav>` : "",
       DOC_BODY: d.html,
       DOC_PAGER: pagerLink(renderedDocs[i - 1], "prev") + pagerLink(renderedDocs[i + 1], "next"),
-      DOC_FILE: d.file,
+      // The API portal is the game's public repository; the other pages are this private one's, so no edit link.
+      DOC_EDIT: d.slug === "api" || d.slug.startsWith("api/") ? `<a href="https://github.com/${REPO}/blob/main/${d.file}">Edit this page on GitHub</a> · ` : "",
       SITE_NAV: siteNav("/docs/"),
     },
   };
@@ -531,7 +561,7 @@ for (const { file, values: own } of docPages) {
 
 // The roadmap for other readers (Kira, scripts): /data/roadmap.json, as tools/roadmap.py wrote it.
 await mkdir(join(dist, "data"), { recursive: true });
-await cp(join(site, "data", "roadmap.json"), join(dist, "data", "roadmap.json"));
+await writeFile(join(dist, "data", "roadmap.json"), roadmapText);
 // The journal for Kira's #updates and its X posts: /data/journal.json, rebuilt with every deploy.
 await writeFile(join(dist, "data", "journal.json"), JSON.stringify(journalJson(releases, hubLive, roadmap), null, 1) + "\n");
 

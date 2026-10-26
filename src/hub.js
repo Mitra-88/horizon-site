@@ -1,4 +1,4 @@
-// The hub (/hub): the roadmap from website/data/roadmap.json (generated from roadmap/roadmap.toml by
+// The hub (/hub): the roadmap from the game repository's roadmap/roadmap.json (generated from roadmap/roadmap.toml by
 // tools/roadmap.py), with each item's issues and pull requests in their live GitHub state. Shared by build.mjs
 // (baked into the page) and hub-page.js (refreshed from GitHub in the browser). Every item says the same thing
 // twice: `plain` (.hub-plain) for players and `dev` (.hub-dev) for contributors; the page's Simple / Technical

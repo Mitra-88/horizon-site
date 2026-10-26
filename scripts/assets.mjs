@@ -1,15 +1,15 @@
 // Copies the launcher's fonts and the repo's screenshots into public/, draws the pixel art,
 // converted for the web (woff2, webp in two widths). Run it after any of them change:
-// `npm run assets`. Its output is committed, because Railway builds only website/.
+// `npm run assets`, with the game's repository beside this one (or HORIZON_CHECKOUT=<path>). Its output is
+// committed, because Railway builds only this repository.
 import { mkdir, readFile, writeFile, copyFile } from "node:fs/promises";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import sharp from "sharp";
 import wawoff2 from "wawoff2";
-import { writeArt } from "./art.mjs";
+import { repo, writeArt } from "./art.mjs";
 
 const site = join(dirname(fileURLToPath(import.meta.url)), "..");
-const repo = join(site, "..");
 const pub = join(site, "public");
 
 const fonts = [

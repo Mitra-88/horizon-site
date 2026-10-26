@@ -6,11 +6,10 @@ Questions and ideas are welcome on [Discord](https://discord.gg/HcTeMZxe5E). Bug
 
 ## The repository
 
-[github.com/ludovic111/horizon](https://github.com/ludovic111/horizon) holds the game, the launcher and this website, plus the tools, tests and docs that build, check and release them.
+[github.com/ludovic111/horizon](https://github.com/ludovic111/horizon) holds the game and the launcher, plus the tools, tests and docs that build, check and release them. This website is built in a separate repository; its API pages come from the game's `docs/api/`.
 
 - `crates/` is the game, as Rust crates: the client, the server, the world and protocol code, the mod system, the design tokens and more.
 - `launcher/` is the launcher, a GPUI app with its own Cargo workspace.
-- `website/` is this site and its documentation, in `website/docs/`.
 - `tools/` holds the parity harness drivers, the parity runner, the release tools and the self-check.
 - `tests/` holds the Python tests, `benchmarks/` the published results and `packaging/` the installers.
 - `docs/` holds the developer documentation, [indexed here](https://github.com/ludovic111/horizon/blob/main/docs/README.md): the native client, the design system, world generation, the parity workflow, the release flow and more.
