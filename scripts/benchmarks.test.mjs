@@ -92,23 +92,20 @@ test("a display cap on our run is kept, and the comparison says at least", async
 });
 
 // The server's copy on the game's main: both sides must make the same groups from the same items. Skipped offline.
+const DIR = "crates/horizon-telemetry-server/tests/fixtures/benchmarks";
 test("the fixtures are the telemetry server's", async (t) => {
   const repo = process.env.HORIZON_CHECKOUT;
   for (const name of ["items.jsonl", "expected.json"]) {
     const ours = readFileSync(fixture(name), "utf8");
     let theirs = null;
     if (repo) {
-      for (const dir of ["crates/horizon-telemetry-server/tests/fixtures/benchmarks", "website/scripts/fixtures/benchmarks"]) {
-        try { theirs = readFileSync(`${repo}/${dir}/${name}`, "utf8"); break; } catch {}
-      }
+      try { theirs = readFileSync(`${repo}/${DIR}/${name}`, "utf8"); } catch {}
     } else {
-      for (const dir of ["crates/horizon-telemetry-server/tests/fixtures/benchmarks", "website/scripts/fixtures/benchmarks"]) {
-        try {
-          const res = await fetch(`https://raw.githubusercontent.com/ludovic111/horizon/main/${dir}/${name}`, { signal: AbortSignal.timeout(10000) });
-          if (res.ok) { theirs = await res.text(); break; }
-        } catch {
-          return t.skip("GitHub unreachable");
-        }
+      try {
+        const res = await fetch(`https://raw.githubusercontent.com/ludovic111/horizon/main/${DIR}/${name}`, { signal: AbortSignal.timeout(10000) });
+        if (res.ok) theirs = await res.text();
+      } catch {
+        return t.skip("GitHub unreachable");
       }
     }
     assert.ok(theirs !== null, `${name}: not in the game's repository`);

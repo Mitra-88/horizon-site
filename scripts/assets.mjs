@@ -54,7 +54,10 @@ for (const [source, name] of images) {
 // The stone tile and the hero's landscape, drawn in code (scripts/art.mjs).
 await writeArt(join(pub, "media"));
 
-// The icons (favicon.svg, favicon-32.png, apple-touch-icon.png) come from Horizon's mark:
-// `cargo run -p xtask -- icons` writes them with the rest of the brand (docs/media/brand).
+// The icons come from Horizon's mark: `cargo run -p xtask -- icons` in the game's repository writes them into
+// docs/media/brand/web/ with the rest of the brand.
+for (const icon of ["favicon.svg", "favicon-32.png", "apple-touch-icon.png"]) {
+  await copyFile(join(repo, "docs/media/brand/web", icon), join(pub, icon));
+}
 
 console.log("assets written to public/");

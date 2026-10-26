@@ -45,19 +45,12 @@ if (!CHECKOUT) {
   }
 }
 
-// A file of the game's repository: the first of `paths` that exists (a file that moved there lists its new path
-// first), with where it came from.
-async function repoFile(...paths) {
-  for (const path of paths) {
-    if (CHECKOUT) {
-      if (existsSync(join(CHECKOUT, path))) return [await readFile(join(CHECKOUT, path), "utf8"), `the checkout ${CHECKOUT}`];
-      continue;
-    }
-    const res = await fetch(`https://raw.githubusercontent.com/${REPO}/${horizonRef}/${path}`, { signal: AbortSignal.timeout(15000) });
-    if (res.ok) return [await res.text(), horizonRef === "main" ? "main on GitHub" : `main on GitHub (${horizonRef.slice(0, 9)})`];
-    if (res.status !== 404) throw new Error(`${path}: ${res.status} from GitHub`);
-  }
-  throw new Error(`${paths.join(" or ")}: not in ${CHECKOUT || `${REPO}@${horizonRef}`}`);
+// A file of the game's repository, with where it came from.
+async function repoFile(path) {
+  if (CHECKOUT) return [await readFile(join(CHECKOUT, path), "utf8"), `the checkout ${CHECKOUT}`];
+  const res = await fetch(`https://raw.githubusercontent.com/${REPO}/${horizonRef}/${path}`, { signal: AbortSignal.timeout(15000) });
+  if (!res.ok) throw new Error(`${path}: ${res.status} from GitHub (${REPO}@${horizonRef})`);
+  return [await res.text(), horizonRef === "main" ? "main on GitHub" : `main on GitHub (${horizonRef.slice(0, 9)})`];
 }
 
 // The README: required, a site with a stale or missing parity table is worse than no deploy.
@@ -125,7 +118,7 @@ try {
 // tools/roadmap.py) and the live state
 // of the issues and pull requests its items link: the open ones and those closed lately, then (with a token) the
 // older ones in one GraphQL request. Without GitHub the hub shows the links without their state.
-const [roadmapText] = await repoFile("roadmap/roadmap.json", "website/data/roadmap.json");
+const [roadmapText] = await repoFile("roadmap/roadmap.json");
 const roadmap = JSON.parse(roadmapText);
 const linked = new Set(roadmap.items.flatMap((i) => (i.links || []).map((l) => Number((l.match(/^#(\d+)$/) || [])[1])).filter(Boolean)));
 let hubLive = [];
@@ -278,7 +271,7 @@ for (const file of modules) {
 const jsName = names["main.js"];
 // The design tokens come first: the game's repository generates them from crates/horizon-theme
 // (`cargo run -p xtask -- tokens`), so the page shares the launcher's and the game's values.
-const [tokens] = await repoFile("crates/horizon-theme/tokens.css", "website/src/tokens.css");
+const [tokens] = await repoFile("crates/horizon-theme/tokens.css");
 const css = tokens + "\n" + (await readFile(join(site, "src/style.css"), "utf8"));
 // The stylesheet is inlined into the page, so the first paint needs no second request.
 const cssName = `style.${fingerprint(css)}.css`;
