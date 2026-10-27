@@ -169,6 +169,7 @@ export function projectHtml(p, rating) {
   <p class="mod-badges">${trust(p)} <span class="badge">${escape(p.license)}</span> <span class="badge">${escape(v.version)}</span>${v.side ? ` <span class="badge">${escape(v.side)}</span>` : ""}</p>
   <p class="mod-stats mod-page-stats"><span data-mod-rating>${rating === undefined ? "" : `${starsHtml(rating)} · `}</span>${downloads(p)}</p>
   <div class="mod-rate" id="mod-rate" aria-live="polite"></div></div></header>
+  ${ownerNote(p)}
   ${p.description ? `<div class="prose">${markdown(p.description)}</div>` : ""}
   ${p.kind === "mod" ? `<h2 class="heading">What it may do</h2>${capsHtml}<p class="meta">Mods run in a sandbox with no file, network or clock access. The game refuses a mod whose code uses more than this list.</p>` : ""}
   ${requires}
@@ -182,6 +183,16 @@ export function projectHtml(p, rating) {
   <a class="link-arrow" href="${REGISTRY}/blob/main/mods/${escape(p.id)}.toml">Its entry in the registry<span aria-hidden="true">→</span></a>
   <a class="link-arrow" href="${REGISTRY}/issues/new?template=report.yml&amp;title=${escape(p.id)}">Report it<span aria-hidden="true">→</span></a></p>
 </article>`;
+}
+
+// Official = made by Horizon: the author is "Horizon" and the source is in the horizon-rust organisation
+// (MOD-POLICY.md). Every other project belongs to its authors, and its page says so.
+export const isOfficial = (p) => (p.authors || []).length === 1 && p.authors[0] === "Horizon" && /^https:\/\/github\.com\/horizon-rust\//.test(p.source || "");
+export const POLICY = "/mods/policy";
+export function ownerNote(p) {
+  return isOfficial(p)
+    ? `<p class="meta mod-owner-note">Made by Horizon. <a href="${POLICY}">Mod policy</a></p>`
+    : `<p class="meta mod-owner-note">Made by ${escape((p.authors || []).join(", ") || "its authors")}. Its authors own it and answer for it. Not made or endorsed by the Horizon project. <a href="${POLICY}">Mod policy</a></p>`;
 }
 
 // /mods/submit: the form. Its script (mods-submit.js) signs in, then sends the page and the file to the service, which
@@ -221,7 +232,7 @@ export function submitHtml() {
           ${field("key", "Public key", text("key", `placeholder="RW…" autocomplete="off"`), "A new project's. Changing a published project's key is a pull request by hand.")}
           ${field("signature", "Signature", `<input id="f-signature" name="signature" type="file" accept=".minisig">`, "The file's .minisig.")}
           </fieldset>
-          <label class="mod-check"><input type="checkbox" id="f-mine" required> I made it, or I may publish it under this licence, and its source is at the address above.</label>
+          <label class="mod-check"><input type="checkbox" id="f-mine" required> I made it, or I may publish it under this licence, and its source is at the address above. I accept the <a href="/mods/policy">mod policy</a> and I am responsible for this project.</label>
           <p class="mod-actions"><button class="button primary" type="submit" id="f-send">Submit for review</button></p>
           <div class="mod-result" id="submit-result" role="status" aria-live="polite"></div>
         </form>`;

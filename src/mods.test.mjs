@@ -108,3 +108,16 @@ test("rating: a sign-in link signed out, stars signed in, none for the project's
   assert.ok(mine.includes('data-stars="3" aria-pressed="true"'));
   assert.ok(rateHtml(p, { login: "bob" }, null).includes("Rate it"));
 });
+
+test("a project's page says who made it: Horizon, or its authors with the policy's disclaimer", async () => {
+  const { ownerNote, isOfficial } = await import("./mods.js");
+  const official = { authors: ["Horizon"], source: "https://github.com/horizon-rust/horizon-mod-zoom" };
+  const theirs = { authors: ["levzzz5154"], source: "https://github.com/levzzz5154/horizon-veinminer" };
+  assert.equal(isOfficial(official), true);
+  assert.equal(isOfficial(theirs), false);
+  assert.equal(isOfficial({ authors: ["Horizon"], source: "https://github.com/someone/horizon-thing" }), false, "the name alone is not enough");
+  assert.match(ownerNote(official), /Made by Horizon\./);
+  assert.match(ownerNote(theirs), /Made by levzzz5154\. Its authors own it and answer for it\. Not made or endorsed by the Horizon project\./);
+  assert.match(ownerNote(theirs), /href="\/mods\/policy"/);
+  assert.match(ownerNote({ authors: ["<b>x</b>"], source: "" }), /&lt;b&gt;x&lt;\/b&gt;/);
+});
