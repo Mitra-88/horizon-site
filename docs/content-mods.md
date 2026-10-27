@@ -4,7 +4,7 @@ A content mod adds blocks and items to the game with data files only: no Rust, n
 
 ## What a content mod is
 
-A folder (while you work on it) or a `.hmod` file (to share it) holding a manifest, `assets/` and `data/`. This is the SDK's [`ruby-content`](https://github.com/ludovic111/horizon/tree/main/crates/horizon-mod-sdk/examples/ruby-content) example, a ruby gem and a block of ruby:
+A folder (while you work on it) or a `.hmod` file (to share it) holding a manifest, `assets/` and `data/`. This is the SDK's [`ruby-content`](https://github.com/horizon-rust/horizon/tree/main/crates/horizon-mod-sdk/examples/ruby-content) example, a ruby gem and a block of ruby:
 
 ```
 ruby/
@@ -83,7 +83,7 @@ Everything else uses vanilla 26.3's own formats, so the [Minecraft Wiki's](https
 - **Block states, models, item models and textures** in `assets/<id>/`, as in a resource pack. Models can use vanilla's parents, such as `minecraft:block/cube_all`.
 - **Names** in `assets/<id>/lang/en_us.json`: `"block.ruby.ruby_block": "Block of Ruby"`, `"item.ruby.ruby": "Ruby"`.
 
-**Structures.** A content mod can also carry structures, template pools and structure sets in its namespace, and add its own pieces to vanilla's villages or to another mod's pools. The [mod design page](https://github.com/ludovic111/horizon/blob/main/docs/mods.md#content-mods-api-02) has the details.
+**Structures.** A content mod can also carry structures, template pools and structure sets in its namespace, and add its own pieces to vanilla's villages or to another mod's pools. The [mod design page](https://github.com/horizon-rust/horizon/blob/main/docs/mods.md#content-mods-api-02) has the details.
 
 ## Namespaces
 

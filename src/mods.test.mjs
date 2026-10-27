@@ -6,7 +6,7 @@ const project = (over = {}) => ({
   id: "coords_hud", kind: "mod", name: "Coordinates HUD", summary: "Where you are.", authors: ["Horizon"],
   license: "MIT", source: "https://example.org/src",
   versions: [{ version: "0.1.0", api: "0.1", side: "client", capabilities: ["game-read", "hud"], game: "26.3",
-    file: { name: "coords_hud-0.1.0.hmod", url: "https://github.com/ludovic111/horizon-mods/releases/download/x/coords_hud-0.1.0.hmod", size: 438, sha256: "e".repeat(64) } }],
+    file: { name: "coords_hud-0.1.0.hmod", url: "https://github.com/horizon-rust/horizon-mods/releases/download/x/coords_hud-0.1.0.hmod", size: 438, sha256: "e".repeat(64) } }],
   ...over,
 });
 

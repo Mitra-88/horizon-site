@@ -8,7 +8,7 @@ import { parts, plainItem, sections } from "./releases.js";
 import { isGame, isLauncher } from "./versions.js";
 import { avatar } from "./contributors.js";
 
-export const REPO = "ludovic111/horizon";
+export const REPO = "horizon-rust/horizon";
 const issueUrl = (n) => `https://github.com/${REPO}/issues/${n}`;
 const fileUrl = (path) => `https://github.com/${REPO}/blob/main/${path}`;
 

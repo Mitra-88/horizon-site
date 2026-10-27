@@ -20,7 +20,7 @@ Everything you can do with the mouse and keyboard, through commands instead of c
   - worlds (create, open, rename, back up, delete), servers, LAN and Play with Friends;
   - chat and commands, screenshots, F3 data, waiting for an event and the game's log.
 
-The full lists are in the repository: [launcher commands](https://github.com/ludovic111/horizon/blob/main/docs/launcher-commands.md) and [game commands](https://github.com/ludovic111/horizon/blob/main/docs/horizon-ctl-commands.md).
+The full lists are in the repository: [launcher commands](https://github.com/horizon-rust/horizon/blob/main/docs/launcher-commands.md) and [game commands](https://github.com/horizon-rust/horizon/blob/main/docs/horizon-ctl-commands.md).
 
 ## Connect it from the launcher
 

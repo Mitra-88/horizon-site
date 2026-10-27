@@ -3,8 +3,8 @@
 // The index's format is docs/api/mod-index.md in the repository.
 import { markdown, escape } from "./markdown.js";
 
-export const INDEX_URL = "https://ludovic111.github.io/horizon-mods/index.json";
-const REGISTRY = "https://github.com/ludovic111/horizon-mods";
+export const INDEX_URL = "https://horizon-rust.github.io/horizon-mods/index.json";
+const REGISTRY = "https://github.com/horizon-rust/horizon-mods";
 export const SUBMIT = "/mods/submit";
 // The submission form's service (crates/horizon-mod-registry), behind the site's own address.
 export const API = "/api/mods";

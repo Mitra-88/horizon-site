@@ -1,7 +1,7 @@
 # Horizon's website
 
 Live at **https://playhorizon.dev**. The game, the launcher and their developer docs are in
-[ludovic111/horizon](https://github.com/ludovic111/horizon) (public); this repository (private) is only the site.
+[horizon-rust/horizon](https://github.com/horizon-rust/horizon) (public); this repository (private) is only the site.
 
 A landing page, a Releases page, a Benchmarks page and a documentation section in Horizon's design language (`docs/design-system.md`), with the tokens of
 `crates/horizon-theme` (generated into the game repository's `crates/horizon-theme/tokens.css` by
@@ -20,7 +20,7 @@ Home, Releases, Benchmarks and every Docs page share the header and phone menu r
 You need Node 22 or newer; nothing to install for the site itself.
 
 ```sh
-git clone https://github.com/ludovic111/horizon-site && cd horizon-site
+git clone https://github.com/horizon-rust/horizon-site && cd horizon-site
 node build.mjs && node serve.mjs     # build dist/ and open http://localhost:4173
 node --test src/ scripts/            # the tests; run them before you push
 ```
@@ -32,7 +32,7 @@ node --test src/ scripts/            # the tests; run them before you push
 - **Some content isn't in this repository.** The parity table and harness count (the game's `README.md`), the
   Discord and Sponsor links (`launcher/links.json`), the API pages under `/docs/api` (`docs/api/`), the colours and
   spacing (`crates/horizon-theme/tokens.css`) and the hub's roadmap (`roadmap/roadmap.json`) come from
-  [ludovic111/horizon](https://github.com/ludovic111/horizon) at build time. Change them there; the site redeploys
+  [horizon-rust/horizon](https://github.com/horizon-rust/horizon) at build time. Change them there; the site redeploys
   by itself when they change on its `main`.
 - **Content-Security-Policy.** The site is served with a strict CSP (`Caddyfile`). Inline `<script>` and `<style>`
   blocks in the page templates are fine: the build hashes each one and the server allows exactly those. Inline event
@@ -85,11 +85,11 @@ shots/             (gitignored) full-page screenshots at 360–1920 px, a 1250×
 
 ## What comes from where
 
-- **Built in** (`build.mjs`): Horizon's registry (`/mods`, one page per project) from the index ludovic111/horizon-mods
+- **Built in** (`build.mjs`): Horizon's registry (`/mods`, one page per project) from the index horizon-rust/horizon-mods
   publishes (`HORIZON_MOD_INDEX=<file>` builds from a test index; docs/api/mod-index.md); the parity table, its score, harness count and audit date,
   all from the game's `README.md`; the documentation pages (`/docs`) from `docs/` here; the Discord and Sponsor links
   from the game's `launcher/links.json`; the design tokens from its `crates/horizon-theme/tokens.css`; the hub's roadmap
-  from its `roadmap/roadmap.json` (also served as `/data/roadmap.json`, which Kira reads); the latest releases and the contributors (`/repos/ludovic111/horizon/contributors`,
+  from its `roadmap/roadmap.json` (also served as `/data/roadmap.json`, which Kira reads); the latest releases and the contributors (`/repos/horizon-rust/horizon/contributors`,
   bots left out, the owner first), when GitHub answers; without an answer the build still succeeds and
   the Contributors block and its menu entries stay hidden until the page loads them. The game's files come from its `main` on GitHub, all from
   the same commit (`HORIZON_CHECKOUT=<path>` reads a local checkout instead). The build

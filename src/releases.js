@@ -5,7 +5,7 @@
 import { markdown, inline, escape } from "./markdown.js";
 import { isLauncher, launcherVersion, newestFirst } from "./versions.js";
 
-const REPO = "ludovic111/horizon";
+const REPO = "horizon-rust/horizon";
 
 export const channel = (r) => (isLauncher(r.tag_name) ? "Launcher" : "Game");
 const anchor = (r) => `release-${r.tag_name.replace(/[^\w.-]/g, "-")}`;

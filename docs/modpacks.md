@@ -35,7 +35,7 @@ Measured on three packs: Vanilla Perfected (108 files) ports 2 mods, Slimes Adve
 
 ## Example: All the Mods 10
 
-All the Mods 10 has 495 jars. Horizon's report sorts them: about 290 add content, 80 are libraries, and the rest are integrations, interface mods, tools and performance mods. A few dozen of the content mods carry over today. The measured numbers are in [docs/modpacks.md](https://github.com/ludovic111/horizon/blob/main/docs/modpacks.md).
+All the Mods 10 has 495 jars. Horizon's report sorts them: about 290 add content, 80 are libraries, and the rest are integrations, interface mods, tools and performance mods. A few dozen of the content mods carry over today. The measured numbers are in [docs/modpacks.md](https://github.com/horizon-rust/horizon/blob/main/docs/modpacks.md).
 
 ## From the command line
 

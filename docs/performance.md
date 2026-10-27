@@ -19,9 +19,9 @@ The numbers below are Horizon before and after a round of performance work, on a
 - Render distance 16 over a village: **8 to 1,041 FPS**. In a forest: 28 to 316 FPS.
 - Render distance 32 improved too (a village went from 4 to 48 FPS) but **still stutters in places**: the slow frames are game ticks while chunks load, not drawing.
 
-The full tables, with the method and the Linux software-rendering run, are in [docs/graphics.md](https://github.com/ludovic111/horizon/blob/main/docs/graphics.md#results).
+The full tables, with the method and the Linux software-rendering run, are in [docs/graphics.md](https://github.com/horizon-rust/horizon/blob/main/docs/graphics.md#results).
 
-**Horizon against vanilla.** The benchmark exists: `tools/perf_bench.py` starts Horizon, vanilla 26.3 and vanilla with Sodium, Lithium, FerriteCore and ImmediatelyFast on the same machine, world, camera path and settings, and computes every number the same way. [docs/benchmark.md](https://github.com/ludovic111/horizon/blob/main/docs/benchmark.md) says how it keeps the comparison fair. Its results for the client, measured on the project's own machines, are on the [Benchmarks page](/benchmarks), with the places where Java is faster. It also estimates other hardware from them, as a range, and shows players' uploaded results once at least three installs share a graphics card and processor.
+**Horizon against vanilla.** The benchmark exists: `tools/perf_bench.py` starts Horizon, vanilla 26.3 and vanilla with Sodium, Lithium, FerriteCore and ImmediatelyFast on the same machine, world, camera path and settings, and computes every number the same way. [docs/benchmark.md](https://github.com/horizon-rust/horizon/blob/main/docs/benchmark.md) says how it keeps the comparison fair. Its results for the client, measured on the project's own machines, are on the [Benchmarks page](/benchmarks), with the places where Java is faster. It also estimates other hardware from them, as a range, and shows players' uploaded results once at least three installs share a graphics card and processor.
 
 **Measure your own computer.** Horizon's half of that benchmark is built into the game. Close other heavy apps,
 plug in a laptop, and run in a terminal:
@@ -46,7 +46,7 @@ The report is a `.json` file in the `benchmarks` folder of the game folder:
 
 It holds startup times, each scene's chunk load time, the frame rate with its 1% and 0.1% lows, memory, and your
 machine (operating system, processor, memory, graphics card and driver). Its format is
-[docs/benchmark-report.md](https://github.com/ludovic111/horizon/blob/main/docs/benchmark-report.md).
+[docs/benchmark-report.md](https://github.com/horizon-rust/horizon/blob/main/docs/benchmark-report.md).
 
 **Share it.** To add your computer to the [Benchmarks page](/benchmarks), either:
 
@@ -66,9 +66,9 @@ The latest bot benchmark compares `horizon-server` with vanilla 26.3, Paper and 
 - **Slow ticks:** from 10 players up, Horizon's slowest ticks were the shortest of the four.
 - **50 players:** Horizon and Paper kept 20 TPS. Fabric with Lithium dropped to 17, and vanilla's watchdog stopped it.
 
-For more than 50 active players, give it more cores. The full report is [benchmarks/server-four-way-2026-10-19](https://github.com/ludovic111/horizon/blob/main/benchmarks/server-four-way-2026-10-19/README.md).
+For more than 50 active players, give it more cores. The full report is [benchmarks/server-four-way-2026-10-19](https://github.com/horizon-rust/horizon/blob/main/benchmarks/server-four-way-2026-10-19/README.md).
 
 ## Where else to look
 
-- [Benchmark report format](https://github.com/ludovic111/horizon/blob/main/docs/benchmark-report.md): what every benchmark writes.
-- `HORIZON_SPIKES=MS` prints what made every frame slower than that many milliseconds slow; it is described in [docs/graphics.md](https://github.com/ludovic111/horizon/blob/main/docs/graphics.md#benchmark).
+- [Benchmark report format](https://github.com/horizon-rust/horizon/blob/main/docs/benchmark-report.md): what every benchmark writes.
+- `HORIZON_SPIKES=MS` prints what made every frame slower than that many milliseconds slow; it is described in [docs/graphics.md](https://github.com/horizon-rust/horizon/blob/main/docs/graphics.md#benchmark).

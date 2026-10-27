@@ -3,7 +3,7 @@
 // docs/nav.json), plus public/ and fingerprinted CSS and JS. No dependencies.
 //
 // Horizon's own files (the README, launcher/links.json, the API portal in docs/api/, the design tokens and the roadmap)
-// live in the game's repository, ludovic111/horizon, which is public: they come from its main on GitHub, pinned to one
+// live in the game's repository, horizon-rust/horizon, which is public: they come from its main on GitHub, pinned to one
 // commit so every file is from the same one, or from a local checkout with HORIZON_CHECKOUT=<path>. The rest of the
 // documentation lives here. The latest releases and the contributors are baked in when GitHub answers, so the page
 // reads well before (or without) JavaScript.
@@ -23,7 +23,7 @@ import { INDEX_URL, KINDS, SORTS, SUBMIT, listHtml, projectHtml, readIndex, sort
 
 const site = dirname(fileURLToPath(import.meta.url));
 const dist = join(site, "dist");
-const REPO = "ludovic111/horizon";
+const REPO = "horizon-rust/horizon";
 const DEFAULT_LINKS = { discord: "https://discord.gg/HcTeMZxe5E", sponsor: "https://github.com/sponsors/ludovic111" };
 
 const CHECKOUT = process.env.HORIZON_CHECKOUT;
@@ -136,7 +136,7 @@ try {
     const res = await fetch("https://api.github.com/graphql", {
       method: "POST",
       headers: githubHeaders,
-      body: JSON.stringify({ query: `query { repository(owner: "ludovic111", name: "horizon") { ${fields} } }` }),
+      body: JSON.stringify({ query: `query { repository(owner: "horizon-rust", name: "horizon") { ${fields} } }` }),
       signal: AbortSignal.timeout(15000),
     });
     const nodes = Object.values((await res.json()).data?.repository || {}).filter(Boolean);

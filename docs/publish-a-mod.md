@@ -38,7 +38,7 @@ Open [playhorizon.dev/mods/submit](/mods/submit) and sign in with GitHub. The pa
 - **Its page**: the name, a one-line summary for the list, a description (Markdown), the authors, the licence, the source address and, optionally, a square PNG icon (at most 256 KiB).
 - **Signature**: your public key (for a new project) and the file's `.minisig`.
 
-**Submit for review** checks the file again and opens a pull request in [ludovic111/horizon-mods](https://github.com/ludovic111/horizon-mods). It adds `mods/<id>.toml`, with you as the project's owner. The repository's checks run the file in the sandbox and post their report on the pull request.
+**Submit for review** checks the file again and opens a pull request in [horizon-rust/horizon-mods](https://github.com/horizon-rust/horizon-mods). It adds `mods/<id>.toml`, with you as the project's owner. The repository's checks run the file in the sandbox and post their report on the pull request.
 
 ## Review and publication
 
@@ -50,7 +50,7 @@ When the reviewer merges it, the file becomes a release of horizon-mods within m
 
 An update is the same form with a new version: it adds the version to your project's entry. The project's owners publish updates without a reviewer's extra look, and if the project has a key, the new file must be signed with it.
 
-Without the form, you can open the pull request by hand: the [horizon-mods README](https://github.com/ludovic111/horizon-mods) says how. The registry's file formats are in [the mod index reference](/docs/api/mod-index).
+Without the form, you can open the pull request by hand: the [horizon-mods README](https://github.com/horizon-rust/horizon-mods) says how. The registry's file formats are in [the mod index reference](/docs/api/mod-index).
 
 ## Reports and takedowns
 
