@@ -78,6 +78,17 @@ try {
   console.warn(`mod index: ${e.message}; the pages will load it themselves`);
 }
 
+// The mod policy (who owns and answers for a listed project, takedowns): the registry's MOD-POLICY.md, shown at
+// /mods/policy. Without it the page links to the file on GitHub.
+let modPolicy = null;
+try {
+  const res = await fetch("https://raw.githubusercontent.com/horizon-rust/horizon-mods/main/MOD-POLICY.md", { signal: AbortSignal.timeout(15000) });
+  if (!res.ok) throw new Error(`${res.status}`);
+  modPolicy = await res.text();
+} catch (e) {
+  console.warn(`MOD-POLICY.md: ${e.message}; /mods/policy links to it on GitHub`);
+}
+
 // An optional token (a Railway variable, or `gh auth token` locally) lifts the rate limit.
 const githubHeaders = { Accept: "application/vnd.github+json", ...(process.env.GITHUB_TOKEN ? { Authorization: `Bearer ${process.env.GITHUB_TOKEN}` } : {}) };
 // Every release (the Releases page lists them all), a page of 100 at a time.
@@ -518,11 +529,17 @@ ${KINDS.map(([k, label]) => `            <button type="button" class="button sec
         <p class="meta release-count" data-mod-count>${modProjects.length} of ${modProjects.length}</p>
         <div class="mod-list" id="mod-list" aria-live="polite">
 ${listHtml(sorted(modProjects, "downloads"))}
-        </div>`;
+        </div>
+        <p class="meta mod-owner-note">Each project belongs to its authors, who answer for it. Only the ones marked as made by Horizon are the Horizon project's; a listing is not an endorsement. <a href="/mods/policy">Mod policy</a></p>`;
+const policyGithub = "https://github.com/horizon-rust/horizon-mods/blob/main/MOD-POLICY.md";
+const modsPolicy = `        <p class="kicker"><span>Mods</span>Policy</p>
+        <div class="prose">${modPolicy ? markdown(modPolicy.replace(/^# .*\n/, "# Mod policy\n")) : `<h1>Mod policy</h1><p>Read it in the registry: <a href="${policyGithub}">MOD-POLICY.md</a>.</p>`}</div>
+        <p class="meta">The source of this page: <a href="${policyGithub}">MOD-POLICY.md</a>. To ask for a takedown: <a href="https://github.com/horizon-rust/horizon-mods/issues/new?template=takedown.yml">the takedown form</a>, or privately through <a href="https://lu4ovic.com/#contact">lu4ovic.com</a>.</p>`;
 const modPages = [
   { file: "mods.html", path: "/mods", title: "Mods", description: "Mods, modpacks and resource packs made for Horizon, reviewed, each with what it may do and how to install it.", main: modsList },
   { file: "mods/submit.html", path: "/mods/submit", title: "Submit to the registry", description: "Submit a mod, a modpack or a resource pack made for Horizon: it is checked, reviewed, then listed here and in the launcher.", main: submitHtml(), js: "mods-submit.js" },
-  ...modProjects.filter((p) => p.id !== "submit").map((p) => ({ file: `mods/${p.id}.html`, path: `/mods/${p.id}`, title: p.name, description: p.summary || p.name, main: projectHtml(p) })),
+  { file: "mods/policy.html", path: "/mods/policy", title: "Mod policy", description: "Who owns and answers for the projects in Horizon's registry, what authors promise, and how to ask for a takedown.", main: modsPolicy },
+  ...modProjects.filter((p) => p.id !== "submit" && p.id !== "policy").map((p) => ({ file: `mods/${p.id}.html`, path: `/mods/${p.id}`, title: p.name, description: p.summary || p.name, main: projectHtml(p) })),
 ];
 await mkdir(join(dist, "mods"), { recursive: true });
 const modsData = JSON.stringify(modIndex && modProjects.length ? { schema: modIndex.schema, projects: modProjects } : null).replace(/</g, "\\u003c");
