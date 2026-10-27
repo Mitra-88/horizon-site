@@ -10,7 +10,7 @@ Download the launcher, let it install Horizon, then prepare the game from your o
 
 ## Download the launcher
 
-Get the newest launcher from the [Download button on the home page](/), which picks the right file for your system, or from [the launcher releases on GitHub](https://github.com/ludovic111/horizon/releases?q=launcher-v&expanded=true).
+Get the newest launcher from the [Download button on the home page](/), which picks the right file for your system, or from [the launcher releases on GitHub](https://github.com/horizon-rust/horizon/releases?q=launcher-v&expanded=true).
 
 - **Linux:** download `horizon-launcher-linux-x86_64.tar.gz`, extract it and run `horizon-launcher`.
 - **macOS:** download `horizon-launcher-macos-arm64.dmg`, open it and drag Horizon onto Applications. The first time, macOS says it cannot check the app, because it is not signed with a paid Apple developer account. On macOS 14 and earlier, right-click Horizon, choose **Open**, then **Open** again. On macOS 15 and later, open it once, then go to **System Settings, Privacy & Security** and choose **Open Anyway**. After that it opens normally.
@@ -45,7 +45,7 @@ Launchers from before this change still show an **Updates** choice in Settings. 
 
 ## The Versions page
 
-It lists Horizon's releases, newest first. You can install a version, remove it, or choose which one **Play** starts. Each release's notes are on the **Patch notes** page, and on [GitHub](https://github.com/ludovic111/horizon/releases).
+It lists Horizon's releases, newest first. You can install a version, remove it, or choose which one **Play** starts. Each release's notes are on the **Patch notes** page, and on [GitHub](https://github.com/horizon-rust/horizon/releases).
 
 ## Something went wrong
 

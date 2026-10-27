@@ -27,7 +27,7 @@ You need [Rust](https://rustup.rs) (the stable toolchain), its WebAssembly targe
 
 ```sh
 rustup target add wasm32-unknown-unknown
-cargo install --git https://github.com/ludovic111/horizon cargo-horizon-mod
+cargo install --git https://github.com/horizon-rust/horizon cargo-horizon-mod
 ```
 
 The second command builds the tool from source, which takes a few minutes the first time. Run it again later to update the tool.

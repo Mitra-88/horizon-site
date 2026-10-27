@@ -24,7 +24,7 @@ async function start() {
     if (!r.ok) throw new Error(String(r.status));
     me = await r.json();
   } catch {
-    auth.innerHTML = `<p class="meta">The form isn't open right now. You can <a href="https://github.com/ludovic111/horizon-mods">open a pull request by hand</a>.</p>`;
+    auth.innerHTML = `<p class="meta">The form isn't open right now. You can <a href="https://github.com/horizon-rust/horizon-mods">open a pull request by hand</a>.</p>`;
     return;
   }
   csrf = me.csrf;

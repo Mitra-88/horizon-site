@@ -102,11 +102,11 @@ test("the journal groups a release's changes by roadmap item and lists what awai
 
 test("journal.json is the flat feed Kira reads: merges, releases, shipped items, weeks, ids that never change", () => {
   const releases = [
-    { tag_name: "v0.2.48", name: "Horizon 0.2.48", published_at: "2030-01-02T00:00:00Z", html_url: "https://github.com/ludovic111/horizon/releases/tag/v0.2.48", body: "### New\n- Packs (#1)\n" },
+    { tag_name: "v0.2.48", name: "Horizon 0.2.48", published_at: "2030-01-02T00:00:00Z", html_url: "https://github.com/horizon-rust/horizon/releases/tag/v0.2.48", body: "### New\n- Packs (#1)\n" },
     { tag_name: "nightly-1", name: "Nightly", published_at: "2030-01-03T00:00:00Z", html_url: "u", body: "" },
   ];
   const list = [
-    pr(1788, { state: "closed", pull_request: { merged_at: "2030-01-04T00:00:00Z" }, html_url: "https://github.com/ludovic111/horizon/pull/1788" }),
+    pr(1788, { state: "closed", pull_request: { merged_at: "2030-01-04T00:00:00Z" }, html_url: "https://github.com/horizon-rust/horizon/pull/1788" }),
     pr(7, { state: "closed", pull_request: { merged_at: "2030-01-04T00:00:00Z" }, labels: [{ name: "skip-release" }] }),
     pr(8, { state: "closed", pull_request: { merged_at: "2030-01-04T00:00:00Z" }, labels: [{ name: "skip-release" }, { name: "roadmap:lean-code" }] }),
     pr(9),
@@ -115,7 +115,7 @@ test("journal.json is the flat feed Kira reads: merges, releases, shipped items,
   const feed = journalJson(releases, list, { ...roadmap, journal: [week] }, "2030-01-05T00:00:00Z");
   const byId = new Map(feed.entries.map((e) => [e.id, e]));
   // A merged pull request, with its roadmap item; skip-release ones only when they move an item; open ones never.
-  assert.deepEqual(byId.get("pr-1788"), { id: "pr-1788", kind: "merge", date: "2030-01-04T00:00:00Z", title: "PR 1788", url: "https://github.com/ludovic111/horizon/pull/1788", number: 1788, item: "discord-presence", item_title: "Discord Rich Presence" });
+  assert.deepEqual(byId.get("pr-1788"), { id: "pr-1788", kind: "merge", date: "2030-01-04T00:00:00Z", title: "PR 1788", url: "https://github.com/horizon-rust/horizon/pull/1788", number: 1788, item: "discord-presence", item_title: "Discord Rich Presence" });
   assert.ok(!byId.has("pr-7") && byId.get("pr-8").item === "lean-code" && !byId.has("pr-9"));
   // Game and launcher releases only.
   assert.equal(byId.get("release-v0.2.48").tag, "v0.2.48");

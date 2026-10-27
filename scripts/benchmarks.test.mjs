@@ -102,7 +102,7 @@ test("the fixtures are the telemetry server's", async (t) => {
       try { theirs = readFileSync(`${repo}/${DIR}/${name}`, "utf8"); } catch {}
     } else {
       try {
-        const res = await fetch(`https://raw.githubusercontent.com/ludovic111/horizon/main/${DIR}/${name}`, { signal: AbortSignal.timeout(10000) });
+        const res = await fetch(`https://raw.githubusercontent.com/horizon-rust/horizon/main/${DIR}/${name}`, { signal: AbortSignal.timeout(10000) });
         if (res.ok) theirs = await res.text();
       } catch {
         return t.skip("GitHub unreachable");

@@ -10,7 +10,7 @@ Mojang or Microsoft. Minecraft is a trademark of Mojang Synergies AB.
 
 | File | Source | Licence |
 | --- | --- | --- |
-| `src/*.html`, `src/*.css`, `src/*.js`, `build.mjs`, `serve.mjs`, `scripts/*`, `Caddyfile`, `Dockerfile` | Written for this site | MIT, as the rest of Horizon ([LICENSE](https://github.com/ludovic111/horizon/blob/main/LICENSE)) |
+| `src/*.html`, `src/*.css`, `src/*.js`, `build.mjs`, `serve.mjs`, `scripts/*`, `Caddyfile`, `Dockerfile` | Written for this site | MIT, as the rest of Horizon ([LICENSE](https://github.com/horizon-rust/horizon/blob/main/LICENSE)) |
 
 The site loads no third-party code at runtime: no frameworks, CDNs, analytics, trackers or
 cookies. The only requests to other hosts are the browser's calls to `api.github.com`

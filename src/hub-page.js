@@ -255,7 +255,7 @@ async function connect() {
   }
   showVotes();
   setUpForm(document.querySelector('[data-form="report"]'), "/hub/report", (status, answer) => {
-    const issue = typeof answer.issue === "string" && answer.issue.match(/^https:\/\/github\.com\/ludovic111\/horizon\/issues\/(\d+)$/);
+    const issue = typeof answer.issue === "string" && answer.issue.match(/^https:\/\/github\.com\/horizon-rust\/horizon\/issues\/(\d+)$/);
     status.innerHTML = issue ? `Thanks! It's <a href="${issue[0]}">issue #${issue[1]}</a> on GitHub: follow it there.` : "Thanks! It will be on GitHub in a few minutes.";
   });
   setUpForm(document.querySelector('[data-form="suggest"]'), "/hub/suggest", (status) => {

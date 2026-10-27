@@ -185,6 +185,6 @@ mod tests {
 
 `cargo test` runs it on your computer, with no game. [Test it](/docs/test-a-mod) covers the rest.
 
-**Where to go from here.** The SDK's examples are complete mods to read: [`coords-hud`](https://github.com/ludovic111/horizon/tree/main/crates/horizon-mod-sdk/examples/coords-hud) (coordinates, facing and the time on the HUD, `/where` and `/coords`) and [`ruby-content`](https://github.com/ludovic111/horizon/tree/main/crates/horizon-mod-sdk/examples/ruby-content) (a content mod). The [reference](/docs/api/mods-reference) lists every type and function, with its limits.
+**Where to go from here.** The SDK's examples are complete mods to read: [`coords-hud`](https://github.com/horizon-rust/horizon/tree/main/crates/horizon-mod-sdk/examples/coords-hud) (coordinates, facing and the time on the HUD, `/where` and `/coords`) and [`ruby-content`](https://github.com/horizon-rust/horizon/tree/main/crates/horizon-mod-sdk/examples/ruby-content) (a content mod). The [reference](/docs/api/mods-reference) lists every type and function, with its limits.
 
 Next: [content mods](/docs/content-mods), or straight to [testing](/docs/test-a-mod) if your mod has no blocks or items.

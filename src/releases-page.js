@@ -4,7 +4,7 @@ import { releasesPageHtml } from "./releases.js";
 import { isGame, isLauncher, newestFirst } from "./versions.js";
 import { cached, get, setUpMenu, setUpTheme, slim } from "./chrome.js";
 
-const REPO = "ludovic111/horizon";
+const REPO = "horizon-rust/horizon";
 const list = document.getElementById("release-list");
 const counter = document.querySelector("[data-release-count]");
 const buttons = [...document.querySelectorAll("[data-filter]")];

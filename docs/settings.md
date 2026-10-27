@@ -50,7 +50,7 @@ Java Edition resource packs work. Put the folder or `.zip` in the `resourcepacks
 
 The launcher's **Mods** page can download them from Modrinth (see [Mods and data packs](/docs/mods#finding-resource-packs-and-modpacks)).
 
-[Resource packs: what works](https://github.com/ludovic111/horizon/blob/main/docs/resource-packs.md) lists everything a 26.3 resource pack can change and whether Horizon honours it.
+[Resource packs: what works](https://github.com/horizon-rust/horizon/blob/main/docs/resource-packs.md) lists everything a 26.3 resource pack can change and whether Horizon honours it.
 
 ## Controllers
 

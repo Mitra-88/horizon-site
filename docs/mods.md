@@ -26,7 +26,7 @@ Horizon mods are written in Rust, compiled to WebAssembly and run in a sandbox. 
 
 ```sh
 rustup target add wasm32-unknown-unknown
-cargo install --git https://github.com/ludovic111/horizon cargo-horizon-mod
+cargo install --git https://github.com/horizon-rust/horizon cargo-horizon-mod
 cargo horizon-mod new my-mod
 cd my-mod
 cargo horizon-mod build
