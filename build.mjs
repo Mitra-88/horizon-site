@@ -212,7 +212,7 @@ const parityCells = body
     const none = gaps.match(/^None:\s*(.*)$/);
     const full = Number(score) === 1;
     const detail = none ? inline(none[1].charAt(0).toUpperCase() + none[1].slice(1)) : `<span class="gap">Gaps:</span> ${inline(gaps)}`;
-    const state = full ? `${check}Matches vanilla` : `${escape(score)} · ${escape(scoreLabel(score))}`;
+    const state = full ? `${check}Passes its harnesses` : `${escape(score)} · ${escape(scoreLabel(score))}`;
     return `<li class="system${full ? " is-full" : ""}">
             <p class="system-head"><span class="system-index">${String(i + 1).padStart(2, "0")}</span><span class="system-state">${state}</span></p>
             <h3>${inline(name)}</h3>
@@ -221,7 +221,8 @@ const parityCells = body
   })
   .join("\n");
 const matching = body.filter(([, score]) => Number(score) === 1).length;
-const parityHeadline = matching === body.length ? "Every subsystem matches vanilla." : `${matching} of ${body.length} subsystems match vanilla.`;
+// "Matches vanilla" read as "no bugs left": the harnesses only cover what they compare, and players find the rest.
+const parityHeadline = matching === body.length ? "Every subsystem passes the harnesses that compare it." : `${matching} of ${body.length} subsystems pass every harness that compares them.`;
 
 // --- The releases ----------------------------------------------------------------------
 
