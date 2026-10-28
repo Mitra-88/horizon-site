@@ -308,6 +308,8 @@ const unavailable = `<p class="lede">The release notes could not be loaded here.
 
 // One top bar and phone menu for Home, Releases, Benchmarks and every Docs page.
 const navSections = [["/#about", "About"], ["/#screenshots", "In game"], ["/#parity", "Parity"], ["/#launcher", "Launcher"], ["/#recent", "New", "Recently added"], ["/#community", "Community"]];
+// Ludovic's GitHub Sponsors (2026-10-28): the Sponsor link in the top bar, the phone menu and the footer.
+const SPONSOR = "https://github.com/sponsors/ludovic111";
 const navPages = [["/hub", "Hub"], ["/mods", "Mods"], ["/releases", "Releases"], ["/benchmarks", "Benchmarks"], ["/docs/", "Docs", "Documentation"]];
 const navLink = ([href, label, menuLabel], current, menu = false) =>
   `<a href="${href}"${href === current ? ' aria-current="page"' : ""}${href === "/#contributors" ? ` data-contributors${contributors.length ? "" : " hidden"}` : ""}>${menu && menuLabel ? menuLabel : label}</a>`;
@@ -320,6 +322,7 @@ ${[...navSections, ...navPages].map((link) => `          ${navLink(link, current
         <div class="nav-end">
           <button class="theme-toggle" type="button" aria-label="Switch between light and dark"><span data-theme-label>Dark</span></button>
           <a class="nav-github" href="https://github.com/${REPO}">GitHub</a>
+          <a class="nav-github nav-sponsor" href="${SPONSOR}"><span aria-hidden="true">♥</span> Sponsor</a>
           <a class="button primary small" href="/docs/install">Download</a>
           <button class="menu-button" type="button" aria-expanded="false" aria-controls="menu"><span class="menu-label">Menu</span><span class="menu-icon" aria-hidden="true"></span></button>
         </div>
@@ -331,6 +334,7 @@ ${[...navSections, ["/#contributors", "Contributors"], ...navPages].map((link) =
       </nav>
       <div class="menu-foot">
         <a class="button secondary large" href="https://github.com/${REPO}">GitHub</a>
+        <a class="button secondary large" href="${SPONSOR}"><span class="nav-sponsor" aria-hidden="true">♥</span> Sponsor Horizon</a>
         <p>Not an official Minecraft product. Not approved by or associated with Mojang or Microsoft.</p>
       </div>
     </div>`;
@@ -338,7 +342,7 @@ const siteFooter = `    <footer class="footer">
       <div class="container">
         <div class="footer-bar">
           <span class="footer-mark">Made in the open, in Rust.</span>
-          <nav class="footer-links" aria-label="Elsewhere"><a href="/">Home</a><a href="/hub">Hub</a><a href="/mods">Mods</a><a href="/releases">Releases</a><a href="/benchmarks">Benchmarks</a><a href="/docs/">Docs</a><a href="/docs/how-horizon-is-built">How it's built</a><a href="https://github.com/${REPO}">GitHub</a><a href="/privacy">Privacy</a><a href="/LEGAL.md">Assets</a></nav>
+          <nav class="footer-links" aria-label="Elsewhere"><a href="/">Home</a><a href="/hub">Hub</a><a href="/mods">Mods</a><a href="/releases">Releases</a><a href="/benchmarks">Benchmarks</a><a href="/docs/">Docs</a><a href="/docs/how-horizon-is-built">How it's built</a><a href="https://github.com/${REPO}">GitHub</a><a href="${SPONSOR}">Sponsor</a><a href="/privacy">Privacy</a><a href="/LEGAL.md">Assets</a></nav>
         </div>
       </div>
       <p class="footer-word" aria-hidden="true">horizon</p>

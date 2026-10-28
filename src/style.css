@@ -137,6 +137,7 @@ code {
   transition: background-color var(--quick) var(--ease-quick), color var(--quick) var(--ease-quick);
 }
 .nav-links a:hover, .nav-github:hover, .theme-toggle:hover { color: var(--ink); background: var(--plate-soft); }
+.nav-sponsor span, span.nav-sponsor { color: #db61a2; }
 .nav-links a[aria-current] { color: var(--ink); background: var(--plate-soft); }
 .nav-end { display: flex; align-items: center; gap: 2px; }
 .theme-toggle {
