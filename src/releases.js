@@ -1,9 +1,10 @@
 // The release notes on the site: the home page's "Recently added" block and the Releases page (every release,
 // newest first). Shared by build.mjs (baked into the pages) and the pages' scripts (refreshed from GitHub).
 // Tags: the game's vX.Y.Z and the launcher's launcher@X.Y.Z from 0.2, vYYYY.MM.DD[.N] and launcher-vX.Y.Z before
-// (src/versions.js). One channel (docs/release-flow.md, "One channel"): a release is the game's or the launcher's.
+// (src/versions.js). One channel (docs/release-flow.md): a release is the game's (since 2026-10-28 a Nightly) or the
+// launcher's.
 import { markdown, inline, escape } from "./markdown.js";
-import { isLauncher, launcherVersion, newestFirst } from "./versions.js";
+import { isLauncher, isNightly, launcherVersion, newestFirst } from "./versions.js";
 
 const REPO = "horizon-rust/horizon";
 
@@ -12,8 +13,13 @@ const anchor = (r) => `release-${r.tag_name.replace(/[^\w.-]/g, "-")}`;
 
 // "Horizon 0.2.3: Cave culling, weather" (before 0.2, "Horizon 2026.10.13: …") reads as the version and its line.
 export function parts(r) {
-  const version = launcherVersion(r.tag_name) ?? r.tag_name.replace(/^v/, "");
   const name = (r.name || "").trim();
+  // A Nightly is named by its title ("Nightly 2026-10-28 · 9b772b2"); its line comes from its notes.
+  if (isNightly(r.tag_name)) {
+    const line = fromNotes(r.body) || "Rebuilt from the latest main";
+    return { version: name || r.tag_name, line: line.charAt(0).toUpperCase() + line.slice(1), date: (r.published_at || "").slice(0, 10) };
+  }
+  const version = launcherVersion(r.tag_name) ?? r.tag_name.replace(/^v/, "");
   let line = name.includes(": ") ? name.slice(name.indexOf(": ") + 2) : name.replace(/^Horizon( launcher)?\s*/i, "").replace(version, "").trim();
   if (junk(line)) line = fromNotes(r.body) || line;
   return { version, line: line.charAt(0).toUpperCase() + line.slice(1), date: (r.published_at || "").slice(0, 10) };

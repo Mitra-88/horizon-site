@@ -104,6 +104,7 @@ test("journal.json is the flat feed Kira reads: merges, releases, shipped items,
   const releases = [
     { tag_name: "v0.2.48", name: "Horizon 0.2.48", published_at: "2030-01-02T00:00:00Z", html_url: "https://github.com/horizon-rust/horizon/releases/tag/v0.2.48", body: "### New\n- Packs (#1)\n" },
     { tag_name: "nightly-1", name: "Nightly", published_at: "2030-01-03T00:00:00Z", html_url: "u", body: "" },
+    { tag_name: "nightly", name: "Nightly 2030-01-03 · 9b772b2", published_at: "2030-01-03T01:00:00Z", html_url: "https://github.com/horizon-rust/horizon/releases/tag/nightly", body: "### Fixed\n- A fix (#2)\n" },
   ];
   const list = [
     pr(1788, { state: "closed", pull_request: { merged_at: "2030-01-04T00:00:00Z" }, html_url: "https://github.com/horizon-rust/horizon/pull/1788" }),
@@ -120,6 +121,9 @@ test("journal.json is the flat feed Kira reads: merges, releases, shipped items,
   // Game and launcher releases only.
   assert.equal(byId.get("release-v0.2.48").tag, "v0.2.48");
   assert.ok(!byId.has("release-nightly-1"));
+  // A Nightly by its build, which stays when its tag moves to nightly-<date>.
+  assert.equal(byId.get("release-nightly-2030-01-03-9b772b2").tag, "nightly");
+  assert.ok(!byId.has("release-nightly"));
   // Every shipped item, dated by its release when the feed has it, with its post and the announce flag.
   const shipped = roadmap.items.filter((i) => i.status === "shipped");
   for (const item of shipped) {

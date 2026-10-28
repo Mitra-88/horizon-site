@@ -1,5 +1,7 @@
 // Horizon's release tags (docs/versioning.md). From 0.2 the game is vX.Y.Z and the launcher launcher@X.Y.Z;
-// before, vYYYY.MM.DD[.N] and launcher-vX.Y.Z. Every 0.2 tag is newer than every tag from before. Shared by
+// before, vYYYY.MM.DD[.N] and launcher-vX.Y.Z. Every 0.2 tag is newer than every tag from before. Since 2026-10-28
+// the game ships only Nightlies (docs/release-flow.md, "Nightly only"): `nightly`, the current one, and the last
+// week's `nightly-YYYY-MM-DD`, newer than every vX.Y.Z. Shared by
 // build.mjs and main.js, and the same order as the launcher's and tools/release_train.py's.
 
 const SEMVER = /^(\d+)\.(\d+)\.(\d+)(?:-([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?$/;
@@ -11,7 +13,9 @@ const semver = (version) => {
   return m && Number(m[1]) < FIRST_YEAR ? m : null;
 };
 
-export const isGame = (tag) => /^v\d{4}\.\d{1,2}\.\d{1,2}(\.\d+)?$/.test(tag) || (tag.startsWith("v") && !!semver(tag.slice(1)));
+export const isNightly = (tag) => tag === "nightly" || /^nightly-\d{4}-\d{2}-\d{2}$/.test(tag);
+
+export const isGame = (tag) => /^v\d{4}\.\d{1,2}\.\d{1,2}(\.\d+)?$/.test(tag) || (tag.startsWith("v") && !!semver(tag.slice(1))) || isNightly(tag);
 
 // The version in a launcher tag (launcher@0.2.0, launcher-v0.16.0), or null.
 export function launcherVersion(tag) {
@@ -22,8 +26,11 @@ export function launcherVersion(tag) {
 
 export const isLauncher = (tag) => launcherVersion(tag) !== null;
 
-// [line, numbers, pre-release]: tags from before 0.2 by their numbers, then 0.2 tags in semver's order.
+// [line, numbers, pre-release]: tags from before 0.2 by their numbers, then 0.2 tags in semver's order, then the
+// dated Nightlies by date, then the current one.
 function key(tag) {
+  if (tag === "nightly") return [3, [], null];
+  if (isNightly(tag)) return [2, tag.match(/\d+/g).map(Number), null];
   const version = tag.startsWith("launcher@") ? tag.slice(9) : tag.startsWith("v") ? tag.slice(1) : null;
   const m = version !== null && semver(version);
   if (!m) return [0, (tag.match(/\d+/g) || []).map(Number), []];
@@ -50,7 +57,7 @@ export function compareTags(a, b) {
   const [lb, nb, pb] = key(b);
   if (la !== lb) return la - lb;
   const d = cmpNumbers(na, nb);
-  if (d || !la) return d;
+  if (d || la !== 1) return d;
   // A release follows its pre-releases.
   if (!pa || !pb) return (pa ? -1 : 0) - (pb ? -1 : 0);
   return cmpList(pa, pb, cmpId);

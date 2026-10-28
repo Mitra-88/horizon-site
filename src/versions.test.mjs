@@ -19,3 +19,10 @@ test("game and launcher tags never mix", () => {
   assert.equal(launcherVersion("launcher-v0.16.0"), "0.16.0");
   assert.ok(!isLauncher("v0.2.0") && !isLauncher("launcher-vnext"));
 });
+
+test("Nightlies follow every release, the current one last", () => {
+  const order = ["v0.2.95", "nightly-2026-10-27", "nightly-2026-10-28", "nightly"];
+  assert.deepEqual([...order].reverse().sort(compareTags), order);
+  for (const tag of order) assert.ok(isGame(tag), tag);
+  for (const tag of ["nightly-1", "nightly-source/2026-10-28-9b772b2", "nightly-2026-10-28-9b772b2"]) assert.ok(!isGame(tag), tag);
+});

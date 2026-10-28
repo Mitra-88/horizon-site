@@ -5,7 +5,7 @@
 // switch shows one of them.
 import { escape, inline } from "./markdown.js";
 import { parts, plainItem, sections } from "./releases.js";
-import { isGame, isLauncher } from "./versions.js";
+import { isGame, isLauncher, isNightly } from "./versions.js";
 import { avatar } from "./contributors.js";
 
 export const REPO = "horizon-rust/horizon";
@@ -328,6 +328,13 @@ export function journalFrom(releases, list, roadmap) {
 const HUB = "https://playhorizon.dev/hub";
 const FEED = 300;
 
+// A Nightly's tag moves (`nightly`, then `nightly-<date>`), so its entry is named by the build its title names
+// ("Nightly 2026-10-28 · 9b772b2" → release-nightly-2026-10-28-9b772b2): Kira posts each build once.
+function releaseId(r) {
+  const m = isNightly(r.tag_name) && /(\d{4}-\d{2}-\d{2}) · ([0-9a-f]+)/.exec(r.name || "");
+  return `release-${m ? `nightly-${m[1]}-${m[2]}` : r.tag_name}`;
+}
+
 // /data/journal.json, which Kira reads for #updates and X (kira's src/journal.js): one flat entry per merged pull
 // request, release, shipped roadmap item and weekly summary, newest first. An entry's id never changes: Kira posts
 // each id once. Shipped items carry `post` (at most 240 characters, tools/roadmap.py checks) and `announce`.
@@ -350,7 +357,7 @@ export function journalJson(releases, list, roadmap, generated = new Date().toIS
       ...(item ? { item, item_title: items.get(item)?.title } : {}),
     }));
   const released = ours.map((r) => ({
-    id: `release-${r.tag_name}`,
+    id: releaseId(r),
     kind: "release",
     date: r.published_at || "",
     title: r.name || r.tag_name,

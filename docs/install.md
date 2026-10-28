@@ -34,18 +34,18 @@ The game opens on vanilla's title screen. Your worlds, options and logs live in 
 
 ## Updating
 
-- **Horizon.** The launcher looks for a new release when it starts and every 30 minutes while it is open. With **Install new versions automatically** on (the default), it installs one and moves you to it if you were on the newest. New releases come out many times a day, and old versions stay installed until you remove them on the **Versions** page.
+- **Horizon.** The launcher looks for a new Nightly when it starts and every 30 minutes while it is open. With **Install new versions automatically** on (the default), it installs it and moves you to it if you were on the newest version. Your worlds stay where they are. New Nightlies come out a few times a day; an older Nightly is removed once nothing plays it, and versions you installed by hand stay until you remove them on the **Versions** page.
 - **The launcher.** It updates itself from its own releases, then shows **Restart** in its footer. A launcher from before 0.2 (0.16 or older) updates twice in a row: first to 0.17, then to 0.2. Then it installs Horizon 0.2 like any update.
 
-## One version for everyone
+## One version for everyone: the Nightly
 
-There is one channel: every release is the version everyone gets. Before a release goes out, the game has to start and draw a world on our test machine, and nothing goes out while a serious problem is open. New releases come out many times a day, and you can install any older version by hand on the **Versions** page.
+Horizon ships one build, the **Nightly**: the latest Horizon, plus a few changes the Team picked to try before they are merged. Before a Nightly goes out, the game has to start and draw a world on our test machine, and nothing goes out while a serious problem is open. The game shows which Nightly you play ("Nightly 2026-10-28 · 9b772b2"): give that when you report a bug. You can install an earlier one (the last week's) or an older numbered release by hand on the **Versions** page.
 
-Launchers from before this change still show an **Updates** choice in Settings. Either option now gets every new release, and the choice goes away once the launcher has updated itself.
+Launchers from before this change still show a **Nightly builds** setting, or an **Updates** choice. The launcher updates itself, and from then on it plays the Nightly for everyone; the setting goes away.
 
 ## The Versions page
 
-It lists Horizon's releases, newest first. You can install a version, remove it, or choose which one **Play** starts. Each release's notes are on the **Patch notes** page, and on [GitHub](https://github.com/horizon-rust/horizon/releases).
+It lists Horizon's builds, newest first: the current Nightly, the last week's, then the numbered releases from before. You can install a version, remove it, or choose which one **Play** starts. Each release's notes are on the **Patch notes** page, and on [GitHub](https://github.com/horizon-rust/horizon/releases).
 
 ## Something went wrong
 
