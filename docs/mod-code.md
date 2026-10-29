@@ -20,7 +20,7 @@ Each is a method of the game (`Game`), hooked with `HEAD` ([the bundle](/docs/mo
 | `native_settings(mod_id: &str, buttons: &mut Vec<String>)` | Your settings page opens, and again after each click | When `mod_id` is yours, push the labels of its buttons |
 | `native_settings_click(mod_id: &str, button: usize)` | A button of a settings page was clicked | When it is yours, change the setting and keep it |
 
-The [item panel and recipes](#the-item-panel-and-recipes-version-2) add one more hook point with the next Nightly.
+Version 2 of the hook points adds one more, for the [item panel and recipes](#the-item-panel-and-recipes-version-2); it is not in a Nightly yet.
 
 ## Helpers
 
@@ -51,7 +51,7 @@ Call them on `game` from your helpers:
 
 ## The item panel and recipes (version 2)
 
-**Next Nightly.** Hook points version 2 add what a recipe viewer needs: the panel beside container screens (`native_panel_items`, `native_panel_recipes`), the hook `native_panel_event` for the player's clicks, searches and keys over it, and the game's items and recipes (`native_recipes`, `native_known_recipes`, `native_place_recipe`, `native_give`). Horizon's Recipes mod is made on them. A mod that uses them sets `"hooks": 2`, and builds only on a Nightly that has them.
+**Merged on main, not in a Nightly yet.** Hook points version 2 add what a recipe viewer needs: the panel beside container screens (`native_panel_items`, `native_panel_recipes`), the hook `native_panel_event` for the player's clicks, searches and keys over it, and the game's items and recipes (`native_recipes`, `native_known_recipes`, `native_place_recipe`, `native_give`). The native port of Horizon's Recipes mod, in horizon-mods' `native/recipes`, uses them. A mod that uses them sets `"hooks": 2`, and builds only on a Nightly that has them: until one does, players can't build it.
 
 ## A worked example: Playtime
 
