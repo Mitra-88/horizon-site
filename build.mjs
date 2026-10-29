@@ -202,6 +202,20 @@ if (body.length < 5) throw new Error("README: the parity table has fewer than fi
 const harnesses = (readme.match(/all (\d[\d,]*) (?:parity )?harnesses/) || [])[1];
 if (!harnesses) throw new Error("README: no 'all N harnesses' count");
 const audited = (parityBody.match(/Last audited\s+(\d{4}-\d{2}-\d{2})/) || [])[1] ?? "";
+// The headline since horizon#3921: the player-visible gaps still open in the port ledger's lists. Optional, so a
+// README without the block still builds.
+const gaps = (status.match(/\*\*Player-visible gaps: (\d[\d,]*) open\*\*/) || [])[1];
+const glance = [
+  ...(gaps ? [["#parity", "Player-visible gaps open", gaps]] : []),
+  ["#parity", "Vanilla checks passing", percent],
+  ["#parity", "Differential harnesses", harnesses],
+  ["#screenshots", "Drawn by Horizon", "5 shots"],
+  ["#recent", "Recently added", "Releases"],
+];
+const glanceIndex = (i) => String(i + 1).padStart(2, "0");
+const glanceRows = glance
+  .map(([href, name, meta], i) => `            <li class="row reveal"><a href="${href}"><span class="row-index">${glanceIndex(i)}</span><span class="row-name">${escape(name)}</span><span class="row-meta">${escape(meta)}</span></a></li>`)
+  .join("\n");
 const intro = status.split(/^###/m)[0].trim();
 
 const scoreLabel = (s) => ({ 0: "Absent", 0.25: "Started", 0.5: "Playable", 0.75: "Mostly complete", 1: "Complete" })[Number(s)] ?? s;
@@ -368,6 +382,8 @@ const values = {
   JS: `/assets/${jsName}`,
   PERCENT: percent,
   HARNESSES: harnesses,
+  GLANCE_ROWS: glanceRows,
+  LIVE_INDEX: glanceIndex(glance.length),
   AUDITED: audited,
   PARITY_INTRO: markdown(intro.replace("The table below is the project's own audit", "Below is the project's own audit")),
   PARITY_CELLS: parityCells,
