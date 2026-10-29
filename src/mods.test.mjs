@@ -54,6 +54,25 @@ test("the submit form sends what the service reads", () => {
   assert.equal(JSON.parse(JSON.stringify(entry)).key, undefined, "an empty key isn't sent");
 });
 
+test("native mods are listed, and their page says they are code with no sandbox", () => {
+  const native = project({
+    id: "zoom", kind: "native-mod", name: "Zoom",
+    versions: [{ version: "2.0.0", api: `native-1/${"6f8c7a0".padEnd(40, "e")}/${"0d6b103".padEnd(40, "c")}`, game: "26.3",
+      file: { name: "zoom-2.0.0.hnmod", url: "https://github.com/horizon-rust/horizon-mods/releases/download/x/zoom-2.0.0.hnmod", size: 5886, sha256: "e".repeat(64) } }],
+  });
+  assert.deepEqual(readIndex({ schema: 1, projects: [native] }).map((p) => p.id), ["zoom"]);
+  assert.ok(matches(native, "native-mod", ""));
+  assert.ok(listHtml([native]).includes(">Native mod<"));
+  const html = projectHtml(native);
+  assert.ok(html.includes("It is not sandboxed"));
+  assert.ok(!html.includes("What it may do"));
+  assert.ok(html.includes("made on Horizon 6f8c7a0"));
+  assert.ok(!html.includes("API native-1"));
+  assert.ok(html.includes("horizon-launcher native-build FOLDER --trust-native-code"));
+  assert.match(submitHtml(), /<option value="native-mod">Native mod<\/option>/);
+  assert.match(submitHtml(), /accept="[^"]*\.hnmod/);
+});
+
 test("a project's page links its owners' GitHub profiles, and only valid logins", () => {
   const html = projectHtml(project({ owners: ["Stink-O", "bad login", "-x", "a--b", "ok\"><script>"] }));
   assert.ok(html.includes('href="https://github.com/Stink-O"'));

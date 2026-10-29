@@ -39,8 +39,8 @@ async function start() {
 // A file named <id>-<version>.<extension> fills in the two fields and the kind.
 form.querySelector("#f-file").addEventListener("change", (e) => {
   const name = e.target.files[0]?.name || "";
-  const m = name.match(/^([a-z0-9_]{1,64})-([A-Za-z0-9][A-Za-z0-9._-]*)\.(hmod|hpack|zip)$/);
-  const kind = { hmod: "mod", hpack: "modpack", zip: "resourcepack" }[name.split(".").pop()];
+  const m = name.match(/^([a-z0-9_]{1,64})-([A-Za-z0-9][A-Za-z0-9._-]*)\.(hmod|hnmod|hpack|zip)$/);
+  const kind = { hmod: "mod", hnmod: "native-mod", hpack: "modpack", zip: "resourcepack" }[name.split(".").pop()];
   if (kind) control("kind").value = kind;
   if (m) {
     if (!control("id").value) control("id").value = m[1];

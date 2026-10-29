@@ -15,11 +15,12 @@ export const SCHEMA = 1;
 // The kinds the site shows, in the filter's order. Kinds a newer index adds are left out until the site knows them.
 export const KINDS = [
   ["mod", "Mods"],
+  ["native-mod", "Native mods"],
   ["modpack", "Modpacks"],
   ["resourcepack", "Resource packs"],
   ["shader", "Shader packs"],
 ];
-const KIND_NAMES = { mod: "Mod", modpack: "Modpack", resourcepack: "Resource pack", shader: "Shader pack" };
+const KIND_NAMES = { mod: "Mod", "native-mod": "Native mod", modpack: "Modpack", resourcepack: "Resource pack", shader: "Shader pack" };
 
 // What a capability lets a mod do, as the game and the launcher say it (horizon_mods::Capability::describe).
 export const CAPABILITIES = {
@@ -115,6 +116,7 @@ function installHtml(p, v) {
   const cli = `horizon-launcher mods install --source horizon ${p.id}`;
   const where = {
     mod: `put it in <code>horizon-mods/</code> beside <code>options.txt</code> in the game folder, then turn it on in the game: Options &gt; Mods`,
+    "native-mod": `unzip it into a folder, then build the game with it: <code>horizon-launcher native-build FOLDER --trust-native-code</code> (it plays in the <strong>Native mods</strong> instance)`,
     resourcepack: `put it in <code>resourcepacks/</code> beside <code>options.txt</code>, then turn it on in Options &gt; Resource Packs`,
     modpack: `a modpack lists registry mods: install them one by one, or wait for the launcher to install modpacks`,
     shader: `Horizon's own shader packs aren't installed yet`,
@@ -150,6 +152,16 @@ export function rateHtml(p, me, mine) {
   return `<span class="mod-rate-label">${mine ? "Your rating" : "Rate it"}</span><span class="mod-rate-stars" role="group" aria-label="Your rating">${stars}</span>`;
 }
 
+// A version's API: a native mod's is native-1/<Horizon commit>/<horizon-mixins commit>, the commit it was made on.
+export function apiLabel(api) {
+  if (!api) return "";
+  const native = /^native-\d+\/([0-9a-f]{40})\//.exec(api);
+  return native ? ` · made on Horizon ${native[1].slice(0, 7)}` : ` · API ${escape(api)}`;
+}
+
+// What a native mod is, on its page: code the launcher compiles, with no sandbox.
+const NATIVE_NOTE = `<h2 class="heading">Native code</h2><p class="meta">A native mod is Rust code that the launcher compiles into a game of its own, the <strong>Native mods</strong> instance. It is not sandboxed: it can do anything you can on this computer. The launcher builds it only after a warning that names it, and a reviewer read its source before it was listed. Read the source yourself before you build it. <a href="/docs/mods">How native mods work</a></p>`;
+
 // One project's page; `rating` is its ratings (null: none yet), left out when they aren't known.
 export function projectHtml(p, rating) {
   const v = p.versions[0];
@@ -161,7 +173,7 @@ export function projectHtml(p, rating) {
     ? `<h2 class="heading">Its mods</h2><ul class="mod-caps">${v.requires.map((r) => `<li><a href="/mods/${escape(r.id)}">${escape(r.id)}</a> ${escape(r.version)}</li>`).join("")}</ul>`
     : "";
   const versions = p.versions
-    .map((x) => `<li><strong>${escape(x.version)}</strong> <span class="mod-version">${escape(x.published || "")} · for ${escape(x.game)}${x.api ? ` · API ${escape(x.api)}` : ""}</span>${x.changelog ? `<div class="prose">${markdown(x.changelog)}</div>` : ""}</li>`)
+    .map((x) => `<li><strong>${escape(x.version)}</strong> <span class="mod-version">${escape(x.published || "")} · for ${escape(x.game)}${apiLabel(x.api)}</span>${x.changelog ? `<div class="prose">${markdown(x.changelog)}</div>` : ""}</li>`)
     .join("");
   return `<article class="mod-page" data-id="${escape(p.id)}">
   <header class="mod-head">${icon(p)}<div><p class="kicker"><span>${escape(KIND_NAMES[p.kind] || p.kind)}</span>${escape((p.authors || []).join(", "))}</p>${ownersHtml(p)}
@@ -172,6 +184,7 @@ export function projectHtml(p, rating) {
   ${ownerNote(p)}
   ${p.description ? `<div class="prose">${markdown(p.description)}</div>` : ""}
   ${p.kind === "mod" ? `<h2 class="heading">What it may do</h2>${capsHtml}<p class="meta">Mods run in a sandbox with no file, network or clock access. The game refuses a mod whose code uses more than this list.</p>` : ""}
+  ${p.kind === "native-mod" ? NATIVE_NOTE : ""}
   ${requires}
   <h2 class="heading">Install</h2>
   ${installHtml(p, v)}
@@ -204,7 +217,7 @@ const text = (name, attrs = "") => `<input class="mod-search" id="f-${name}" nam
 export function submitHtml() {
   return `<p class="kicker"><span>Mods</span>Submit</p>
         <h1 class="display page-title">Submit to the registry</h1>
-        <p class="lede">A mod, a modpack of registry mods, or a resource pack made for Horizon. The form checks the file and opens a pull request; a reviewer reads it, its source and the checks' report, and merging publishes it to this site and the launcher.</p>
+        <p class="lede">A content mod, a native mod, a modpack of registry mods, or a resource pack made for Horizon. The form checks the file and opens a pull request; a reviewer reads it, its source and the checks' report, and merging publishes it to this site and the launcher.</p>
         <p class="meta">First time? <a href="/docs/publish-a-mod">Publish a mod</a> walks through building, checking and signing the file, and <a href="/docs/make-a-mod">Make a mod</a> starts from the beginning.</p>
         <div class="mod-auth" id="submit-auth" aria-live="polite">
           <p class="meta no-script">The form needs JavaScript. You can also <a href="${REGISTRY}">open a pull request by hand</a>.</p>
@@ -212,7 +225,7 @@ export function submitHtml() {
         <form class="mod-form" id="submit-form" hidden>
           <fieldset><legend class="heading">The file</legend>
           ${field("kind", "Kind", `<select class="mod-search" id="f-kind" name="kind">${KINDS.map(([k, label]) => `<option value="${k}"${k === "shader" ? " disabled" : ""}>${label.replace(/s$/, "")}${k === "shader" ? " (opens with Horizon's own shader format)" : ""}</option>`).join("")}</select>`)}
-          ${field("file", "File", `<input id="f-file" name="file" type="file" accept=".hmod,.hpack,.zip" required>`, "A .hmod, a .hpack or a resource pack .zip, at most 64 MB. Run <code>cargo horizon-mod check</code> on it first.")}
+          ${field("file", "File", `<input id="f-file" name="file" type="file" accept=".hmod,.hnmod,.hpack,.zip" required>`, "A .hmod, a native mod's .hnmod, a .hpack or a resource pack .zip, at most 64 MB. Run <code>cargo horizon-mod check</code> on it first.")}
           ${field("id", "Id", text("id", `required pattern="[a-z0-9_]{1,64}" placeholder="my_mod" autocomplete="off"`), "Its manifest's id: a-z, 0-9 and _. A resource pack's is yours to pick.")}
           ${field("version", "Version", text("version", `required pattern="[A-Za-z0-9][A-Za-z0-9._\\-]{0,63}" placeholder="1.0.0"`))}
           ${field("game", "For Minecraft", text("game", `required value="26.3"`))}
