@@ -1,6 +1,6 @@
 # The bundle
 
-A native mod is a bundle for [horizon-mixins](https://github.com/horizon-rust/horizon-mixins): the manifest `horizon-mixin.toml`, the mod's own code, and one small helper for each place it hooks. This page explains the manifest, what Horizon a mod builds on, and the `.hnmod` file players install. Content mods have a different manifest, on [their own page](/docs/content-mods).
+A native mod is a bundle for [horizon-mixins](https://github.com/horizon-rust/horizon-mixins): the manifest `horizon-mixin.toml`, the mod's own code, and one small helper for each place it hooks. This page explains the manifest, what Horizon a mod builds on, and the `.hnmod` file players install. Content mods have a different manifest, on [their own page](/docs/content-mods#the-manifest).
 
 ## The manifest
 
@@ -101,7 +101,7 @@ Horizon changes every day, and a hook names a function of its source. What a mod
 
 ## The .hnmod file
 
-What players install, and what you submit to the registry, is one `.hnmod` file: a zip holding `horizon-native.json` (the id, the version, the game, the commits and the hook points' version) and your bundle's `.rs` and `.toml` files, nothing else. The `.hnmod` *is* the source: the launcher compiles it on the player's computer, and a reviewer reads all of it before the registry lists it. `native.py package` makes it ([Publish](/docs/publish-a-mod)).
+What players install, and what you submit to the registry, is one `.hnmod` file: a zip holding `horizon-native.json` (the id, the version, the game, the commits and the hook points' version) and your bundle's `.rs` and `.toml` files, nothing else. The `.hnmod` *is* the source: the launcher compiles it on the player's computer, and a reviewer reads all of it before the registry lists it. `native.py package` makes it ([Publish](/docs/publish-a-mod#package-a-native-mod)).
 
 ## What a native mod can do
 
