@@ -29,7 +29,7 @@ The launcher's **Settings** page has a **Logs** row with an **Open** button. On 
 ## What to try first
 
 - **The game does not start, or crashes straight away.** Update the launcher and Horizon, and your graphics drivers. On Windows, try **Graphics API: DirectX 12** (see [Settings](/docs/settings#graphics-api-on-windows)).
-- **"Not prepared" or "Minecraft 26.3 was not found".** Play 26.3 once in the official Minecraft launcher, or point the launcher at your Minecraft folder (**Choose…** next to Minecraft folder on the Play page), then choose **Prepare** again.
+- **"Not prepared" or "Minecraft 26.3 was not found".** Sign in with a Microsoft account that owns Java Edition and press Play: with no Minecraft installed, the launcher downloads 26.3 from Mojang for your account and prepares it. To use an install you already have, point the launcher at your Minecraft folder (**Choose…** next to Minecraft folder on the Play page), then choose **Prepare** again.
 - **Preparation says Java 25 is needed.** Update the launcher: it then uses the Java the Minecraft launcher downloaded for 26.3, or downloads it from Mojang. If it still can't (no internet, say), install a Java 25 JDK, for example Eclipse Temurin 25.
 - **Slow or stuttering.** Lower the render distance, turn LOD off, or pick the **Performance** preset. The performance overlay (Video, Advanced, Overlay) shows what is slow.
 - **A resource pack broke something.** Switch it off, or take it out of its folder.
