@@ -1,38 +1,38 @@
 # Mods and data packs
 
-Horizon has its own mod system, written for Horizon and not compatible with Java mods. Data packs work in part. This page says what you can do with each today.
+Horizon has its own mods, made for Horizon and not compatible with Java mods. Data packs work in part. This page says what you can do with each today.
 
 ## Mods
 
-Horizon mods are written in Rust, compiled to WebAssembly and run in a sandbox. A mod can only do what it asks for and you allow, and a mod that crashes is switched off without taking the game down.
+Horizon has two kinds of mod:
 
-> **Early.** The mod system is new. Reviewed mods are listed at [playhorizon.dev/mods](/mods), and any `.hmod` file can be put in the folder by hand.
+- **Content mods** (`.hmod`) add blocks and items from data and assets: models, textures, recipes, loot tables, tags and structures, with no code. They work in single player today. This is also what the launcher's [modpack](/docs/modpacks) carry-over produces.
+- **Native mods** (`.hnmod`) are Rust code built into the game: a HUD, keys, commands, settings, new behaviour. Horizon's own Zoom, FPS Counter, Keystrokes and Minimap are native mods. They work in single player, on LAN and on servers (only what runs in your own game, on a server you join).
 
-**Playing with mods**
+> **Early.** Reviewed mods are listed at [playhorizon.dev/mods](/mods) and on the launcher's Mods page.
 
-1. Put the mod's `.hmod` file in the `horizon-mods` folder of the game folder (see [Install](/docs/install#first-launch) for where that is), or use the **Open Mod Folder** button on the Mods screen.
-2. Open **Options, Mods...**. Each mod is listed with what it may do ("May see your position, health and the time, draw text on your screen…") and a switch. Mods start off. Turn on the ones you trust.
-3. A mod that failed to load shows why, in red, on its row.
+**Content mods**
 
-**What a mod can do today**
+1. Install one from the launcher's **Mods** page (pick **Horizon** beside Modrinth), or put its `.hmod` file in the `horizon-mods` folder of the game folder (see [Install](/docs/install#first-launch) for where that is).
+2. Open **Options, Mods...**. Each mod is listed with what it may do ("May add blocks and items to your worlds") and a switch. Content mods start off.
+3. Start the game again after a switch: content loads when the game starts. A mod that failed to load shows why, in red, on its row.
 
-- **Client mods** read the same things the F3 screen shows (your position, health, food, the time), draw text panels on the HUD, show chat lines only you see, and add chat commands. They work in single player and on any server, and a server cannot see them.
-- **Content mods** add blocks and items from data and assets: models, textures, recipes, loot tables and tags, with no code. They work in single player today. This is also what the launcher's [modpack](/docs/modpacks) carry-over produces.
-- **Server mods**, which run where the world is simulated, are planned.
+**Native mods**
+
+A native mod is code, not sandboxed: it can do anything you can on your computer. So the launcher builds it into a game of its own, and only when you say so:
+
+1. Install it from the launcher's **Mods** page. The first time, the launcher says what native mods are and turns on **Settings > Native mods (experimental)**.
+2. There, press **Build**. The launcher names the mods and warns you in red; **I trust these mods: build** starts it. The first build downloads Rust and takes 20 to 30 minutes and a few GB of disk; later builds take a few minutes.
+3. Play the **Native mods** instance. It has its own worlds and options, so your other worlds never run the mods.
+4. In the game, **Options > Mods** lists each native mod with a switch and, when it has some, a **Settings** page and keys to rebind. Turn one off there and the next build leaves it out.
+
+Install only mods whose authors you trust. The registry lists a native mod only after a maintainer has read its source, and each one's page links it. Horizon's own mods say "Made by Horizon"; every other mod's page says who made it.
 
 **Making a mod**
 
-[Make a mod](/docs/make-a-mod) is the full guide: the tools, your first mod in the game, the manifest and capabilities, the code with a worked example, content mods, testing, and publishing on [the registry](/mods). In short:
+[Make a mod](/docs/make-a-mod) is the full guide, for both kinds: the tools, your mod in the game, the hook points with a worked example, content mods, testing, and publishing on [the registry](/mods).
 
-```sh
-rustup target add wasm32-unknown-unknown
-cargo install --git https://github.com/horizon-rust/horizon cargo-horizon-mod
-cargo horizon-mod new my-mod
-cd my-mod
-cargo horizon-mod build
-```
-
-`cargo horizon-mod test` runs the mod's test scripts (`tests/*.toml`: ticks, commands and the player's position in, chat and HUD lines checked) with no game open. The [Mod API](/docs/api/mods) lists what a mod can do today and what comes next, and its [reference](/docs/api/mods-reference) every function. Java mod jars don't run in Horizon: their code calls and patches Minecraft's Java classes, and Horizon has none. What carries over is the data and assets inside a jar ([modpacks](/docs/modpacks)).
+Java mod jars don't run in Horizon: their code calls and patches Minecraft's Java classes, and Horizon has none. What carries over is the data and assets inside a jar ([modpacks](/docs/modpacks)).
 
 ## Finding resource packs and modpacks
 

@@ -21,7 +21,7 @@ Nothing is uploaded or shared. The mod jars and what is made from them stay on y
 
 **Not yet:**
 
-- **Mods with Java code:** machines, magic, new mob behaviour, anything that needs the mod's own logic. Each of these must be ported by hand to Horizon's mod system (Rust compiled to WebAssembly), and checked against the original mod running in a Java test instance. That work is under way; none of it is something you can install yet.
+- **Mods with Java code:** machines, magic, new mob behaviour, anything that needs the mod's own logic. Each of these must be ported by hand as a Horizon [native mod](/docs/make-a-mod), and checked against the original mod running in a Java test instance. That work is under way; none of it is something you can install yet.
 - **World generation written in code:** custom biomes, terrain shaping and structure types that are Java classes.
 - **Scripts** such as KubeJS, and recipe viewers and map mods that are built around Java.
 
