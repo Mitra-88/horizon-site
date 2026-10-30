@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
-import { boardFrom, boardHtml, creditFrom, creditHtml, fixesIn, itemOf, journalFrom, journalHtml, journalJson, overviewHtml, progress, roadmapHtml, slimIssue, suggestItemsHtml } from "./hub.js";
+import { boardFrom, boardHtml, creditFrom, creditHtml, fixesIn, itemOf, journalFrom, journalHtml, journalJson, overviewHtml, progress, roadmapHtml, slimIssue } from "./hub.js";
 
 const roadmap = JSON.parse(readFileSync(new URL("./fixtures/roadmap.json", import.meta.url), "utf8"));
 
@@ -142,11 +142,10 @@ test("journal.json is the flat feed Kira reads: merges, releases, shipped items,
   }
 });
 
-test("items still to come take votes and suggestions; shipped ones don't", () => {
+test("items still to come take votes; shipped ones don't", () => {
   const html = roadmapHtml(roadmap);
   for (const item of roadmap.items) {
     assert.equal(html.includes(`data-vote="${item.id}"`), item.status !== "shipped", item.id);
-    assert.equal(suggestItemsHtml(roadmap).includes(`value="${item.id}"`), item.status !== "shipped", item.id);
   }
   // Hidden until the hub's server answers.
   assert.ok(html.includes('aria-pressed="false" hidden>'));

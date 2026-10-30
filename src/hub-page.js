@@ -145,7 +145,7 @@ async function refresh() {
   if (note) note.textContent = "Pull request and issue states are live from GitHub.";
 }
 
-// --- Votes, bug reports and suggestions: the hub's server (crates/horizon-telemetry-server) --------------------
+// --- Votes and bug reports: the hub's server (crates/horizon-telemetry-server) ----------------------------------
 
 const saved = (key, fallback) => {
   try {
@@ -257,9 +257,6 @@ async function connect() {
   setUpForm(document.querySelector('[data-form="report"]'), "/hub/report", (status, answer) => {
     const issue = typeof answer.issue === "string" && answer.issue.match(/^https:\/\/github\.com\/horizon-rust\/horizon\/issues\/(\d+)$/);
     status.innerHTML = issue ? `Thanks! It's <a href="${issue[0]}">issue #${issue[1]}</a> on GitHub: follow it there.` : "Thanks! It will be on GitHub in a few minutes.";
-  });
-  setUpForm(document.querySelector('[data-form="suggest"]'), "/hub/suggest", (status) => {
-    status.textContent = "Thanks! The maintainers read every suggestion.";
   });
 }
 
