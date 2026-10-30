@@ -59,7 +59,8 @@
 	# The staff pages (one page, its script picks the view) and the application form: never indexed or cached.
 	@staff path /staff /staff/ /staff/team /staff/mod /staff/setup
 	rewrite @staff /staff.html
-	@private path /staff /staff/* /staff.html
+	rewrite /apply /apply.html
+	@private path /staff /staff/* /staff.html /apply /apply.html
 	header @private {
 		X-Robots-Tag "noindex, nofollow"
 		Cache-Control "no-store"
