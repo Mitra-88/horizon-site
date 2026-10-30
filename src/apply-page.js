@@ -23,7 +23,7 @@ async function start() {
   }
   const token = sessionStorage.getItem("apply:token");
   if (!token) {
-    intro.innerHTML = "To apply for 🤝 Support, 🛡️ Mod or 🌌 Horizon Team, run <code>/apply</code> on Horizon's Discord server: Kira DMs you a link to this form.";
+    intro.innerHTML = "To apply for 🤝 Support or 🛡️ Mod, run <code>/apply</code> on Horizon's Discord server: Kira DMs you a link to this form.";
     return;
   }
   let link;
