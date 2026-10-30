@@ -166,7 +166,7 @@ export function overviewHtml(roadmap, live = new Map()) {
   <h2 class="title" id="h-ov-help">How to help</h2>
   <p class="hub-plain">${inline(o.help_plain)}</p>
   <p class="hub-dev">${inline(o.help_dev)}</p>
-  <p class="hub-actions"><a class="button primary" href="#contribute" data-goto="contribute">Contribute</a><a class="button secondary" href="#help-wanted" data-goto="roadmap">Help wanted</a><a class="button secondary" href="#report">Report a bug</a><a class="button secondary" href="#suggest">Suggest something</a></p>
+  <p class="hub-actions"><a class="button primary" href="#contribute" data-goto="contribute">Contribute</a><a class="button secondary" href="#help-wanted" data-goto="roadmap">Help wanted</a><a class="button secondary" href="#report">Report a bug</a></p>
 </section>`;
 }
 
@@ -432,15 +432,7 @@ export function journalHtml(entries, roadmap) {
     .join("\n");
 }
 
-// --- Contribute: the suggestion form's items and the contributors ------------------------------------------------
-
-// The suggestion form's "About" choices: the items still to come.
-export function suggestItemsHtml(roadmap) {
-  const open = roadmap.items.filter((i) => i.status !== "shipped");
-  return [`<option value="">Something new</option>`]
-    .concat(open.map((i) => `<option value="${escape(i.id)}">${escape(i.title)}</option>`))
-    .join("");
-}
+// --- Contribute: the contributors ---------------------------------------------------------------------------------
 
 // The contributors, from GitHub (contributors.js's list), with the Discord name of those who linked their accounts
 // on Kira and agreed to be credited (Kira's /contributors.json: { contributors: [{ github, discord }] }).
