@@ -1017,6 +1017,7 @@ code { border-radius: 0; background: var(--well); box-shadow: 0 0 0 1px var(--ou
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --chart-1: #8a72f8; --chart-2: #d9702a; } }
 :root[data-theme="dark"] { --chart-1: #8a72f8; --chart-2: #d9702a; }
 .stat-tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr)); gap: 8px; margin-bottom: 24px; }
+.stat-note { margin: -16px 0 24px; }
 .stat-tile { display: grid; gap: 4px; padding: 16px 18px; background: var(--panel); border: var(--block-outline) solid var(--outline); box-shadow: var(--panel-edges); }
 .stat-value { font: 500 calc(var(--text-title) * 0.6) / 1.1 var(--pixel); color: var(--ink); }
 .stat-label { font-size: var(--text-label); color: var(--ink-soft); }

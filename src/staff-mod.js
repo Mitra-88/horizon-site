@@ -22,6 +22,7 @@ function statsHtml(s) {
       ${tile(fmt(s.last7.automod), "AutoMod actions, last 7 days", `${fmt(s.last30.automod)} in 30 days`)}
       ${tile(`${fmt(a.open.mod)} / ${fmt(a.open.support)}`, "Mod / Support applications waiting", `${fmt(a.accepted30)} accepted, ${fmt(a.declined30)} declined in 30 days`)}
     </div>
+    <p class="meta stat-note">Counts only: Kira stores no list of who or what.</p>
     <div class="chart-grid">
       ${barChart("Reports and mod-mail per week", w, [{ name: "Reports", values: col("reports") }, { name: "Mod-mail", values: col("modmail") }])}
       ${barChart("Warnings and timeouts per week", w, [{ name: "Warnings", values: col("warns") }, { name: "Timeouts", values: col("timeouts") }])}
