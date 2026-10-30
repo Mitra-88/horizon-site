@@ -1,7 +1,7 @@
 // node --test src/: the Markdown the docs pages and release notes are rendered from.
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { markdown } from "./markdown.js";
+import { escape, markdown } from "./markdown.js";
 
 test("a table renders with its header, cells and inline Markdown", () => {
   const html = markdown("| Way in | Status |\n| --- | :-: |\n| Rust | `cargo horizon-mod` |\n| Lua | planned \\| soon |\n\nAfter.");
@@ -22,4 +22,12 @@ test("rows without a rule line are a paragraph", () => {
 
 test("a link whose label is code keeps it", () => {
   assert.equal(markdown("See [`AGENTS.md`](/docs/agents).", { site: true }), '<p>See <a href="/docs/agents"><code>AGENTS.md</code></a>.</p>');
+});
+
+test("escape takes a missing value as empty text", () => {
+  // The Team dashboard broke on an application field the API sent as null (2026-10-30).
+  assert.equal(escape(null), "");
+  assert.equal(escape(undefined), "");
+  assert.equal(escape(3), "3");
+  assert.equal(escape(`<a href="x">'&'</a>`), "&lt;a href=&quot;x&quot;&gt;&#39;&amp;&#39;&lt;/a&gt;");
 });
