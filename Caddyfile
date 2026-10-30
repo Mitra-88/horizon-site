@@ -47,6 +47,24 @@
 	handle /api/mods/* {
 		reverse_proxy {$REGISTRY_UPSTREAM:127.0.0.1:9}
 	}
+	# The staff dashboards' API: Kira's service (src/staff-http.js in horizon-rust/kira), reached only through here,
+	# with the key both sides hold and the browser's address. Unset, the pages say the dashboards are closed.
+	handle /staff/api/* {
+		reverse_proxy {$STAFF_UPSTREAM:http://127.0.0.1:9} {
+			header_up Host {upstream_hostport}
+			header_up X-Staff-Proxy-Key "{$STAFF_PROXY_KEY}"
+			header_up X-Staff-Client-Ip {http.request.header.X-Real-IP}
+		}
+	}
+	# The staff pages (one page, its script picks the view) and the application form: never indexed or cached.
+	@staff path /staff /staff/ /staff/team /staff/mod /staff/setup
+	rewrite @staff /staff.html
+	@private path /staff /staff/* /staff.html
+	header @private {
+		X-Robots-Tag "noindex, nofollow"
+		Cache-Control "no-store"
+		Referrer-Policy "no-referrer"
+	}
 	# The registry: /mods, /mods/submit and /mods/<id> baked at build time, else the list page, whose script shows a project
 	# published since.
 	rewrite /mods /mods.html
