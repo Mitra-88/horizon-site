@@ -32,7 +32,7 @@ export function inboxHtml({ apps, cards = null, decisions = null, me, names = []
     { id: "veto", title: "In your veto window", short: "in your veto window", items: apps.filter((a) => a.owner && a.status === "veto-window")
       .map((a) => item(`${app(a)} passed${a.tally ? `, ${a.tally.for} to ${a.tally.against}` : ""} · goes through in ${left(a.veto.until, now)}`, "Approve it now, veto it, or let it go through.",
         owner(a, "approve", "Approve now", true) + owner(a, "veto", "Veto") + link(goTo(a), "Read"))) },
-    { id: "decide", title: "Waiting for your decision", short: "to decide", items: apps.filter((a) => a.owner && ["stalled", "owner"].includes(a.status))
+    { id: "decide", title: "Needs your decision", short: "need your decision", items: apps.filter((a) => a.owner && ["stalled", "owner"].includes(a.status))
       .map((a) => item(`Decide on ${app(a)}`, a.status === "stalled" ? "Not enough votes, even after 48 more hours." : "Too few active voters to hold a vote.", link(goTo(a), "Decide", true))) },
     { id: "vote", title: "Waiting for your vote", short: "to vote on", items: open.filter((a) => a.vote.canVote && !a.vote.mine).sort((a, b) => a.vote.closesAt - b.vote.closesAt)
       .map((a) => item(`Vote on ${app(a)} · closes in ${left(a.vote.closesAt, now)}`, votes(a.vote), link(goTo(a), "Vote", true))) },
