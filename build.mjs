@@ -18,7 +18,7 @@ import { machinesHtml, playersHtml } from "./src/bench.js";
 import { CPUS, GPUS, singleThread } from "./src/hardware.js";
 import { isGame, isLauncher, launcherVersion, newestFirst } from "./src/versions.js";
 import { contributorsFrom, contributorsHtml } from "./src/contributors.js";
-import { areaFilterHtml, boardFilterHtml, boardFrom, boardHtml, creditFrom, creditHtml, helpWantedHtml, journalFrom, journalHtml, journalJson, overviewHtml, roadmapHtml, slimIssue, suggestItemsHtml } from "./src/hub.js";
+import { areaFilterHtml, boardFilterHtml, boardFrom, boardHtml, creditFrom, creditHtml, helpWantedHtml, journalFrom, journalHtml, journalJson, overviewHtml, roadmapHtml, slimIssue } from "./src/hub.js";
 import { INDEX_URL, KINDS, SORTS, SUBMIT, listHtml, projectHtml, readIndex, sorted, submitHtml } from "./src/mods.js";
 
 const site = dirname(fileURLToPath(import.meta.url));
@@ -168,7 +168,7 @@ const hubLinked = new Map(hubLive.filter((i) => linked.has(i.n)).map((i) => [i.n
 const board = boardFrom(hubLive, roadmap);
 const journal = journalFrom(releases, hubLive, roadmap);
 
-// The hub's server (crates/horizon-telemetry-server: votes, bug reports, suggestions), and Kira's list of the
+// The hub's server (crates/horizon-telemetry-server: votes and bug reports), and Kira's list of the
 // contributors who linked their Discord account and agreed to be credited (kira's /contributors.json).
 const hubApi = process.env.HUB_API_URL || "https://telemetry.playhorizon.dev";
 let kiraCredit = {};
@@ -422,7 +422,6 @@ const values = {
   HUB_BOARD_FILTER: boardFilterHtml(board, roadmap),
   HUB_JOURNAL: journalHtml(journal, roadmap) || unavailable,
   HUB_DATA: JSON.stringify({ roadmap, live: [...hubLinked.values()], api: hubApi }).replace(/</g, "\\u003c"),
-  HUB_SUGGEST_ITEMS: suggestItemsHtml(roadmap),
   HUB_VERSION: escape(game[0]?.tag_name || ""),
   HUB_CREDIT: creditHtml(creditFrom(contributors, kiraCredit)),
   YEAR: String(new Date().getUTCFullYear()),

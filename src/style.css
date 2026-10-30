@@ -841,7 +841,7 @@ code { border-radius: 0; background: var(--well); box-shadow: 0 0 0 1px var(--ou
   .hub-rows .row-meta { grid-column: 2; text-align: left; }
 }
 
-/* --- Hub: votes, the report and suggestion forms, the contributors ---------------------- */
+/* --- Hub: votes, the report form, the contributors --------------------------------------- */
 .hub-vote { margin-left: auto; }
 .hub-vote-count { margin-left: -2px; }
 .hub-vote-count:empty { display: none; }

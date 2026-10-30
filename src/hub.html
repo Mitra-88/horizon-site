@@ -90,7 +90,7 @@
               <article class="highlight">
                 <h3>Tell us what differs</h3>
                 <p>Something that doesn't play like vanilla is a bug. Say what you did, what happened and what vanilla does, with your Horizon version and system.</p>
-                <p class="hub-actions"><a class="button secondary small" href="#report">Report a bug</a><a class="button secondary small" href="#suggest">Suggest something</a></p>
+                <p class="hub-actions"><a class="button secondary small" href="#report">Report a bug</a><a class="button secondary small" href="{{DISCORD}}">Share an idea in #horizon-ideas</a></p>
               </article>
               <article class="highlight">
                 <h3>Take a task</h3>
@@ -129,20 +129,6 @@
               <p class="meta">What you write is public on GitHub: no passwords or personal details. A screenshot or the log file helps: add it to the issue once it's open.</p>
             </form>
             <p class="hub-form-closed" data-closed>Report it on <a href="https://github.com/horizon-rust/horizon/issues/new">GitHub</a> or in <a href="{{DISCORD}}">#horizon-bugs on Discord</a>, where Kira turns your post into an issue.</p>
-          </section>
-          <section class="hub-block" id="suggest" aria-labelledby="h-suggest">
-            <h2 class="title" id="h-suggest">Suggest something</h2>
-            <p class="hub-intro">An idea for Horizon, or about something on the roadmap. The maintainers read every one, and the good ones become roadmap items. Nothing you send here is published.</p>
-            <form class="hub-form" data-form="suggest" hidden>
-              <label class="hub-field"><span>Your idea</span><textarea name="text" required minlength="10" maxlength="1000" rows="4"></textarea></label>
-              <div class="hub-form-pair">
-                <label class="hub-field"><span>About</span><select name="item">{{HUB_SUGGEST_ITEMS}}</select></label>
-                <label class="hub-field"><span>Your name (optional)</span><input name="name" maxlength="64" autocomplete="nickname"></label>
-              </div>
-              <label class="hub-trap" aria-hidden="true">Leave this empty <input name="website" tabindex="-1" autocomplete="off"></label>
-              <p class="hub-form-foot"><button type="submit" class="button primary">Send the idea</button><span class="meta" data-status role="status"></span></p>
-            </form>
-            <p class="hub-form-closed" data-closed>Post it in <a href="{{DISCORD}}">#horizon-ideas on Discord</a>, or send it to Kira with <code>/suggest</code>.</p>
           </section>
           <section class="hub-block" aria-labelledby="h-rules">
             <h2 class="title" id="h-rules">The rules</h2>
