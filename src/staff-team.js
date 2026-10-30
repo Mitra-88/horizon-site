@@ -1,6 +1,6 @@
 // The Team dashboard (/staff/team): the Team kanban and Kira's work board, the roadmap with its Team layer (Team-only
 // items, notes on public ones, publishing an item to the public roadmap), the decisions log, applications.
-import { api, escape, when, linkHtml, paragraphs, placePill } from "./staff-api.js";
+import { api, escape, when, linkHtml, paragraphs, placePill, section } from "./staff-api.js";
 import { renderApplications, fetchApplications } from "./staff-apps.js";
 import { inboxHtml, inboxCount, wireInbox } from "./staff-inbox.js";
 import { renderStats, renderData } from "./staff-stats.js";
@@ -11,8 +11,8 @@ const STATUSES = [["now", "Now"], ["next", "Next"], ["help-wanted", "Help wanted
 const statusName = Object.fromEntries(STATUSES);
 
 let data = null; // team/overview
-const name = (id) => (id && data.people[id] ? escape(data.people[id]) : "");
-const peopleOptions = (selected) => `<option value="">Nobody</option>` + Object.entries(data.people).map(([id, n]) => `<option value="${escape(id)}"${id === selected ? " selected" : ""}>${escape(n)}</option>`).join("");
+const name = (id) => (id && data.people?.[id] ? escape(data.people[id]) : "");
+const peopleOptions = (selected) => `<option value="">Nobody</option>` + Object.entries(data.people || {}).map(([id, n]) => `<option value="${escape(id)}"${id === selected ? " selected" : ""}>${escape(n)}</option>`).join("");
 const field = (label, input) => `<label class="hub-field"><span>${label}</span>${input}</label>`;
 const status = `<span class="meta" data-status role="status"></span>`;
 
@@ -23,7 +23,7 @@ function cardHtml(c) {
   return `<li class="hub-card staff-card"><div class="staff-card-body">
     <span class="hub-card-title">${escape(c.title)}</span>
     ${c.note ? `<span class="meta">${paragraphs(c.note)}</span>` : ""}
-    <span class="hub-card-meta meta">${c.owner ? `<span>${name(c.owner)}</span>` : ""}${c.link ? `<span>${linkHtml(c.link)}</span>` : ""}<span>${when(c.updatedAt)}</span></span>
+    <span class="hub-card-meta meta">${c.owner ? `<span>${name(c.owner)}</span>` : ""}${c.link ? `<span>${linkHtml(c.link)}</span>` : ""}${c.updatedAt ? `<span>${when(c.updatedAt)}</span>` : ""}</span>
     <span class="staff-card-actions">
       ${i > 0 ? `<button type="button" class="button ghost small" data-move="${escape(c.id)}" data-to="${COLUMNS[i - 1][0]}" aria-label="Move to ${COLUMNS[i - 1][1]}">←</button>` : ""}
       ${i < 2 ? `<button type="button" class="button ghost small" data-move="${escape(c.id)}" data-to="${COLUMNS[i + 1][0]}" aria-label="Move to ${COLUMNS[i + 1][1]}">→</button>` : ""}
@@ -41,11 +41,27 @@ function cardHtml(c) {
     </details></div></li>`;
 }
 
+const KIND = { pr: "PR", issue: "Issue", card: "Card" };
+// A card of Kira's work board: issues and pull requests link to GitHub; Kira's own cards may have no link (url null).
+function workCardHtml(k) {
+  const inner = `<span class="hub-card-title">${escape(k.title)}</span><span class="hub-card-meta meta"><span>${KIND[k.kind] || "Card"} #${escape(k.number)}</span>${(k.people || []).slice(0, 2).map((p) => `<span>${escape(p?.name || p?.login)}</span>`).join("")}</span>`;
+  return `<li class="hub-card">${k.url ? `<a href="${escape(k.url)}">${inner}</a>` : `<div>${inner}</div>`}</li>`;
+}
+
+function workBoardHtml() {
+  if (!data.board) return `<p class="empty">Kira's board isn't loaded yet.</p>`;
+  return (data.board.columns || []).map((c) => {
+    const cards = c.cards || [];
+    return `<section class="hub-column"><h3>${escape(c.name)}<span class="hub-count">${cards.length}</span></h3><ul class="hub-cards-list">${cards.slice(0, 12).map(workCardHtml).join("")}</ul>${cards.length > 12 ? `<p class="meta">and ${cards.length - 12} more on <a href="/hub#board">the hub</a></p>` : ""}</section>`;
+  }).join("");
+}
+
 function boardHtml() {
-  const team = COLUMNS.map(([k, label]) => `<section class="hub-column"><h3>${label}<span class="hub-count">${data.cards[k].length}</span></h3><ul class="hub-cards-list">${data.cards[k].map(cardHtml).join("") || `<li class="empty meta">Nothing here.</li>`}</ul></section>`).join("");
-  const work = data.board
-    ? data.board.columns.map((c) => `<section class="hub-column"><h3>${escape(c.name)}<span class="hub-count">${c.cards.length}</span></h3><ul class="hub-cards-list">${c.cards.slice(0, 12).map((k) => `<li class="hub-card"><a href="${escape(k.url)}"><span class="hub-card-title">${escape(k.title)}</span><span class="hub-card-meta meta"><span>${k.kind === "pr" ? "PR" : "Issue"} #${k.number}</span>${(k.people || []).slice(0, 2).map((p) => `<span>${escape(p.name || p.login || "")}</span>`).join("")}</span></a></li>`).join("")}</ul>${c.cards.length > 12 ? `<p class="meta">and ${c.cards.length - 12} more on <a href="/hub#board">the hub</a></p>` : ""}</section>`).join("")
-    : `<p class="empty">Kira's board isn't loaded yet.</p>`;
+  const team = section("The Team kanban", () => COLUMNS.map(([k, label]) => {
+    const cards = data.cards?.[k] || [];
+    return `<section class="hub-column"><h3>${label}<span class="hub-count">${cards.length}</span></h3><ul class="hub-cards-list">${cards.map(cardHtml).join("") || `<li class="empty meta">Nothing here.</li>`}</ul></section>`;
+  }).join(""));
+  const work = section("Kira's work board", workBoardHtml);
   return `<section class="hub-block staff-first">
       <h2 class="title">Team kanban</h2>
       <p class="hub-intro">Coordination that isn't a GitHub issue: releases, onboarding, reviews to organise. Only the Team sees it.</p>
@@ -65,9 +81,9 @@ function boardHtml() {
 
 // ── Roadmap ───────────────────────────────────────────────────────────────────
 
-const areaOptions = (selected) => data.roadmap.areas.map((a) => `<option value="${escape(a.id)}"${a.id === selected ? " selected" : ""}>${escape(a.name)}</option>`).join("");
+const areaOptions = (selected) => (data.roadmap?.areas || []).map((a) => `<option value="${escape(a.id)}"${a.id === selected ? " selected" : ""}>${escape(a.name)}</option>`).join("");
 const statusOptions = (selected) => STATUSES.map(([k, l]) => `<option value="${k}"${k === selected ? " selected" : ""}>${l}</option>`).join("");
-const areaName = (id) => escape(data.roadmap.areas.find((a) => a.id === id)?.name || id);
+const areaName = (id) => escape((data.roadmap?.areas || []).find((a) => a.id === id)?.name || id);
 
 function itemForm(it = {}) {
   return `<form class="hub-form staff-inline" data-item-form="${escape(it.id || "")}">
@@ -86,7 +102,7 @@ function teamItemHtml(it) {
     <p class="hub-entry-meta"><span class="badge badge-unsigned">Team only</span><span>${statusName[it.status] || escape(it.status)}</span><span>${areaName(it.area)}</span>${it.owner ? `<span>${name(it.owner)}</span>` : ""}${it.publishRequested ? `<span>publish asked ${when(it.publishRequested.at)}</span>` : ""}</p>
     <h3 class="hub-entry-title">${escape(it.title)}</h3>
     ${it.note ? `<p>${paragraphs(it.note)}</p>` : ""}
-    ${it.links.length ? `<p class="meta">${it.links.map(linkHtml).join(" · ")}</p>` : ""}
+    ${it.links?.length ? `<p class="meta">${it.links.map(linkHtml).join(" · ")}</p>` : ""}
     <details><summary class="meta">Edit</summary>${itemForm(it)}</details>
     <p class="staff-card-actions"><button type="button" class="button secondary small" data-publish="${escape(it.id)}">Publish…</button><button type="button" class="button ghost small" data-delete-item="${escape(it.id)}">Delete</button>${status}</p>
     <div data-snippet></div>
@@ -111,13 +127,13 @@ function publicItemHtml(it) {
 function roadmapHtml() {
   const r = data.roadmap;
   const groups = STATUSES.map(([k, label]) => {
-    const items = r.public.filter((i) => i.status === k);
+    const items = (r.public || []).filter((i) => i.status === k);
     return items.length ? `<details class="staff-group"${k === "now" ? " open" : ""}><summary><span class="title">${label}</span> <span class="hub-count">${items.length}</span></summary><ul class="staff-publics">${items.map(publicItemHtml).join("")}</ul></details>` : "";
   }).join("");
   return `<section class="hub-block staff-first">
       <h2 class="title">Team-only items</h2>
       <p class="hub-intro">Plans the public doesn't see. They never reach the public repository by themselves: "Publish" gives the entry to add to <code>roadmap/roadmap.toml</code> in a pull request, and once it is merged the item shows as public here.</p>
-      ${r.team.map(teamItemHtml).join("") || `<p class="empty">No Team-only item.</p>`}
+      ${(r.team || []).map(teamItemHtml).join("") || `<p class="empty">No Team-only item.</p>`}
       <details class="staff-new"><summary class="button secondary small">New Team-only item</summary>${itemForm()}</details>
     </section>
     <section class="hub-block">
@@ -129,7 +145,7 @@ function roadmapHtml() {
 
 // ── Decisions ─────────────────────────────────────────────────────────────────
 
-const itemOptions = (selected) => `<option value="">None</option>` + [...data.roadmap.team, ...data.roadmap.public].map((i) => `<option value="${escape(i.id)}"${i.id === selected ? " selected" : ""}>${escape(i.title)}</option>`).join("");
+const itemOptions = (selected) => `<option value="">None</option>` + [...(data.roadmap?.team || []), ...(data.roadmap?.public || [])].map((i) => `<option value="${escape(i.id)}"${i.id === selected ? " selected" : ""}>${escape(i.title)}</option>`).join("");
 function decisionForm(d = {}) {
   return `<form class="hub-form staff-inline" data-decision-form="${escape(d.id || "")}">
     ${field("Decision", `<input name="title" required maxlength="200" value="${escape(d.title || "")}" placeholder="What was decided, in one line">`)}
@@ -139,12 +155,12 @@ function decisionForm(d = {}) {
   </form>`;
 }
 function decisionsHtml() {
-  const list = data.decisions.map((d) => `<article class="hub-entry${d.status === "withdrawn" ? " is-withdrawn" : ""}">
+  const list = (data.decisions || []).map((d) => `<article class="hub-entry${d.status === "withdrawn" ? " is-withdrawn" : ""}">
       <p class="hub-entry-meta"><span>${when(d.at)}</span><span>${name(d.by) || "someone"}</span>${d.item ? `<span>${escape(d.item)}</span>` : ""}${d.status === "withdrawn" ? `<span class="badge badge-unsigned">withdrawn</span>` : ""}</p>
       <h3 class="hub-entry-title">${escape(d.title)}</h3>
       ${d.body ? `<p>${paragraphs(d.body)}</p>` : ""}
       ${d.link ? `<p class="meta">${linkHtml(d.link)}</p>` : ""}
-      ${d.history.length ? `<details><summary class="meta">Earlier versions (${d.history.length})</summary><ul class="app-ballots">${d.history.map((h) => `<li>${when(h.at)}, before ${name(h.by)}'s change: ${escape(h.title)}</li>`).join("")}</ul></details>` : ""}
+      ${d.history?.length ? `<details><summary class="meta">Earlier versions (${d.history.length})</summary><ul class="app-ballots">${d.history.map((h) => `<li>${when(h.at)}, before ${name(h.by)}'s change: ${escape(h.title)}</li>`).join("")}</ul></details>` : ""}
       ${d.status === "active" ? `<details><summary class="meta">Edit</summary>${decisionForm(d)}<p><button type="button" class="button ghost small" data-withdraw="${escape(d.id)}">Withdraw it</button>${status}</p></details>` : ""}
     </article>`).join("");
   return `<section class="hub-block staff-first">
@@ -159,19 +175,25 @@ function decisionsHtml() {
 
 const values = (form) => Object.fromEntries(new FormData(form));
 
+// The Board, Roadmap and Decisions panels from Kira's team/overview, each on its own: one that fails shows its error.
+export function teamPanels(overview) {
+  data = overview;
+  return { board: section("The board", boardHtml), roadmap: section("The roadmap", roadmapHtml), decisions: section("The decisions", decisionsHtml) };
+}
+
 export async function render(root, who) {
   root.innerHTML = `<div class="staff-nav"><div class="tabs hub-tabs staff-tabs" role="tablist" aria-label="Team dashboard"><span class="tab-pill" aria-hidden="true"></span>${TABS.map(([id, label]) => `<button type="button" role="tab" id="tab-${id}" aria-controls="panel-${id}">${label}<span class="tab-count" data-count="${id}"></span></button>`).join("")}</div><a class="staff-help-link" href="/staff/help">How this works</a></div>
     ${TABS.map(([id]) => `<div class="hub-panel" role="tabpanel" id="panel-${id}" aria-labelledby="tab-${id}"></div>`).join("")}`;
   const tabs = root.querySelector("[role=tablist]");
   const panel = (id) => root.querySelector(`#panel-${id}`);
   const draw = () => {
-    panel("board").innerHTML = boardHtml();
-    panel("roadmap").innerHTML = roadmapHtml();
-    panel("decisions").innerHTML = decisionsHtml();
+    const html = teamPanels(data);
+    for (const id of ["board", "roadmap", "decisions"]) panel(id).innerHTML = html[id];
   };
   // The Inbox: what needs this member now, from the applications, the Team kanban and the decisions log.
   const drawInbox = async () => {
-    const html = inboxHtml({ apps: (await fetchApplications("team")).applications, cards: data.cards, decisions: data.decisions, me: who?.user, names: [who?.name, data.people?.[who?.user]] });
+    const apps = (await fetchApplications("team")).applications;
+    const html = section("The Inbox", () => inboxHtml({ apps, cards: data.cards, decisions: data.decisions, me: who?.user, names: [who?.name, data.people?.[who?.user]] }));
     panel("inbox").innerHTML = html;
     const n = inboxCount(html);
     root.querySelector('[data-count="inbox"]').textContent = n ? String(n) : "";
