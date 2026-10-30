@@ -2,8 +2,9 @@
 // items, notes on public ones, publishing an item to the public roadmap), the decisions log, applications.
 import { api, escape, when, linkHtml, paragraphs, placePill } from "./staff-api.js";
 import { renderApplications } from "./staff-apps.js";
+import { renderStats, renderData } from "./staff-stats.js";
 
-const TABS = [["board", "Board"], ["roadmap", "Roadmap"], ["decisions", "Decisions"], ["applications", "Applications"]];
+const TABS = [["board", "Board"], ["roadmap", "Roadmap"], ["decisions", "Decisions"], ["applications", "Applications"], ["stats", "Stats"], ["data", "Data"]];
 const COLUMNS = [["todo", "To do"], ["doing", "Doing"], ["done", "Done"]];
 const STATUSES = [["now", "Now"], ["next", "Next"], ["help-wanted", "Help wanted"], ["later", "Later"], ["shipped", "Shipped"]];
 const statusName = Object.fromEntries(STATUSES);
@@ -172,6 +173,7 @@ export async function render(root) {
     draw();
   };
   const select = (id) => {
+    const opened = !panel(id).classList.contains("is-active");
     for (const [t] of TABS) {
       const on = t === id;
       root.querySelector(`#tab-${t}`).setAttribute("aria-selected", String(on));
@@ -179,6 +181,9 @@ export async function render(root) {
       panel(t).classList.toggle("is-active", on);
     }
     placePill(tabs);
+    // Stats and Data load when first opened: Kira counts from GitHub for them.
+    if (id === "stats" && !panel("stats").dataset.loaded) { panel("stats").dataset.loaded = "1"; renderStats(panel("stats")); }
+    if (id === "data" && opened) renderData(panel("data"), () => data); // fresh tables each time it is opened
     if (!location.hash.startsWith(`#${id}`) && !(id === "applications" && location.hash.startsWith("#application-"))) history.replaceState(null, "", `#${id}`);
   };
   tabs.addEventListener("click", (e) => {
@@ -190,7 +195,7 @@ export async function render(root) {
   // A link to a tab or to an application (#applications, #application-<id>, as in Kira's DMs) opens it, also when
   // the dashboard is already open.
   const fromHash = () => {
-    const id = location.hash.slice(1).replace(/^application-.*/, "applications");
+    const id = location.hash.slice(1).replace(/^application-.*/, "applications").replace(/^data-.*/, "data");
     select(TABS.some(([t]) => t === id) ? id : "board");
     const target = location.hash.startsWith("#application-") && document.getElementById(location.hash.slice(1));
     if (target) target.scrollIntoView({ block: "start" });
