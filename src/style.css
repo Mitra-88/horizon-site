@@ -1007,7 +1007,7 @@ code { border-radius: 0; background: var(--well); box-shadow: 0 0 0 1px var(--ou
 .app-result { padding: 10px 14px; background: color-mix(in srgb, var(--accent) 10%, var(--panel)); font-size: var(--text-label); }
 .app-owner { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 0; }
 .app-audit ul { margin-top: 6px; padding-left: 18px; list-style: square; font: var(--text-micro) / 1.6 var(--mono); color: var(--muted); }
-.app-done-title { margin: 40px 0 12px; font-size: var(--text-heading); }
+.staff .app-done-title { margin: 40px 0 12px; font-size: calc(var(--text-title) * 0.6); line-height: 1.1; }
 @media (max-width: 900px) { .staff-board-3 { grid-template-columns: minmax(0, 1fr); } }
 .staff-app .hub-block > .title { font-size: calc(var(--text-title) * 0.6); line-height: 1.1; }
 .staff-app .hub-block { margin-top: 48px; }
