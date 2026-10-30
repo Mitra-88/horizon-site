@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { CAPABILITIES, count, entryFrom, listHtml, matches, projectHtml, rateHtml, ratingOf, readIndex, sorted, starsHtml, submitHtml } from "./mods.js";
+import { CAPABILITIES, MAX_FILE, count, entryFrom, listHtml, matches, projectHtml, rateHtml, ratingOf, readIndex, readPicked, sorted, starsHtml, submitHtml } from "./mods.js";
 
 const project = (over = {}) => ({
   id: "coords_hud", kind: "mod", name: "Coordinates HUD", summary: "Where you are.", authors: ["Horizon"],
@@ -139,4 +139,19 @@ test("a project's page says who made it: Horizon, or its authors with the policy
   assert.match(ownerNote(theirs), /Made by levzzz5154\. Its authors own it and answer for it\. Not made or endorsed by the Horizon project\./);
   assert.match(ownerNote(theirs), /href="\/mods\/policy"/);
   assert.match(ownerNote({ authors: ["<b>x</b>"], source: "" }), /&lt;b&gt;x&lt;\/b&gt;/);
+});
+
+test("reads the picked file first, and names a file the browser can no longer read", async () => {
+  const file = new File([new Uint8Array([1, 2, 3])], "coords_hud-0.1.0.hmod");
+  const [blob, sig] = await readPicked(file, new File(["untrusted comment\n"], "coords_hud-0.1.0.hmod.minisig"));
+  assert.deepEqual([...new Uint8Array(await blob.arrayBuffer())], [1, 2, 3]);
+  assert.equal(sig, "untrusted comment\n");
+  assert.equal((await readPicked(file))[1], "");
+  // Chrome's NotReadableError for a file rebuilt since it was picked.
+  const rebuilt = { name: "coords_hud-0.1.0.hmod", size: 3, arrayBuffer: () => Promise.reject(new DOMException("could not be read", "NotReadableError")) };
+  await assert.rejects(readPicked(rebuilt), /can't read coords_hud-0\.1\.0\.hmod any more.*Pick it again/);
+  const signature = { name: "x.minisig", text: () => Promise.reject(new DOMException("could not be read", "NotReadableError")) };
+  await assert.rejects(readPicked(file, signature), /can't read x\.minisig any more/);
+  await assert.rejects(readPicked({ name: "big.hmod", size: MAX_FILE + 1 }), /over 64 MB/);
+  await assert.rejects(readPicked(undefined), /Pick the file/);
 });

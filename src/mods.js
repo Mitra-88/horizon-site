@@ -271,3 +271,32 @@ export function entryFrom(v) {
     changelog: v.changelog || "",
   };
 }
+
+// The service's limit for the file (index::MAX_FILE in the game's repository).
+export const MAX_FILE = 64 << 20;
+
+// The picked file and signature, read before anything is sent: a browser keeps a picked file by reference, and one
+// rebuilt, moved or locked by another program since fails its upload with no response at all ("Failed to fetch").
+// Read here first, the form names the file to pick again. [the file as a Blob, the signature's text]; or an Error
+// whose message the form shows.
+export async function readPicked(file, signature) {
+  if (!file) throw new Error("Pick the file to submit.");
+  if (file.size > MAX_FILE) throw new Error(`${file.name} is over 64 MB, the registry's limit.`);
+  const again = (f) =>
+    new Error(`Your browser can't read ${f.name} any more: it changed, moved or is open in another program since you picked it (a new build?). Pick it again, then submit.`);
+  let bytes;
+  try {
+    bytes = await file.arrayBuffer();
+  } catch {
+    throw again(file);
+  }
+  let text = "";
+  if (signature) {
+    try {
+      text = await signature.text();
+    } catch {
+      throw again(signature);
+    }
+  }
+  return [new Blob([bytes], { type: file.type }), text];
+}

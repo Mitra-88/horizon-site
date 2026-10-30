@@ -1,6 +1,6 @@
 // /mods/submit: signs in with GitHub through the registry's service, then sends the page and the file. The service
 // checks the file and answers with the pull request it opened, or with what to fix.
-import { API, entryFrom } from "./mods.js";
+import { API, entryFrom, readPicked } from "./mods.js";
 import { setUpMenu, setUpTheme } from "./chrome.js";
 import { escape } from "./markdown.js";
 
@@ -52,11 +52,17 @@ form.addEventListener("submit", async (e) => {
   e.preventDefault();
   const send = form.querySelector("#f-send");
   const values = Object.fromEntries(["id", "kind", "name", "summary", "description", "authors", "license", "source", "icon", "key", "version", "game", "changelog"].map((k) => [k, control(k).value]));
-  const sig = form.querySelector("#f-signature").files[0];
-  values.signature = sig ? await sig.text() : "";
+  const picked = form.querySelector("#f-file").files[0];
+  let file;
+  try {
+    [file, values.signature] = await readPicked(picked, form.querySelector("#f-signature").files[0]);
+  } catch (err) {
+    result.innerHTML = `<p class="mod-error">${escape(err.message)}</p>`;
+    return;
+  }
   const body = new FormData();
   body.append("entry", JSON.stringify(entryFrom(values)));
-  body.append("file", form.querySelector("#f-file").files[0]);
+  body.append("file", file, picked.name);
   send.disabled = true;
   result.innerHTML = `<p class="meta">Checking the file and opening the pull request…</p>`;
   try {
@@ -69,7 +75,7 @@ form.addEventListener("submit", async (e) => {
       result.innerHTML = `<p class="mod-error">${escape(json.error || `The service answered ${r.status}.`)}</p>`;
     }
   } catch {
-    result.innerHTML = `<p class="mod-error">The service didn't answer. Try again in a minute.</p>`;
+    result.innerHTML = `<p class="mod-error">The service didn't answer: check your connection, then try again in a minute.</p>`;
   } finally {
     send.disabled = false;
   }
