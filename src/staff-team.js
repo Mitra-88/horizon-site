@@ -1,10 +1,11 @@
 // The Team dashboard (/staff/team): the Team kanban and Kira's work board, the roadmap with its Team layer (Team-only
 // items, notes on public ones, publishing an item to the public roadmap), the decisions log, applications.
 import { api, escape, when, linkHtml, paragraphs, placePill } from "./staff-api.js";
-import { renderApplications } from "./staff-apps.js";
+import { renderApplications, fetchApplications } from "./staff-apps.js";
+import { inboxHtml, inboxCount, wireInbox } from "./staff-inbox.js";
 import { renderStats, renderData } from "./staff-stats.js";
 
-const TABS = [["board", "Board"], ["roadmap", "Roadmap"], ["decisions", "Decisions"], ["applications", "Applications"], ["stats", "Stats"], ["data", "Data"]];
+const TABS = [["inbox", "Inbox"], ["applications", "Applications"], ["board", "Board"], ["roadmap", "Roadmap"], ["decisions", "Decisions"], ["stats", "Stats"], ["data", "Data"]];
 const COLUMNS = [["todo", "To do"], ["doing", "Doing"], ["done", "Done"]];
 const STATUSES = [["now", "Now"], ["next", "Next"], ["help-wanted", "Help wanted"], ["later", "Later"], ["shipped", "Shipped"]];
 const statusName = Object.fromEntries(STATUSES);
@@ -158,8 +159,8 @@ function decisionsHtml() {
 
 const values = (form) => Object.fromEntries(new FormData(form));
 
-export async function render(root) {
-  root.innerHTML = `<div class="tabs hub-tabs staff-tabs" role="tablist" aria-label="Team dashboard"><span class="tab-pill" aria-hidden="true"></span>${TABS.map(([id, label]) => `<button type="button" role="tab" id="tab-${id}" aria-controls="panel-${id}">${label}</button>`).join("")}</div>
+export async function render(root, who) {
+  root.innerHTML = `<div class="staff-nav"><div class="tabs hub-tabs staff-tabs" role="tablist" aria-label="Team dashboard"><span class="tab-pill" aria-hidden="true"></span>${TABS.map(([id, label]) => `<button type="button" role="tab" id="tab-${id}" aria-controls="panel-${id}">${label}<span class="tab-count" data-count="${id}"></span></button>`).join("")}</div><a class="staff-help-link" href="/staff/help">How this works</a></div>
     ${TABS.map(([id]) => `<div class="hub-panel" role="tabpanel" id="panel-${id}" aria-labelledby="tab-${id}"></div>`).join("")}`;
   const tabs = root.querySelector("[role=tablist]");
   const panel = (id) => root.querySelector(`#panel-${id}`);
@@ -168,9 +169,18 @@ export async function render(root) {
     panel("roadmap").innerHTML = roadmapHtml();
     panel("decisions").innerHTML = decisionsHtml();
   };
+  // The Inbox: what needs this member now, from the applications, the Team kanban and the decisions log.
+  const drawInbox = async () => {
+    const html = inboxHtml({ apps: (await fetchApplications("team")).applications, cards: data.cards, decisions: data.decisions, me: who?.user, names: [who?.name, data.people?.[who?.user]] });
+    panel("inbox").innerHTML = html;
+    const n = inboxCount(html);
+    root.querySelector('[data-count="inbox"]').textContent = n ? String(n) : "";
+    placePill(tabs);
+  };
   const reload = async () => {
     data = await api("GET", "team/overview");
     draw();
+    if (panel("inbox").dataset.ready) drawInbox();
   };
   const select = (id) => {
     const opened = !panel(id).classList.contains("is-active");
@@ -191,14 +201,20 @@ export async function render(root) {
     if (b) select(b.id.slice(4));
   });
   await reload();
-  await renderApplications(panel("applications"), "team", data.people);
+  const applications = await renderApplications(panel("applications"), "team", data.people, drawInbox);
+  wireInbox(panel("inbox"), "team", async () => { await applications.reload(); await drawInbox(); });
+  panel("inbox").dataset.ready = "1";
+  await drawInbox();
   // A link to a tab or to an application (#applications, #application-<id>, as in Kira's DMs) opens it, also when
   // the dashboard is already open.
   const fromHash = () => {
-    const id = location.hash.slice(1).replace(/^application-.*/, "applications").replace(/^data-.*/, "data");
-    select(TABS.some(([t]) => t === id) ? id : "board");
-    const target = location.hash.startsWith("#application-") && document.getElementById(location.hash.slice(1));
-    if (target) target.scrollIntoView({ block: "start" });
+    const id = location.hash.slice(1).replace(/^application-.*/, "applications").replace(/^data-.*/, "data").replace(/^inbox-.*/, "inbox");
+    select(TABS.some(([t]) => t === id) ? id : "inbox");
+    const target = /^#(application|inbox)-/.test(location.hash) && document.getElementById(decodeURIComponent(location.hash.slice(1)));
+    if (target) {
+      target.closest("details")?.setAttribute("open", "");
+      target.scrollIntoView({ block: "start" });
+    }
   };
   fromHash();
   addEventListener("hashchange", fromHash);

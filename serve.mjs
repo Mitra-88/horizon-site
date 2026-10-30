@@ -33,7 +33,7 @@ function staffApi(req, res) {
 createServer(async (req, res) => {
   if (req.url.startsWith("/staff/api/")) return staffApi(req, res);
   let path = normalize(decodeURIComponent(new URL(req.url, "http://x").pathname)).replace(/^(\.\.[/\\])+/, "");
-  if (/^\/staff(\/(team|mod|setup))?\/?$/.test(path)) path = "/staff.html";
+  if (/^\/staff(\/(team|mod|setup|help))?\/?$/.test(path)) path = "/staff.html";
   if (path === "/apply/") path = "/apply";
   if (path === "/docs/api/") {
     res.writeHead(301, { Location: "/docs/api" });
