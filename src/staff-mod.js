@@ -1,10 +1,11 @@
 // The Moderation dashboard (/staff/mod): Mod and Support applications, and the moderation counters (reports, mod-mail,
 // warns, timeouts, kicks, bans, AutoMod, joins and leaves; counts only) from Kira's mod/stats. Nothing of the Team's.
 import { api, escape, placePill } from "./staff-api.js";
-import { renderApplications } from "./staff-apps.js";
+import { renderApplications, fetchApplications } from "./staff-apps.js";
+import { inboxHtml, inboxCount } from "./staff-inbox.js";
 import { barChart, tile, tableHtml, download, fmt, toCsv } from "./staff-stats.js";
 
-const TABS = [["applications", "Applications"], ["stats", "Moderation stats"]];
+const TABS = [["inbox", "Inbox"], ["applications", "Applications"], ["stats", "Stats"]];
 const LABELS = { reports: "Reports", modmail: "Mod-mail threads", warns: "Warnings", timeouts: "Timeouts", kicks: "Kicks", bans: "Bans", automod: "AutoMod actions", joins: "Joins", leaves: "Leaves" };
 const day = (iso) => new Date(`${iso}T00:00:00Z`).toLocaleDateString("en", { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" });
 
@@ -32,8 +33,8 @@ function statsHtml(s) {
 }
 const weekRows = (s) => s.weeks.map((x) => ({ week: x.week, ...Object.fromEntries(Object.keys(LABELS).map((k) => [k, x[k]])) }));
 
-export async function render(root) {
-  root.innerHTML = `<div class="tabs hub-tabs staff-tabs" role="tablist" aria-label="Moderation dashboard"><span class="tab-pill" aria-hidden="true"></span>${TABS.map(([id, label]) => `<button type="button" role="tab" id="tab-${id}" aria-controls="panel-${id}">${label}</button>`).join("")}</div>
+export async function render(root, who) {
+  root.innerHTML = `<div class="staff-nav"><div class="tabs hub-tabs staff-tabs" role="tablist" aria-label="Moderation dashboard"><span class="tab-pill" aria-hidden="true"></span>${TABS.map(([id, label]) => `<button type="button" role="tab" id="tab-${id}" aria-controls="panel-${id}">${label}<span class="tab-count" data-count="${id}"></span></button>`).join("")}</div><a class="staff-help-link" href="/staff/help">How this works</a></div>
     ${TABS.map(([id]) => `<div class="hub-panel" role="tabpanel" id="panel-${id}" aria-labelledby="tab-${id}"></div>`).join("")}`;
   const tabs = root.querySelector("[role=tablist]");
   const panel = (id) => root.querySelector(`#panel-${id}`);
@@ -69,13 +70,24 @@ export async function render(root) {
     if (b.dataset.format === "json") download(`horizon-moderation-${stamp}.json`, JSON.stringify(rows, null, 2), "application/json");
     else download(`horizon-moderation-${stamp}.csv`, toCsv(rows), "text/csv");
   });
-  await renderApplications(panel("applications"), "mod");
+  const drawInbox = async () => {
+    const html = inboxHtml({ apps: (await fetchApplications("mod")).applications, me: who?.user });
+    panel("inbox").innerHTML = html;
+    const n = inboxCount(html);
+    root.querySelector('[data-count="inbox"]').textContent = n ? String(n) : "";
+    placePill(tabs);
+  };
+  await renderApplications(panel("applications"), "mod", {}, drawInbox);
+  await drawInbox();
   // A link to a tab or an application (#stats, #application-<id>, as in Kira's DMs) opens it, also once open.
   const fromHash = () => {
-    const id = location.hash.slice(1).replace(/^application-.*/, "applications");
-    select(TABS.some(([t]) => t === id) ? id : "applications");
-    const target = location.hash.startsWith("#application-") && document.getElementById(location.hash.slice(1));
-    if (target) target.scrollIntoView({ block: "start" });
+    const id = location.hash.slice(1).replace(/^application-.*/, "applications").replace(/^inbox-.*/, "inbox");
+    select(TABS.some(([t]) => t === id) ? id : "inbox");
+    const target = /^#(application|inbox)-/.test(location.hash) && document.getElementById(decodeURIComponent(location.hash.slice(1)));
+    if (target) {
+      target.closest("details")?.setAttribute("open", "");
+      target.scrollIntoView({ block: "start" });
+    }
   };
   fromHash();
   addEventListener("hashchange", fromHash);

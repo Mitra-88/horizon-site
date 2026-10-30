@@ -288,7 +288,7 @@ await writeFile(join(dist, "favicon.ico"), Buffer.concat([ico, png32]));
 const names = {};
 const rewrite = (code) => code.replace(/"\.\/([\w-]+\.js)"/g, (all, file) => (names[file] ? `"./${names[file]}"` : all));
 // Dependencies before what imports them.
-const modules = ["markdown.js", "versions.js", "chrome.js", "hardware.js", "estimate.js", "releases.js", "contributors.js", "bench.js", "hub.js", "main.js", "releases-page.js", "benchmarks-page.js", "docs-page.js", "hub-page.js", "mods.js", "mods-page.js", "mods-submit.js", "staff-api.js", "staff-apps.js", "staff-stats.js", "staff-team.js", "staff-mod.js", "staff-page.js", "apply-page.js"];
+const modules = ["markdown.js", "versions.js", "chrome.js", "hardware.js", "estimate.js", "releases.js", "contributors.js", "bench.js", "hub.js", "main.js", "releases-page.js", "benchmarks-page.js", "docs-page.js", "hub-page.js", "mods.js", "mods-page.js", "mods-submit.js", "staff-api.js", "staff-apps.js", "staff-stats.js", "staff-inbox.js", "staff-team.js", "staff-mod.js", "staff-page.js", "apply-page.js"];
 for (const file of modules) {
   const code = rewrite(await readFile(join(site, "src", file), "utf8"));
   names[file] = `${file.replace(".js", "")}.${fingerprint(code)}.js`;
