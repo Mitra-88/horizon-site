@@ -7,7 +7,7 @@ import { api, setCsrf, escape, placePill } from "./staff-api.js";
 const NAMES = { team: "Team", mod: "Moderation" };
 const TITLES = { team: "Team dashboard", mod: "Moderation dashboard" };
 const LOADERS = {
-  team: null,
+  team: () => import("./staff-team.js"),
   mod: null,
 };
 
