@@ -3,7 +3,7 @@
 // every bar and the numbers in a table under each chart. Data lists the same facts as tables, exportable as CSV or JSON.
 import { api, escape, when, relative } from "./staff-api.js";
 
-const fmt = (n) => (n == null ? "–" : Number.isInteger(n) ? n.toLocaleString("en") : n.toLocaleString("en", { maximumFractionDigits: 1 }));
+export const fmt = (n) => (n == null ? "–" : Number.isInteger(n) ? n.toLocaleString("en") : n.toLocaleString("en", { maximumFractionDigits: 1 }));
 const day = (iso) => new Date(`${iso}T00:00:00Z`).toLocaleDateString("en", { day: "numeric", month: "short", timeZone: "UTC" });
 
 // A round top for the axis: 1, 2 or 5 times a power of ten, at or above the largest value.
@@ -14,7 +14,7 @@ function niceMax(v) {
 }
 
 // Bars per week. series: [{ name, values }] (one or two, colors in that order); unit: what a value counts.
-function barChart(title, weeks, series, unit = "") {
+export function barChart(title, weeks, series, unit = "") {
   const W = 640, H = 200, left = 40, bottom = 24, top = 8;
   const max = niceMax(Math.max(...series.flatMap((s) => s.values.filter((v) => v != null))));
   const y = (v) => top + (H - top - bottom) * (1 - v / max);
@@ -46,7 +46,7 @@ function rankChart(title, entries) {
   return `<figure class="chart"><figcaption class="chart-title">${escape(title)}</figcaption><ul class="rank">${rows || `<li class="empty">None.</li>`}</ul></figure>`;
 }
 
-const tile = (value, label, note = "") => `<div class="stat-tile"><span class="stat-value">${value}</span><span class="stat-label">${label}</span>${note ? `<span class="meta">${note}</span>` : ""}</div>`;
+export const tile = (value, label, note = "") => `<div class="stat-tile"><span class="stat-value">${value}</span><span class="stat-label">${label}</span>${note ? `<span class="meta">${note}</span>` : ""}</div>`;
 
 function statsHtml(s) {
   const w = s.weeks.map((x) => x.week);
@@ -103,7 +103,7 @@ const csvCell = (v) => {
 };
 export const toCsv = (rows) => (rows.length ? [Object.keys(rows[0]), ...rows.map(Object.values)].map((r) => r.map(csvCell).join(",")).join("\r\n") + "\r\n" : "");
 
-function download(file, text, type) {
+export function download(file, text, type) {
   const url = URL.createObjectURL(new Blob([text], { type }));
   const a = Object.assign(document.createElement("a"), { href: url, download: file });
   document.body.append(a);
@@ -112,7 +112,7 @@ function download(file, text, type) {
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
-function tableHtml(set) {
+export function tableHtml(set) {
   const cols = set.rows.length ? Object.keys(set.rows[0]) : [];
   const body = set.rows.map((r) => `<tr>${cols.map((c) => `<td>${escape(r[c] == null ? "" : String(r[c]))}</td>`).join("")}</tr>`).join("");
   return `<section class="hub-block staff-data" id="data-${set.id}">

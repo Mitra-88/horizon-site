@@ -37,7 +37,7 @@ function voteHtml(a, people) {
   const head = open
     ? `<p class="meta">${v.cast} ballot${v.cast === 1 ? "" : "s"} cast · quorum ${v.quorum} of ${v.active} active voter${v.active === 1 ? "" : "s"} · ${v.firstBallotAt ? `closes ${relative(v.closesAt)}` : `no ballot yet: closes ${relative(v.closesAt)} without one`}${v.extended ? " (extended)" : ""}. Ballots stay hidden until it closes.</p>`
     : a.tally ? `<p class="meta">${a.tally.for} for, ${a.tally.against} against, ${a.tally.abstain} abstain (quorum ${a.tally.quorum}).</p>` : "";
-  const mine = v.mine ? `<p>Your ballot: <strong>${CHOICE[v.mine.choice]}</strong>${v.mine.comment ? `: ${escape(v.mine.comment)}` : ""}. You can change it until it closes.</p>` : v.recused ? `<p>You recused yourself.</p>` : "";
+  const mine = !open ? "" : v.mine ? `<p>Your ballot: <strong>${CHOICE[v.mine.choice]}</strong>${v.mine.comment ? `: ${escape(v.mine.comment)}` : ""}. You can change it until it closes.</p>` : v.recused ? `<p>You recused yourself.</p>` : "";
   const form = v.canVote
     ? `<form class="app-ballot" data-ballot="${escape(a.id)}">
         <div class="app-choices" role="group" aria-label="Your ballot">
@@ -68,7 +68,7 @@ function resultHtml(a) {
   const r = a.result;
   const lines = [];
   if (a.status === "veto-window") lines.push(`Goes through ${relative(a.veto.until)} unless Ludovic vetoes it${a.veto.dm ? ` (DM to Ludovic: ${a.veto.dm.sent ? "sent" : `not sent, ${escape(a.veto.dm.error || "")}`})` : ""}.`);
-  if (r) lines.push(`Role ${r.granted ? "given" : a.status === "accepted" ? "<strong>not given</strong>" : "–"} · DM ${r.dmSent ? "sent" : "<strong>not sent</strong>"}${r.error ? ` · ${escape(r.error)}` : ""}`);
+  if (r) lines.push(`${a.status === "accepted" ? `Role ${r.granted ? "given" : "<strong>not given</strong>"} · ` : ""}DM ${r.dmSent ? "sent" : "<strong>not sent</strong>"}${r.error ? ` · ${escape(r.error)}` : ""}`);
   if (a.revoked) lines.push(`Role taken back ${when(a.revoked.at)}${a.revoked.result?.error ? `: ${escape(a.revoked.result.error)}` : ""}.`);
   if (a.githubManual && ["veto-window", "accepted"].includes(a.status)) lines.push("Accepting grants only the Discord role: GitHub organisation or team access is Ludovic's to give, by hand.");
   return lines.length ? `<p class="app-result">${lines.join("<br>")}</p>` : "";
@@ -89,7 +89,8 @@ function cardHtml(a, people) {
   </article>`;
 }
 
-// Renders the dashboard's applications into `root`. people: { id: name } for names in ballots and history.
+// Renders the dashboard's applications into `root`. people: { id: name } known beforehand; Kira adds the names behind
+// the ids in ballots and history.
 export async function renderApplications(root, dashboard, people = {}) {
   const draw = (list) => {
     const open = list.filter((a) => !["accepted", "declined"].includes(a.status));
@@ -100,7 +101,11 @@ export async function renderApplications(root, dashboard, people = {}) {
     const target = location.hash.startsWith("#application-") && document.getElementById(location.hash.slice(1));
     if (target) target.scrollIntoView({ block: "start" });
   };
-  const load = async () => draw((await api("GET", `${dashboard}/applications`)).applications);
+  const load = async () => {
+    const res = await api("GET", `${dashboard}/applications`);
+    people = { ...people, ...res.people };
+    draw(res.applications);
+  };
   root.onsubmit = async (event) => {
     const form = event.target.closest("[data-ballot]");
     if (!form) return;

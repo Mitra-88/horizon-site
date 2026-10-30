@@ -8,7 +8,7 @@ const NAMES = { team: "Team", mod: "Moderation" };
 const TITLES = { team: "Team dashboard", mod: "Moderation dashboard" };
 const LOADERS = {
   team: () => import("./staff-team.js"),
-  mod: null,
+  mod: () => import("./staff-mod.js"),
 };
 
 const $ = (sel) => document.querySelector(sel);
