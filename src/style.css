@@ -960,3 +960,6 @@ code { border-radius: 0; background: var(--well); box-shadow: 0 0 0 1px var(--ou
 }
 .staff-switch a:hover { color: var(--ink); }
 .staff-switch a[aria-current="page"] { color: var(--on-face); }
+.apply-form { max-width: 46rem; margin-top: 24px; }
+.apply-form [data-questions] { display: grid; gap: 16px; }
+.apply-done { margin-top: 24px; }
