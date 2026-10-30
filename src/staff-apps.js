@@ -2,7 +2,7 @@
 // the contributor badge, the answers, where the vote stands in plain words, the tally once you voted, and your buttons.
 // The ballots, the history, recusal and the rest fold away under "More". Blind until you vote: Kira sends the others'
 // ballots only once you cast yours or the vote closed (src/application-votes.js in kira).
-import { api, escape, when, paragraphs } from "./staff-api.js";
+import { api, escape, when, paragraphs, section } from "./staff-api.js";
 
 export const ROLE = { mod: "🛡️ Mod", support: "🤝 Support", team: "🌌 Horizon Team" };
 export const CHOICE = { for: "For", against: "Against", abstain: "Abstain" };
@@ -104,7 +104,7 @@ function moreHtml(a, people) {
   const more = (a.contributor?.prs || []).length > 3 ? `<p>More pull requests: ${prLinks(a.contributor, 3)}</p>` : "";
   const github = !a.contributor ? `<p class="meta">No GitHub account linked on Discord.</p>` : "";
   const recuse = v.canVote ? `<p><button type="button" class="button ghost small" data-recuse="${escape(a.id)}">Recuse myself</button> <span class="meta">You won't vote or see the votes on this one.</span></p>` : "";
-  const history = a.audit.map((e) => `<li>${when(e.at)} · ${who(people, e.by)} ${ACTION[e.action] || "acted"}${e.choice ? `: ${CHOICE[e.choice]}` : ""}${e.note ? ` (your note: ${escape(e.note)})` : ""}</li>`).join("");
+  const history = (a.audit || []).map((e) => `<li>${when(e.at)} · ${who(people, e.by)} ${ACTION[e.action] || "acted"}${e.choice ? `: ${CHOICE[e.choice]}` : ""}${e.note ? ` (your note: ${escape(e.note)})` : ""}</li>`).join("");
   return `<details class="app-more"><summary class="meta">More: votes, history${v.canVote ? ", recuse" : ""}</summary>
     ${ballots}${more}${github}${recuse}
     ${history ? `<h4>History</h4><ul class="app-history">${history}</ul>` : ""}
@@ -113,7 +113,7 @@ function moreHtml(a, people) {
 }
 
 export function cardHtml(a, people, now = Date.now()) {
-  const answers = a.questions.filter((q) => a.answers[q.id]).map((q) => `<dt>${escape(q.label)}</dt><dd>${paragraphs(a.answers[q.id])}</dd>`).join("");
+  const answers = (a.questions || []).filter((q) => a.answers?.[q.id]).map((q) => `<dt>${escape(q.label)}</dt><dd>${paragraphs(a.answers[q.id])}</dd>`).join("");
   const part = yourPart(a);
   return `<article class="hub-entry app-card${a.vote.canVote && !a.vote.mine ? " needs-you" : ""}" id="application-${escape(a.id)}">
     <header class="app-head">
@@ -143,6 +143,9 @@ export async function ownerAct(dashboard, id, action, label) {
   return true;
 }
 
+// One application on its own: if it can't be shown, the others still are.
+const cardOrError = (a, people) => section(`${a?.name || "An"} application`, () => cardHtml(a, people));
+
 export async function fetchApplications(dashboard) {
   return api("GET", `${dashboard}/applications`);
 }
@@ -154,8 +157,8 @@ export async function renderApplications(root, dashboard, people = {}, onChange 
     const open = list.filter((a) => !FINAL.includes(a.status));
     const done = list.filter((a) => FINAL.includes(a.status));
     root.innerHTML = `<p class="hub-intro">Verified contributors come first. <a href="/staff/help#applications">How the vote works</a>.</p>
-      ${open.length ? open.map((a) => cardHtml(a, people)).join("") : `<p class="empty">No application waiting. New ones appear here when someone sends the form from <code>/apply</code>.</p>`}
-      ${done.length ? `<details class="app-decided"><summary><h3 class="title app-done-title">Decided <span class="hub-count">${done.length}</span></h3></summary>${done.map((a) => cardHtml(a, people)).join("")}</details>` : ""}`;
+      ${open.length ? open.map((a) => cardOrError(a, people)).join("") : `<p class="empty">No application waiting. New ones appear here when someone sends the form from <code>/apply</code>.</p>`}
+      ${done.length ? `<details class="app-decided"><summary><h3 class="title app-done-title">Decided <span class="hub-count">${done.length}</span></h3></summary>${done.map((a) => cardOrError(a, people)).join("")}</details>` : ""}`;
     const target = location.hash.startsWith("#application-") && document.getElementById(location.hash.slice(1));
     if (target) {
       target.closest("details")?.setAttribute("open", "");

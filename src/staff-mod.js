@@ -1,6 +1,6 @@
 // The Moderation dashboard (/staff/mod): Mod and Support applications, and the moderation counters (reports, mod-mail,
 // warns, timeouts, kicks, bans, AutoMod, joins and leaves; counts only) from Kira's mod/stats. Nothing of the Team's.
-import { api, escape, placePill } from "./staff-api.js";
+import { api, escape, placePill, section } from "./staff-api.js";
 import { renderApplications, fetchApplications } from "./staff-apps.js";
 import { inboxHtml, inboxCount, wireInbox } from "./staff-inbox.js";
 import { barChart, tile, tableHtml, download, fmt, toCsv } from "./staff-stats.js";
@@ -9,7 +9,7 @@ const TABS = [["inbox", "Inbox"], ["applications", "Applications"], ["stats", "S
 const LABELS = { reports: "Reports", modmail: "Mod-mail threads", warns: "Warnings", timeouts: "Timeouts", kicks: "Kicks", bans: "Bans", automod: "AutoMod actions", joins: "Joins", leaves: "Leaves" };
 const day = (iso) => new Date(`${iso}T00:00:00Z`).toLocaleDateString("en", { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" });
 
-function statsHtml(s) {
+export function statsHtml(s) {
   const w = s.weeks.map((x) => x.week);
   const col = (k) => s.weeks.map((x) => x[k]);
   const a = s.applications;
@@ -43,7 +43,7 @@ export async function render(root, who) {
   const loadStats = async () => {
     try {
       stats = await api("GET", "mod/stats");
-      panel("stats").innerHTML = statsHtml(stats);
+      panel("stats").innerHTML = section("The moderation numbers", () => statsHtml(stats));
     } catch (e) {
       panel("stats").innerHTML = `<p class="lede">${escape(e.message)}</p>`;
     }
@@ -72,7 +72,8 @@ export async function render(root, who) {
     else download(`horizon-moderation-${stamp}.csv`, toCsv(rows), "text/csv");
   });
   const drawInbox = async () => {
-    const html = inboxHtml({ apps: (await fetchApplications("mod")).applications, me: who?.user });
+    const apps = (await fetchApplications("mod")).applications;
+    const html = section("The Inbox", () => inboxHtml({ apps, me: who?.user }));
     panel("inbox").innerHTML = html;
     const n = inboxCount(html);
     root.querySelector('[data-count="inbox"]').textContent = n ? String(n) : "";

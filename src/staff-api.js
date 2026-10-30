@@ -62,6 +62,17 @@ export function linkHtml(link) {
   return escape(s);
 }
 
+// One part of a dashboard: its HTML, or a one-line error in its place, so a field the page didn't expect never blanks
+// the rest of the dashboard.
+export function section(what, build) {
+  try {
+    return build();
+  } catch (e) {
+    console.error(`staff: ${what}`, e);
+    return `<p class="staff-error" role="alert">${escape(what)} couldn't be shown (${escape(e.message)}). The rest of the dashboard works; tell the Team if this stays.</p>`;
+  }
+}
+
 // Text with line breaks kept, escaped.
 export const paragraphs = (text) => escape(String(text || "")).replace(/\n/g, "<br>");
 
