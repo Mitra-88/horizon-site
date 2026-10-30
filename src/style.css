@@ -963,3 +963,52 @@ code { border-radius: 0; background: var(--well); box-shadow: 0 0 0 1px var(--ou
 .apply-form { max-width: 46rem; margin-top: 24px; }
 .apply-form [data-questions] { display: grid; gap: 16px; }
 .apply-done { margin-top: 24px; }
+/* The staff dashboards' content: tabs, the Team kanban, the roadmap's Team layer, decisions, applications. */
+.staff-tabs { margin-top: 8px; max-width: 100%; overflow-x: auto; scrollbar-width: none; }
+.staff-first { margin-top: 0; }
+.staff-board-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.staff-card .staff-card-body { display: grid; gap: 6px; padding: 10px 12px; background: var(--well); box-shadow: 0 0 0 var(--block-outline) var(--outline); }
+.staff-card .meta { margin: 0; }
+.staff-card-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 0; }
+.staff-card-actions .meta { margin: 0 0 0 4px; }
+.staff-inline { margin-top: 16px; }
+.staff-item + .staff-item { margin-top: 8px; }
+.staff-item p, .staff-item .meta { margin: 0; }
+.staff-new { margin-top: 16px; }
+.staff-new > summary { list-style: none; width: max-content; }
+.staff-new > summary::-webkit-details-marker { display: none; }
+.staff-group { margin-top: 8px; padding: 12px 16px; background: var(--panel); border: var(--block-outline) solid var(--outline); }
+.staff-group > summary { cursor: pointer; }
+.staff-group > summary .title { font-size: var(--text-heading); }
+.staff-publics { display: grid; gap: 10px; margin-top: 12px; }
+.staff-public { display: grid; gap: 4px; padding-top: 10px; border-top: 1px solid var(--outline); font-size: var(--text-ui); }
+.staff-public .meta { margin: 0; }
+.staff-snippet { display: grid; gap: 10px; margin-top: 4px; padding: 14px; background: var(--well); box-shadow: 0 0 0 var(--block-outline) var(--outline); }
+.staff-snippet pre { overflow-x: auto; font: var(--text-micro) / 1.5 var(--mono); }
+.staff-snippet pre code { background: none; box-shadow: none; }
+.staff-snippet p { display: flex; flex-wrap: wrap; gap: 8px; margin: 0; }
+.hub-entry.is-withdrawn { opacity: 0.6; }
+.hub-entry details > summary { cursor: pointer; width: max-content; }
+.hub-entry .meta { margin: 0; }
+.app-card + .app-card { margin-top: 8px; }
+.app-github { padding: 12px 14px; background: var(--well); box-shadow: 0 0 0 var(--block-outline) var(--outline); font-size: var(--text-ui); }
+.app-github.is-contributor { box-shadow: 0 0 0 var(--block-outline) var(--success); }
+.app-github .badge { margin: 0 0 0 6px; }
+.app-prs { margin-top: 6px; padding-left: 18px; list-style: square; font-size: var(--text-label); }
+.app-answers { display: grid; gap: 4px 0; }
+.app-answers dt { margin-top: 8px; font: 500 var(--text-label) / 1.4 var(--font); color: var(--ink-soft); }
+.app-answers dd { margin: 0; font-size: var(--text-ui); color: var(--ink); }
+.app-vote { display: grid; gap: 10px; padding-top: 12px; border-top: 1px solid var(--outline); }
+.app-vote p { margin: 0; }
+.app-ballot { margin: 0; max-width: 40rem; }
+.app-choices { display: flex; flex-wrap: wrap; gap: 8px 20px; font-size: var(--text-ui); }
+.app-choices label { display: inline-flex; align-items: center; gap: 6px; cursor: pointer; }
+.app-ballots { padding-left: 18px; list-style: square; font-size: var(--text-label); color: var(--ink-soft); }
+.app-result { padding: 10px 14px; background: color-mix(in srgb, var(--accent) 10%, var(--panel)); font-size: var(--text-label); }
+.app-owner { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 0; }
+.app-audit ul { margin-top: 6px; padding-left: 18px; list-style: square; font: var(--text-micro) / 1.6 var(--mono); color: var(--muted); }
+.app-done-title { margin: 40px 0 12px; font-size: var(--text-heading); }
+@media (max-width: 900px) { .staff-board-3 { grid-template-columns: minmax(0, 1fr); } }
+.staff-app .hub-block > .title { font-size: calc(var(--text-title) * 0.6); line-height: 1.1; }
+.staff-app .hub-block { margin-top: 48px; }
+.staff-app .hub-block.staff-first { margin-top: 0; }
