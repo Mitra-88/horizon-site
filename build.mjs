@@ -286,9 +286,9 @@ await writeFile(join(dist, "favicon.ico"), Buffer.concat([ico, png32]));
 
 // The page's modules, fingerprinted; each import of a shared module is rewritten to its name.
 const names = {};
-const rewrite = (code) => code.replace(/"\.\/(\w+\.js)"/g, (all, file) => (names[file] ? `"./${names[file]}"` : all));
+const rewrite = (code) => code.replace(/"\.\/([\w-]+\.js)"/g, (all, file) => (names[file] ? `"./${names[file]}"` : all));
 // Dependencies before what imports them.
-const modules = ["markdown.js", "versions.js", "chrome.js", "hardware.js", "estimate.js", "releases.js", "contributors.js", "bench.js", "hub.js", "main.js", "releases-page.js", "benchmarks-page.js", "docs-page.js", "hub-page.js", "mods.js", "mods-page.js", "mods-submit.js"];
+const modules = ["markdown.js", "versions.js", "chrome.js", "hardware.js", "estimate.js", "releases.js", "contributors.js", "bench.js", "hub.js", "main.js", "releases-page.js", "benchmarks-page.js", "docs-page.js", "hub-page.js", "mods.js", "mods-page.js", "mods-submit.js", "staff-api.js", "staff-page.js"];
 for (const file of modules) {
   const code = rewrite(await readFile(join(site, "src", file), "utf8"));
   names[file] = `${file.replace(".js", "")}.${fingerprint(code)}.js`;
@@ -412,6 +412,7 @@ const values = {
   CONTRIBUTORS_HIDDEN: contributors.length ? "" : " hidden",
   BAKED: JSON.stringify(baked).replace(/</g, "\\u003c"),
   HUB_JS: `/assets/${names["hub-page.js"]}`,
+  STAFF_JS: `/assets/${names["staff-page.js"]}`,
   HUB_OVERVIEW: overviewHtml(roadmap, hubLinked),
   HUB_ROADMAP: roadmapHtml(roadmap, hubLinked),
   HUB_AREAS: areaFilterHtml(roadmap),
@@ -521,7 +522,8 @@ const docPages = renderedDocs.map((d, i) => {
   };
 });
 
-const pages = ["index.html", "404.html", "privacy.html", "releases.html", "benchmarks.html", "hub.html"];
+// staff.html: the staff dashboards (/staff, /staff/team, /staff/mod, /staff/setup), never in the sitemap.
+const pages = ["index.html", "404.html", "privacy.html", "releases.html", "benchmarks.html", "hub.html", "staff.html"];
 const currentPath = { "releases.html": "/releases", "benchmarks.html": "/benchmarks", "hub.html": "/hub" };
 for (const page of pages) {
   let html = await readFile(join(site, "src", page), "utf8");

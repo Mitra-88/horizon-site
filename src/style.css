@@ -945,3 +945,18 @@ code { border-radius: 0; background: var(--well); box-shadow: 0 0 0 1px var(--ou
   .mod-icon { width: 40px; height: 40px; }
   .mod-head { grid-template-columns: 1fr; }
 }
+
+/* The staff dashboards (/staff): the sign-in forms, the bar with the dashboard switch and the account. */
+.staff-message { margin-bottom: 24px; color: var(--ink); }
+.staff-auth { margin-top: 24px; max-width: 34rem; }
+.staff-form { max-width: 26rem; }
+.staff-bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px 24px; margin: 8px 0 32px; }
+.staff-who { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-left: auto; }
+.staff-who .meta { margin: 0 8px 0 0; }
+.staff-switch { margin-bottom: 0; }
+.staff-switch a {
+  position: relative; z-index: 1; display: inline-flex; align-items: center; height: var(--segment); padding: 0 14px;
+  color: var(--muted); font: 500 15px / 1 var(--pixel); transition: color var(--quick) var(--ease-quick);
+}
+.staff-switch a:hover { color: var(--ink); }
+.staff-switch a[aria-current="page"] { color: var(--on-face); }

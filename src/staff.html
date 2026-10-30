@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>Staff · Horizon</title>
+    <meta name="robots" content="noindex, nofollow">
+    <meta name="referrer" content="no-referrer">
+    <meta name="theme-color" content="#ece7f7" media="(prefers-color-scheme: light)">
+    <meta name="theme-color" content="#0f0d17" media="(prefers-color-scheme: dark)">
+    <meta name="color-scheme" content="light dark">
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+    <link rel="icon" href="/favicon-32.png" sizes="32x32" type="image/png">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+    <style>{{STYLE}}</style>
+    <script>document.documentElement.classList.replace("no-js", "js"); try { const t = localStorage.getItem("theme"); if (t === "light" || t === "dark") document.documentElement.dataset.theme = t } catch {}</script>
+    <script type="module" src="{{STAFF_JS}}"></script>
+  </head>
+  <body class="subpage">
+    <a class="skip" href="#main">Skip to the content</a>
+{{SITE_NAV}}
+    <main id="main" class="section page-main staff">
+      <div class="container">
+        <p class="kicker"><span>Staff</span><span data-staff-kicker>Horizon Team and Mods</span></p>
+        <h1 class="display page-title" data-staff-title>Staff dashboards</h1>
+        <noscript><p class="lede">The dashboards need JavaScript.</p></noscript>
+        <p class="lede staff-message" data-staff-message role="status" hidden></p>
+
+        <section class="staff-auth" data-staff-login hidden aria-labelledby="h-login">
+          <h2 class="sr-only" id="h-login">Sign in</h2>
+          <p class="hub-intro">For the 🌌 Horizon Team and the 🛡️ Mods. Your username is your Discord username. No password yet, or forgot it? Run <code>/staff password</code> on Discord: Kira DMs you a link to set one.</p>
+          <form class="hub-form staff-form" data-login-form>
+            <label class="hub-field"><span>Discord username</span><input name="username" autocomplete="username" autocapitalize="none" spellcheck="false" required maxlength="64"></label>
+            <label class="hub-field"><span>Password</span><input name="password" type="password" autocomplete="current-password" required maxlength="200"></label>
+            <p class="hub-form-foot"><button type="submit" class="button primary">Sign in</button><span class="meta" data-status role="status"></span></p>
+          </form>
+        </section>
+
+        <section class="staff-auth" data-staff-setup hidden aria-labelledby="h-setup">
+          <h2 class="sr-only" id="h-setup">Set your password</h2>
+          <p class="hub-intro" data-setup-who>Checking your link…</p>
+          <form class="hub-form staff-form" data-setup-form hidden>
+            <input name="username" autocomplete="username" hidden>
+            <label class="hub-field"><span>New password (12 characters or more)</span><input name="password" type="password" autocomplete="new-password" required minlength="12" maxlength="200"></label>
+            <label class="hub-field"><span>The same again</span><input name="again" type="password" autocomplete="new-password" required minlength="12" maxlength="200"></label>
+            <p class="hub-form-foot"><button type="submit" class="button primary">Set it and sign in</button><span class="meta" data-status role="status"></span></p>
+          </form>
+        </section>
+
+        <section class="staff-app" data-staff-app hidden>
+          <div class="staff-bar">
+            <nav class="tabs staff-switch" aria-label="Dashboards" data-dashboards></nav>
+            <div class="staff-who">
+              <span class="meta" data-who></span>
+              <button type="button" class="button secondary small" data-logout>Sign out</button>
+              <button type="button" class="button ghost small" data-logout-all>Sign out everywhere</button>
+            </div>
+          </div>
+          <div data-staff-content></div>
+        </section>
+      </div>
+    </main>
+{{SITE_FOOTER}}
+  </body>
+</html>
