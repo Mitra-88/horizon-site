@@ -1,4 +1,4 @@
-// The staff pages (/staff, /staff/setup, /staff/team, /staff/mod): signing in, setting one's password with the link
+// The staff pages (/staff, /staff/setup, /staff/team, /staff/mod, /staff/help): signing in, setting one's password with the link
 // Kira DMs, signing out, and the dashboard switch. Each dashboard's content is its own module, loaded when opened.
 // The session is an HttpOnly cookie this script never sees; the API says who is signed in (GET me).
 import { setUpTheme, setUpMenu } from "./chrome.js";
@@ -13,7 +13,7 @@ const LOADERS = {
 
 const $ = (sel) => document.querySelector(sel);
 const show = (sel) => {
-  for (const s of ["[data-staff-login]", "[data-staff-setup]", "[data-staff-app]"]) $(s).hidden = s !== sel;
+  for (const s of ["[data-staff-login]", "[data-staff-setup]", "[data-staff-app]", "[data-staff-help]"]) $(s).hidden = s !== sel;
 };
 const message = (text) => {
   const m = $("[data-staff-message]");
@@ -74,6 +74,7 @@ async function route() {
   message("");
   try {
     if (where() === "setup") return setup();
+    if (where() === "help") return help();
     const who = await me();
     if (!who) return login();
     await open(who);
@@ -81,6 +82,14 @@ async function route() {
     show(null);
     message(e.message);
   }
+}
+
+// "How this works": the rules and what is kept, for anyone (nothing private on it), linked from both dashboards.
+function help() {
+  show("[data-staff-help]");
+  $("[data-staff-kicker]").textContent = "Help";
+  $("[data-staff-title]").textContent = "How this works";
+  document.title = "How the staff dashboards work · Horizon";
 }
 
 async function setup() {

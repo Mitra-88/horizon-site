@@ -57,7 +57,7 @@
 		}
 	}
 	# The staff pages (one page, its script picks the view) and the application form: never indexed or cached.
-	@staff path /staff /staff/ /staff/team /staff/mod /staff/setup
+	@staff path /staff /staff/ /staff/team /staff/mod /staff/setup /staff/help
 	rewrite @staff /staff.html
 	rewrite /apply /apply.html
 	@private path /staff /staff/* /staff.html /apply /apply.html
