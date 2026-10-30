@@ -27,8 +27,8 @@ const who = (people, id) => (id === "vote" ? "The vote" : people[id] ? escape(pe
 export function standing(a, now = Date.now()) {
   const v = a.vote;
   if (a.status === "open") {
-    const votes = v.needed > 0 ? `waiting for ${plural(v.needed, "more vote")}` : "enough votes so far";
-    return `Voting · ${v.firstBallotAt ? `closes in ${left(v.closesAt, now)}` : `no vote yet · closes in ${left(v.closesAt, now)}`} · ${votes}${v.extended ? " (extended)" : ""}`;
+    const votes = v.needed > 0 ? `${v.cast} of ${v.quorum} votes needed` : `${plural(v.cast, "vote")}, enough`;
+    return `${votes} · closes in ${left(v.closesAt, now)}${v.extended ? " (extended once)" : ""}`;
   }
   if (a.status === "veto-window") return `Passed · goes through in ${left(a.veto.until, now)} unless Ludovic vetoes it`;
   if (a.status === "stalled") return "Not enough votes, even after 48 more hours · Ludovic decides";
@@ -100,7 +100,7 @@ function resultLine(a) {
 function moreHtml(a, people) {
   const v = a.vote;
   const ballots = v.ballots?.length ? `<h4>Votes</h4><ul class="app-ballots">${v.ballots.map((b) => `<li><strong>${who(people, b.by)}</strong>: ${CHOICE[b.choice]}${b.comment ? ` · ${escape(b.comment)}` : ""}</li>`).join("")}</ul>`
-    : a.status === "open" ? `<p class="meta">The others' votes show here once you vote${a.owner ? "" : " (or when the vote closes)"}.</p>` : "";
+    : a.status === "open" ? `<p class="meta">${a.owner ? "Who voted what shows here when the vote closes." : "The others' votes show here once you vote (or when the vote closes)."}</p>` : "";
   const more = (a.contributor?.prs || []).length > 3 ? `<p>More pull requests: ${prLinks(a.contributor, 3)}</p>` : "";
   const github = !a.contributor ? `<p class="meta">No GitHub account linked on Discord.</p>` : "";
   const recuse = v.canVote ? `<p><button type="button" class="button ghost small" data-recuse="${escape(a.id)}">Recuse myself</button> <span class="meta">You won't vote or see the votes on this one.</span></p>` : "";
@@ -123,12 +123,24 @@ export function cardHtml(a, people, now = Date.now()) {
     <p class="app-standing">${standing(a, now)}</p>
     <dl class="app-answers">${answers}</dl>
     ${tallyLine(a)}
+    ${a.vote.againstComments?.length ? `<div class="app-against"><p class="meta">Against, without names until the vote closes:</p><ul>${a.vote.againstComments.map((c) => `<li>${escape(c)}</li>`).join("")}</ul></div>` : ""}
     ${part ? `<p class="app-part">${part}</p>` : ""}
     ${ballotForm(a)}
     ${ownerButtons(a)}
     ${resultLine(a)}
     ${moreHtml(a, people)}
   </article>`;
+}
+
+// Ludovic's action on an application, after he confirms (a veto asks for an optional private note). False if he cancels.
+export async function ownerAct(dashboard, id, action, label) {
+  let note = "";
+  if (action === "veto") {
+    note = prompt("Veto: the application is declined and the applicant gets the usual polite DM, without the votes.\nOptional note, only you will see it:", "");
+    if (note === null) return false;
+  } else if (!confirm(`${label}: are you sure?`)) return false;
+  await api("POST", `${dashboard}/applications/owner`, { id, action, note });
+  return true;
 }
 
 export async function fetchApplications(dashboard) {
@@ -177,15 +189,10 @@ export async function renderApplications(root, dashboard, people = {}, onChange 
     const owner = event.target.closest("[data-owner]");
     if (!recuse && !owner) return;
     const status = event.target.closest(".app-card")?.querySelector(".app-owner [data-status]");
-    let note = "";
     if (recuse && !confirm("Recuse yourself? You won't vote or see the votes on this application.")) return;
-    if (owner?.dataset.owner === "veto") {
-      note = prompt("Veto: the application is declined and the applicant gets the usual polite DM, without the votes.\nOptional note, only you will see it:", "");
-      if (note === null) return;
-    } else if (owner && !confirm(`${owner.textContent}: are you sure?`)) return;
     try {
       if (recuse) await api("POST", `${dashboard}/applications/vote`, { id: recuse.dataset.recuse, recuse: true });
-      else await api("POST", `${dashboard}/applications/owner`, { id: owner.dataset.id, action: owner.dataset.owner, note });
+      else if (!(await ownerAct(dashboard, owner.dataset.id, owner.dataset.owner, owner.textContent))) return;
       await after();
     } catch (e) {
       if (status) status.textContent = e.message;

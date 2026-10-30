@@ -2,7 +2,7 @@
 // items, notes on public ones, publishing an item to the public roadmap), the decisions log, applications.
 import { api, escape, when, linkHtml, paragraphs, placePill } from "./staff-api.js";
 import { renderApplications, fetchApplications } from "./staff-apps.js";
-import { inboxHtml, inboxCount } from "./staff-inbox.js";
+import { inboxHtml, inboxCount, wireInbox } from "./staff-inbox.js";
 import { renderStats, renderData } from "./staff-stats.js";
 
 const TABS = [["inbox", "Inbox"], ["applications", "Applications"], ["board", "Board"], ["roadmap", "Roadmap"], ["decisions", "Decisions"], ["stats", "Stats"], ["data", "Data"]];
@@ -169,9 +169,9 @@ export async function render(root, who) {
     panel("roadmap").innerHTML = roadmapHtml();
     panel("decisions").innerHTML = decisionsHtml();
   };
-  // The Inbox: what needs this member now, from the applications and the Team kanban.
+  // The Inbox: what needs this member now, from the applications, the Team kanban and the decisions log.
   const drawInbox = async () => {
-    const html = inboxHtml({ apps: (await fetchApplications("team")).applications, cards: data.cards, me: who?.user });
+    const html = inboxHtml({ apps: (await fetchApplications("team")).applications, cards: data.cards, decisions: data.decisions, me: who?.user, names: [who?.name, data.people?.[who?.user]] });
     panel("inbox").innerHTML = html;
     const n = inboxCount(html);
     root.querySelector('[data-count="inbox"]').textContent = n ? String(n) : "";
@@ -201,7 +201,8 @@ export async function render(root, who) {
     if (b) select(b.id.slice(4));
   });
   await reload();
-  await renderApplications(panel("applications"), "team", data.people, drawInbox);
+  const applications = await renderApplications(panel("applications"), "team", data.people, drawInbox);
+  wireInbox(panel("inbox"), "team", async () => { await applications.reload(); await drawInbox(); });
   panel("inbox").dataset.ready = "1";
   await drawInbox();
   // A link to a tab or to an application (#applications, #application-<id>, as in Kira's DMs) opens it, also when

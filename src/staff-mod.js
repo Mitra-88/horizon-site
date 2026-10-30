@@ -2,7 +2,7 @@
 // warns, timeouts, kicks, bans, AutoMod, joins and leaves; counts only) from Kira's mod/stats. Nothing of the Team's.
 import { api, escape, placePill } from "./staff-api.js";
 import { renderApplications, fetchApplications } from "./staff-apps.js";
-import { inboxHtml, inboxCount } from "./staff-inbox.js";
+import { inboxHtml, inboxCount, wireInbox } from "./staff-inbox.js";
 import { barChart, tile, tableHtml, download, fmt, toCsv } from "./staff-stats.js";
 
 const TABS = [["inbox", "Inbox"], ["applications", "Applications"], ["stats", "Stats"]];
@@ -77,7 +77,8 @@ export async function render(root, who) {
     root.querySelector('[data-count="inbox"]').textContent = n ? String(n) : "";
     placePill(tabs);
   };
-  await renderApplications(panel("applications"), "mod", {}, drawInbox);
+  const applications = await renderApplications(panel("applications"), "mod", {}, drawInbox);
+  wireInbox(panel("inbox"), "mod", async () => { await applications.reload(); await drawInbox(); });
   await drawInbox();
   // A link to a tab or an application (#stats, #application-<id>, as in Kira's DMs) opens it, also once open.
   const fromHash = () => {

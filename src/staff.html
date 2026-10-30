@@ -52,13 +52,14 @@
           <h2 class="staff-help-title" id="sign-in">Signing in</h2>
           <ul class="staff-help-list">
             <li>Run <code>/staff password</code> on Horizon's Discord: Kira DMs you a link that works once, for 30 minutes. Choose a password of 12 characters or more.</li>
-            <li>Sign in with your Discord username. "Sign out everywhere" ends every session you have. If you lose the Team or Mod role, your sessions end at once.</li>
+            <li>Sign in with your Discord username. Forgot your password? Run <code>/staff password</code> again: the new one replaces it.</li>
+            <li>A session ends after 12 hours without use, and after 7 days at most. "Sign out everywhere" ends every session you have. If you lose the Team or Mod role, your sessions end at once.</li>
           </ul>
           <h2 class="staff-help-title" id="applications">Applications and the vote</h2>
           <ul class="staff-help-list">
             <li><strong>Who votes.</strong> 🌌 Team applications: the Team. 🛡️ Mod applications: the Mods. 🤝 Support applications: the Mods and the Team. Nobody votes on their own application, and you can recuse yourself.</li>
             <li><strong>Your vote.</strong> For, Against or Abstain. Against needs a short comment. You can change your vote until the vote closes.</li>
-            <li><strong>Blind until you vote.</strong> You see the others' votes and comments only once you have voted, or when the vote closes, so nobody just follows the crowd.</li>
+            <li><strong>Blind until you vote.</strong> You see the others' votes and comments only once you have voted, or when the vote closes, so nobody just follows the crowd. Ludovic doesn't vote: while a vote runs he sees only the counts and the Against comments, without names.</li>
             <li><strong>Enough votes.</strong> An active voter is someone who signed in or acted here in the last 30 days. A vote needs at least 2 votes, and at least 40% of the active voters. With fewer than 2 active voters, Ludovic decides.</li>
             <li><strong>Passing.</strong> At least two thirds of the For and Against votes are For (abstentions don't count either way), with enough votes.</li>
             <li><strong>How long.</strong> 72 hours from the first vote, or less once every active voter has voted. Without enough votes it gets 48 more hours once; after that it goes to Ludovic.</li>
@@ -71,12 +72,15 @@
             <li>After a role is given he can still take it back from the dashboard: a normal removal, written in the log.</li>
             <li>A 🌌 Team acceptance gives only the Discord role. Access to the GitHub organisation is Ludovic's to give, by hand.</li>
           </ul>
-          <h2 class="staff-help-title" id="log">The log and privacy</h2>
+          <h2 class="staff-help-title" id="log">What is stored, and for how long</h2>
           <ul class="staff-help-list">
             <li>Every vote, change, recusal, veto and decision is written in a log that can't be edited. Voters and Ludovic see it under "More" on each application.</li>
             <li>The applicant only gets a polite yes or no in their DMs: never the votes, the comments or who voted. After a no, they can apply again in 14 days.</li>
-            <li>Answers, comments and GitHub details are deleted 90 days after the decision; only the role, the outcome and the date stay (<a href="/privacy">privacy</a>).</li>
-            <li>The statistics are counts only: no messages, nothing from anyone's private DMs.</li>
+            <li><strong>Your password:</strong> only a scrypt hash, never the password itself; nobody can read it back. <strong>Sessions:</strong> as long as they last (above).</li>
+            <li><strong>Links Kira DMs:</strong> a password link works once, for 30 minutes; an application link once, for a day.</li>
+            <li><strong>Applications:</strong> answers, vote comments and GitHub details are deleted 90 days after the decision; only the role, the outcome and the date stay (<a href="/privacy">privacy</a>).</li>
+            <li><strong>Statistics:</strong> daily counts only, kept 120 days: no messages, nothing from anyone's private DMs.</li>
+            <li><strong>The board, the roadmap notes and the decisions:</strong> kept until the Team removes them; decisions are never deleted, only withdrawn.</li>
           </ul>
         </section>
 
