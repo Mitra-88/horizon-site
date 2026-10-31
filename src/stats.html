@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>Players: how many play Horizon · Horizon</title>
+    <meta name="description" content="How many people play Horizon right now, and over the last day, week, month and since the count began: the peaks, the averages and the split by platform, live.">
+    <meta name="theme-color" content="#ece7f7" media="(prefers-color-scheme: light)">
+    <meta name="theme-color" content="#0f0d17" media="(prefers-color-scheme: dark)">
+    <meta name="color-scheme" content="light dark">
+    <link rel="canonical" href="https://playhorizon.dev/stats">
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+    <link rel="icon" href="/favicon-32.png" sizes="32x32" type="image/png">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Horizon">
+    <meta property="og:title" content="Players · Horizon">
+    <meta property="og:description" content="How many play Horizon right now, and its peaks over time.">
+    <meta property="og:url" content="https://playhorizon.dev/stats">
+    <meta property="og:image" content="https://playhorizon.dev/og.png">
+    <link rel="preconnect" href="https://telemetry.playhorizon.dev" crossorigin>
+    <style>{{STYLE}}</style>
+    <script>document.documentElement.classList.replace("no-js", "js"); try { const t = localStorage.getItem("theme"); if (t === "light" || t === "dark") document.documentElement.dataset.theme = t } catch {}</script>
+    <script type="module" src="{{STATS_JS}}"></script>
+  </head>
+  <body class="subpage">
+    <a class="skip" href="#main">Skip to the content</a>
+{{SITE_NAV}}
+    <main id="main" class="section page-main" data-api="{{TELEMETRY_API}}">
+      <div class="container">
+        <p class="kicker"><span>Players</span>Live, every minute</p>
+        <h1 class="display page-title">Who plays Horizon right now</h1>
+        <p class="lede">Every running game sends an anonymous "I'm playing" ping once a minute: no account, no address, nothing you do in the game (<a href="/privacy#the-im-playing-ping">what it holds</a>). The count below is exact, and the server writes down only the totals each minute, so you can see the peaks over time.</p>
+
+        <section class="bench-section" aria-labelledby="now-title">
+          <h2 class="sr-only" id="now-title">Now and the peaks</h2>
+          <div class="stat-tiles" aria-live="polite">
+            <div class="stat-tile"><span class="stat-value" data-stat="players-now">–</span><span class="stat-label">playing now</span><span class="meta" data-stat="players-now-note">Asking the server…</span></div>
+            <div class="stat-tile"><span class="stat-value" data-stat="players-today">–</span><span class="stat-label">peak today</span><span class="meta" data-stat="players-today-note"></span></div>
+            <div class="stat-tile"><span class="stat-value" data-stat="players-ever">–</span><span class="stat-label">all-time peak</span><span class="meta" data-stat="players-ever-note"></span></div>
+            <div class="stat-tile"><span class="stat-value" data-stat="lan">–</span><span class="stat-label">with a world open to LAN or friends</span><span class="meta" data-stat="lan-note"></span></div>
+          </div>
+          <noscript><p class="lede">This page asks the telemetry server for the count, which needs JavaScript. The figures are also at <a href="https://telemetry.playhorizon.dev/v1/live">/v1/live</a> and <a href="https://telemetry.playhorizon.dev/v1/live/history?range=7d">/v1/live/history</a>.</p></noscript>
+        </section>
+
+        <section class="bench-section" id="history" aria-labelledby="history-title">
+          <h2 class="title" id="history-title">Over time</h2>
+          <div class="release-filter" role="group" aria-label="Show the">
+            <button type="button" class="button secondary small" data-range="24h" aria-pressed="true">24 hours</button>
+            <button type="button" class="button secondary small" data-range="7d" aria-pressed="false">7 days</button>
+            <button type="button" class="button secondary small" data-range="30d" aria-pressed="false">30 days</button>
+            <button type="button" class="button secondary small" data-range="all" aria-pressed="false">All</button>
+          </div>
+          <figure class="chart stats-chart" data-chart-root="players">
+            <figcaption class="chart-title" data-chart-title>Players over the last 24 hours</figcaption>
+            <p class="chart-legend"><span><i class="chart-key chart-s1"></i>Highest</span><span><i class="chart-key stats-key-avg"></i>Average</span><span class="meta" data-chart-peak></span></p>
+            <div class="stats-plot" data-chart><p class="empty">Loading…</p></div>
+            <p class="stats-tip" data-chart-tip aria-hidden="true" hidden></p>
+            <p class="sr-only" data-chart-status aria-live="polite"></p>
+            <details><summary class="meta">Table</summary><div class="staff-table-wrap" data-chart-table></div></details>
+          </figure>
+          <p class="meta">Each point is the highest and the average count in its 5 minutes (24 hours), hour (7 days), 3 hours (30 days) or day (all, UTC days). Times are in your time zone. Minutes are kept 7 days, hours 90 days, days for good. The tabs set both charts on this page.</p>
+        </section>
+
+        <section class="bench-section" id="official" aria-labelledby="official-title">
+          <h2 class="title" id="official-title">The official server</h2>
+          <p class="lede">Horizon Official, the survival server (SMP) at the top of the game's server list. Every minute the telemetry server asks it how many play, with the same status ping your game's Multiplayer list sends; a gap in the line is a time it didn't answer.</p>
+          <div class="stat-tiles" aria-live="polite">
+            <div class="stat-tile"><span class="stat-value" data-stat="official-now">–</span><span class="stat-label">on the official server now</span><span class="meta" data-stat="official-now-note">Asking the server…</span></div>
+            <div class="stat-tile"><span class="stat-value" data-stat="official-today">–</span><span class="stat-label">peak today</span><span class="meta" data-stat="official-today-note"></span></div>
+            <div class="stat-tile"><span class="stat-value" data-stat="official-ever">–</span><span class="stat-label">all-time peak</span><span class="meta" data-stat="official-ever-note"></span></div>
+          </div>
+          <figure class="chart stats-chart" data-chart-root="official">
+            <figcaption class="chart-title" data-chart-title>On the official server over the last 24 hours</figcaption>
+            <p class="chart-legend"><span><i class="chart-key chart-s1"></i>Highest</span><span><i class="chart-key stats-key-avg"></i>Average</span><span class="meta" data-chart-peak></span></p>
+            <div class="stats-plot" data-chart><p class="empty">Loading…</p></div>
+            <p class="stats-tip" data-chart-tip aria-hidden="true" hidden></p>
+            <p class="sr-only" data-chart-status aria-live="polite"></p>
+            <details><summary class="meta">Table</summary><div class="staff-table-wrap" data-chart-table></div></details>
+          </figure>
+        </section>
+
+        <section class="bench-section" id="platforms" aria-labelledby="platforms-title">
+          <h2 class="title" id="platforms-title">By platform</h2>
+          <figure class="chart">
+            <figcaption class="chart-title">Playing now, per system</figcaption>
+            <ul class="rank stats-rank" data-platforms><li class="empty">Asking the server…</li></ul>
+          </figure>
+        </section>
+        <p class="disclaimer">Not an official Minecraft product. Not approved by or associated with Mojang or Microsoft.</p>
+      </div>
+    </main>
+{{SITE_FOOTER}}
+  </body>
+</html>
