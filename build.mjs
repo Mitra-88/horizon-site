@@ -24,7 +24,7 @@ import { INDEX_URL, KINDS, SORTS, SUBMIT, listHtml, projectHtml, readIndex, sort
 const site = dirname(fileURLToPath(import.meta.url));
 const dist = join(site, "dist");
 const REPO = "horizon-rust/horizon";
-const DEFAULT_LINKS = { discord: "https://discord.gg/HcTeMZxe5E", sponsor: "https://github.com/sponsors/ludovic111" };
+const DEFAULT_LINKS = { discord: "https://discord.gg/playhorizon", sponsor: "https://github.com/sponsors/ludovic111" };
 
 const CHECKOUT = process.env.HORIZON_CHECKOUT;
 if (CHECKOUT && !existsSync(join(CHECKOUT, "README.md"))) throw new Error(`HORIZON_CHECKOUT=${CHECKOUT}: no README.md there`);
