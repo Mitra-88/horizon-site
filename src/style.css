@@ -1104,3 +1104,24 @@ code { border-radius: 0; background: var(--well); box-shadow: 0 0 0 1px var(--ou
   .inbox-actions .button { flex: 1 1 auto; }
   .app-owner .button { flex: 1 1 auto; justify-content: center; }
 }
+
+/* Stats (/stats): the players chart (stats.js), its cursor and tooltip, the platform split. */
+.stats-chart { position: relative; }
+.stats-area { fill: var(--chart-1); fill-opacity: 0.16; }
+.stats-peak { fill: none; stroke: var(--chart-1); stroke-width: 2; stroke-linejoin: round; }
+.stats-avg { fill: none; stroke: var(--chart-2); stroke-width: 1.5; stroke-dasharray: 4 3; }
+.stats-key-avg { background: var(--chart-2); }
+.chart-axis .chart-tick { stroke-opacity: 0.5; }
+.stats-cursor[hidden] { display: none; }
+.stats-cursor line { stroke: var(--ink-soft); stroke-width: 1; }
+.stats-dot-peak { fill: var(--chart-1); stroke: var(--panel); stroke-width: 2; }
+.stats-dot-avg { fill: var(--chart-2); stroke: var(--panel); stroke-width: 2; }
+.stats-chart svg:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
+.stats-tip { position: absolute; top: var(--y, 0); left: var(--x, 0); z-index: 1; display: grid; gap: 2px; margin: 0; padding: 8px 10px; transform: translateX(14px); background: var(--panel); border: var(--block-outline) solid var(--outline); box-shadow: var(--panel-edges); font-size: var(--text-label); color: var(--ink-soft); white-space: nowrap; pointer-events: none; }
+.stats-tip.is-left { transform: translateX(calc(-100% - 14px)); }
+.stats-tip strong { font-weight: 500; color: var(--ink); }
+.stats-tip b { font: 500 var(--text-label) / 1.4 var(--mono); color: var(--ink); }
+.stats-table caption { caption-side: top; padding-bottom: 6px; text-align: left; }
+.stats-table td.num { text-align: right; font-variant-numeric: tabular-nums; }
+.stats-rank li { grid-template-columns: minmax(5rem, 8rem) minmax(0, 1fr) 7rem; }
+.stats-rank .meta { margin-left: 6px; }

@@ -108,9 +108,9 @@ async function setUpLinks() {
 
 const TELEMETRY = "https://telemetry.playhorizon.dev";
 
-// How many play right now, from the games' anonymous "I'm playing" pings (Privacy explains them). The
-// server rounds it and makes it again at most every 15 seconds; the row stays hidden while nobody plays
-// or the server doesn't answer.
+// How many play right now, from the games' anonymous "I'm playing" pings (Privacy explains them), exact;
+// the server makes it again at most every 15 seconds. The row links to /stats (the count over time) and
+// stays hidden while nobody plays or the server doesn't answer.
 async function setUpLive() {
   const row = document.querySelector("[data-live]");
   if (!row) return;

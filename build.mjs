@@ -288,7 +288,7 @@ await writeFile(join(dist, "favicon.ico"), Buffer.concat([ico, png32]));
 const names = {};
 const rewrite = (code) => code.replace(/"\.\/([\w-]+\.js)"/g, (all, file) => (names[file] ? `"./${names[file]}"` : all));
 // Dependencies before what imports them.
-const modules = ["markdown.js", "versions.js", "chrome.js", "hardware.js", "estimate.js", "releases.js", "contributors.js", "bench.js", "hub.js", "main.js", "releases-page.js", "benchmarks-page.js", "docs-page.js", "hub-page.js", "mods.js", "mods-page.js", "mods-submit.js", "staff-api.js", "staff-apps.js", "staff-stats.js", "staff-inbox.js", "staff-team.js", "staff-mod.js", "staff-page.js", "apply-page.js"];
+const modules = ["markdown.js", "versions.js", "chrome.js", "hardware.js", "estimate.js", "releases.js", "contributors.js", "bench.js", "hub.js", "main.js", "releases-page.js", "benchmarks-page.js", "stats.js", "stats-page.js", "docs-page.js", "hub-page.js", "mods.js", "mods-page.js", "mods-submit.js", "staff-api.js", "staff-apps.js", "staff-stats.js", "staff-inbox.js", "staff-team.js", "staff-mod.js", "staff-page.js", "apply-page.js"];
 for (const file of modules) {
   const code = rewrite(await readFile(join(site, "src", file), "utf8"));
   names[file] = `${file.replace(".js", "")}.${fingerprint(code)}.js`;
@@ -356,7 +356,7 @@ const siteFooter = `    <footer class="footer">
       <div class="container">
         <div class="footer-bar">
           <span class="footer-mark">Made in the open, in Rust.</span>
-          <nav class="footer-links" aria-label="Elsewhere"><a href="/">Home</a><a href="/hub">Hub</a><a href="/mods">Mods</a><a href="/releases">Releases</a><a href="/benchmarks">Benchmarks</a><a href="/docs/">Docs</a><a href="/docs/how-horizon-is-built">How it's built</a><a href="https://github.com/${REPO}">GitHub</a><a href="${SPONSOR}">Sponsor</a><a href="/privacy">Privacy</a><a href="/LEGAL.md">Assets</a></nav>
+          <nav class="footer-links" aria-label="Elsewhere"><a href="/">Home</a><a href="/hub">Hub</a><a href="/mods">Mods</a><a href="/releases">Releases</a><a href="/benchmarks">Benchmarks</a><a href="/stats">Players</a><a href="/docs/">Docs</a><a href="/docs/how-horizon-is-built">How it's built</a><a href="https://github.com/${REPO}">GitHub</a><a href="${SPONSOR}">Sponsor</a><a href="/privacy">Privacy</a><a href="/LEGAL.md">Assets</a></nav>
         </div>
       </div>
       <p class="footer-word" aria-hidden="true">horizon</p>
@@ -398,6 +398,8 @@ const values = {
   RELEASE_COUNT: ours.length ? `${ours.length} releases` : "",
   NEWEST_TAG: escape(ours[0]?.tag_name || ""),
   BENCH_JS: `/assets/${names["benchmarks-page.js"]}`,
+  STATS_JS: `/assets/${names["stats-page.js"]}`,
+  TELEMETRY_API: escape(hubApi),
   MACHINES: machinesHtml(benchSummary),
   PLAYERS: playersHtml(benchSummary),
   PLAYERS_SOURCE: `${playersGroups.length ? `${playersGroups.length} groups` : "No groups yet"}, as of ${benchSummary.generated.slice(0, 10)}. The page asks the telemetry server for newer ones.`,
@@ -524,8 +526,8 @@ const docPages = renderedDocs.map((d, i) => {
 
 // staff.html: the staff dashboards (/staff, /staff/team, /staff/mod, /staff/setup); apply.html: the application form
 // (/apply). Never in the sitemap.
-const pages = ["index.html", "404.html", "privacy.html", "releases.html", "benchmarks.html", "hub.html", "staff.html", "apply.html"];
-const currentPath = { "releases.html": "/releases", "benchmarks.html": "/benchmarks", "hub.html": "/hub" };
+const pages = ["index.html", "404.html", "privacy.html", "releases.html", "benchmarks.html", "stats.html", "hub.html", "staff.html", "apply.html"];
+const currentPath = { "releases.html": "/releases", "benchmarks.html": "/benchmarks", "stats.html": "/stats", "hub.html": "/hub" };
 for (const page of pages) {
   let html = await readFile(join(site, "src", page), "utf8");
   const own = { ...values, SITE_NAV: siteNav(currentPath[page]) };
@@ -612,7 +614,7 @@ const hashes = (re) => [...new Set([...allHtml.matchAll(re)].map((m) => `'sha256
 await writeFile(join(dist, ".csp-script"), hashes(/<script>([\s\S]*?)<\/script>/g));
 await writeFile(join(dist, ".csp-style"), hashes(/<style>([\s\S]*?)<\/style>/g));
 
-const urls = ["/", "/hub", "/mods", ...modPages.slice(1).map((p) => p.path), "/releases", "/benchmarks", ...docs.map((d) => d.path), "/privacy"];
+const urls = ["/", "/hub", "/mods", ...modPages.slice(1).map((p) => p.path), "/releases", "/benchmarks", "/stats", ...docs.map((d) => d.path), "/privacy"];
 await writeFile(
   join(dist, "sitemap.xml"),
   `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls.map((u) => `  <url><loc>https://playhorizon.dev${u}</loc></url>`).join("\n")}\n</urlset>\n`,
