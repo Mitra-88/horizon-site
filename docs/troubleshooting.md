@@ -39,7 +39,7 @@ The launcher's **Settings** page has a **Logs** row with an **Open** button. On 
 Good places, in this order:
 
 1. **GitHub issues:** [github.com/horizon-rust/horizon/issues](https://github.com/horizon-rust/horizon/issues). Search first; someone may have reported it already.
-2. **Discord:** the bugs channel on [our Discord server](https://discord.gg/HcTeMZxe5E), if you would rather talk it through.
+2. **Discord:** the bugs channel on [our Discord server](https://discord.gg/playhorizon), if you would rather talk it through.
 
 Include:
 

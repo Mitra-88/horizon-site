@@ -2,7 +2,7 @@
 
 Horizon is open source and takes pull requests. The one rule that shapes everything: **it plays exactly like vanilla.** Wherever vanilla has a feature, vanilla is the specification.
 
-Questions and ideas are welcome on [Discord](https://discord.gg/HcTeMZxe5E). Bugs and feature requests go in [GitHub issues](https://github.com/horizon-rust/horizon/issues). If you want to take something on, say so in its issue so nobody else starts the same work.
+Questions and ideas are welcome on [Discord](https://discord.gg/playhorizon). Bugs and feature requests go in [GitHub issues](https://github.com/horizon-rust/horizon/issues). If you want to take something on, say so in its issue so nobody else starts the same work.
 
 ## The repository
 
