@@ -1,4 +1,5 @@
-import { cacheLife } from "next/cache";
+import { cacheLife, cacheTag } from "next/cache";
+import { rawMainUrl, TAGS } from "@/components/github-fresh";
 import { boardFrom, REPO, slimIssue, type HubIssue, type Roadmap } from "@/components/hub-logic";
 
 const headers = (): Record<string, string> => ({
@@ -10,8 +11,9 @@ const FRESH = { stale: 300, revalidate: 900, expire: 86400 };
 
 export async function getRoadmap(): Promise<Roadmap | null> {
   "use cache";
+  cacheTag(TAGS.main);
   try {
-    const res = await fetch(`https://raw.githubusercontent.com/${REPO}/main/roadmap/roadmap.json`);
+    const res = await fetch(await rawMainUrl(REPO, "roadmap/roadmap.json"));
     if (!res.ok) throw new Error(`GitHub responded ${res.status} ${res.statusText}`);
     const roadmap: Roadmap = await res.json();
     cacheLife(FRESH);
@@ -25,6 +27,7 @@ export async function getRoadmap(): Promise<Roadmap | null> {
 
 export async function getHubIssues(): Promise<HubIssue[] | null> {
   "use cache";
+  cacheTag(TAGS.issues);
   const list: HubIssue[] = [];
   try {
     for (let page = 1; page <= 3; page++) {
@@ -48,6 +51,7 @@ export async function getHubIssues(): Promise<HubIssue[] | null> {
 
 export async function getBoard() {
   "use cache";
+  cacheTag(TAGS.main, TAGS.issues);
   const [issues, roadmap] = await Promise.all([getHubIssues(), getRoadmap()]);
   if (!issues || !roadmap) {
     cacheLife("minutes");

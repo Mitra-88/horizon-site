@@ -1,5 +1,6 @@
 import Image from "next/image";
-import { cacheLife } from "next/cache";
+import { cacheLife, cacheTag } from "next/cache";
+import { TAGS } from "@/components/github-fresh";
 import { ClaudeIcon, ExternalLinkIcon } from "@/components/icons";
 import { GITHUB_URL } from "@/components/links";
 
@@ -17,6 +18,7 @@ type Card = { name: string; detail: string; avatar: string; url: string };
 
 export async function getContributors(): Promise<Contributor[] | null> {
   "use cache";
+  cacheTag(TAGS.main);
   const headers: Record<string, string> = { Accept: "application/vnd.github+json" };
   if (process.env.GITHUB_TOKEN) headers.Authorization = `Bearer ${process.env.GITHUB_TOKEN}`;
 

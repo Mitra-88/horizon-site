@@ -1,4 +1,5 @@
-import { cacheLife } from "next/cache";
+import { cacheLife, cacheTag } from "next/cache";
+import { rawMainUrl, TAGS } from "@/components/github-fresh";
 import { journalJson, slimIssue } from "@/vendor/horizon-site/hub.js";
 import { isGame } from "@/vendor/horizon-site/versions.js";
 
@@ -24,8 +25,9 @@ async function github(url: string) {
 
 export async function roadmapText(): Promise<string | null> {
   "use cache";
+  cacheTag(TAGS.main);
   try {
-    const res = await fetch(`https://raw.githubusercontent.com/${REPO}/main/roadmap/roadmap.json`, { signal: AbortSignal.timeout(TIMEOUT) });
+    const res = await fetch(await rawMainUrl(REPO, "roadmap/roadmap.json"), { signal: AbortSignal.timeout(TIMEOUT) });
     if (!res.ok) throw new Error(`roadmap.json: ${res.status} from GitHub`);
     const text = await res.text();
     JSON.parse(text);
@@ -87,6 +89,7 @@ async function hubLive(roadmap: Roadmap) {
 
 export async function journalText(): Promise<string | null> {
   "use cache";
+  cacheTag(TAGS.main, TAGS.issues, TAGS.releases);
   try {
     const text = await roadmapText();
     if (!text) throw new Error("the roadmap didn't load");
