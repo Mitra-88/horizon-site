@@ -282,9 +282,9 @@ function Board({ ctx }: { ctx: Ctx }) {
         <h2 className="font-display text-2xl font-semibold tracking-[-0.02em] text-white">Work board</h2>
         <Note>
           Kira&apos;s board from GitHub, as on{" "}
-          <a href="/hub" className={LINK}>
+          <Link href="/hub" className={LINK}>
             the hub
-          </a>{" "}
+          </Link>{" "}
           (read-only here: move cards with /move on Discord or the MCP tools).
         </Note>
         <Guard what="Kira's work board">
@@ -305,9 +305,9 @@ function Board({ ctx }: { ctx: Ctx }) {
                     {cards.length > 12 && (
                       <p className="mt-2 text-xs text-white/45">
                         and {cards.length - 12} more on{" "}
-                        <a href="/hub" className={LINK}>
+                        <Link href="/hub" className={LINK}>
                           the hub
-                        </a>
+                        </Link>
                       </p>
                     )}
                   </section>
@@ -463,9 +463,9 @@ function PublicItemRow({ it, ctx }: { it: PublicItem; ctx: Ctx }) {
   return (
     <li className="py-3">
       <p className="text-[15px]">
-        <a href="/hub" className="text-white hover:underline">
+        <Link href="/hub" className="text-white hover:underline">
           {it.title}
-        </a>{" "}
+        </Link>{" "}
         <span className="text-sm text-white/45">{area}</span>
         {t && (
           <span className="text-sm text-white/45">
@@ -525,9 +525,9 @@ function Roadmap({ ctx }: { ctx: Ctx }) {
         <h2 className="font-display text-2xl font-semibold tracking-[-0.02em] text-white">Public roadmap</h2>
         <Note>
           What everyone sees on{" "}
-          <a href="/hub" className={LINK}>
+          <Link href="/hub" className={LINK}>
             the hub
-          </a>
+          </Link>
           , from roadmap/roadmap.toml{r.available === false ? " (not loaded right now)" : ""}. The Team&apos;s owner, priority and notes on each item stay
           here.
         </Note>
@@ -852,7 +852,7 @@ export function TeamDashboard({ who }: { who: Who }) {
     <div>
       <div className="flex flex-wrap items-center justify-between gap-3">
         <Tabs tabs={tabs} active={tab} onSelect={selectTab} label="Team dashboard" />
-        <Link href="/staff/help" className="text-sm text-white/55 hover:text-white">
+        <Link href="/hub/staff-help" className="text-sm text-white/55 hover:text-white">
           How this works
         </Link>
       </div>

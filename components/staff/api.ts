@@ -74,6 +74,36 @@ export type Overview = {
   decisions?: Decision[];
 };
 
+// Which dashboards this browser last signed in to, so the hub can show their tabs without asking Kira on every visit.
+// Only a hint for links: every dashboard checks the session itself.
+const STAFF_HINT = "hub:staff";
+const hintListeners = new Set<() => void>();
+
+export function rememberStaff(dashboards: Dashboard[]) {
+  try {
+    if (dashboards.length) localStorage.setItem(STAFF_HINT, dashboards.join(","));
+    else localStorage.removeItem(STAFF_HINT);
+  } catch {}
+  hintListeners.forEach((onChange) => onChange());
+}
+
+export function subscribeStaffHint(onChange: () => void) {
+  hintListeners.add(onChange);
+  return () => {
+    hintListeners.delete(onChange);
+  };
+}
+
+export function readStaffHint() {
+  try {
+    return localStorage.getItem(STAFF_HINT) ?? "";
+  } catch {
+    return "";
+  }
+}
+
+export const staffDashboards = (hint: string) => hint.split(",").filter((d): d is Dashboard => d === "team" || d === "mod");
+
 let csrf = "";
 export const setCsrf = (token?: string) => {
   csrf = token || "";

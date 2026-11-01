@@ -3,18 +3,19 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState, useSyncExternalStore, type FormEvent, type ReactNode } from "react";
-import { ApiError, api, setCsrf, type Dashboard, type Who } from "@/components/staff/api";
+import { HubStaffBar, STAFF_TABS, useStaffTabs } from "@/components/hub-shell";
+import { ApiError, api, rememberStaff, setCsrf, type Dashboard, type Who } from "@/components/staff/api";
 import { ModDashboard } from "@/components/staff/mod";
 import { TeamDashboard } from "@/components/staff/team";
 import { CARD, Field, GHOST_SM, INPUT, LINK, PRIMARY, SECONDARY_SM, Status } from "@/components/staff/ui";
 
-const NAMES: Record<Dashboard, string> = { team: "Team", mod: "Moderation" };
+const NAMES = STAFF_TABS;
 const TITLES: Record<string, [string, string]> = {
   team: ["Team", "Team dashboard"],
   mod: ["Moderation", "Moderation dashboard"],
   setup: ["Staff", "Your staff password"],
-  help: ["Help", "How this works"],
-  "": ["Horizon Team and Mods", "Staff dashboards"],
+  "staff-help": ["Staff help", "How this works"],
+  "sign-in": ["Staff", "Staff sign-in"],
 };
 const isDashboard = (v: string): v is Dashboard => v === "team" || v === "mod";
 const never = () => () => {};
@@ -23,7 +24,7 @@ function readSetupToken() {
   try {
     if (window.location.hash.length > 1) {
       sessionStorage.setItem("staff:setup", window.location.hash.slice(1));
-      window.history.replaceState(null, "", "/staff/setup");
+      window.history.replaceState(null, "", "/hub/setup");
     }
     return sessionStorage.getItem("staff:setup") ?? "";
   } catch {
@@ -38,11 +39,11 @@ function forgetSetupToken() {
 }
 
 function Header({ view, message }: { view: string; message?: string }) {
-  const [kicker, title] = TITLES[view] ?? TITLES[""];
+  const [kicker, title] = TITLES[view] ?? TITLES["sign-in"];
   return (
-    <div className="mb-8">
+    <div>
       <p className="text-sm font-medium text-white/60">
-        Staff <span className="mx-1.5 text-white/30">·</span> {kicker}
+        Hub <span className="mx-1.5 text-white/30">·</span> {kicker}
       </p>
       <h1 className="mt-3 font-display text-[clamp(2rem,5vw,3.25rem)] leading-[1.05] font-semibold tracking-[-0.03em] text-white">{title}</h1>
       {message && (
@@ -67,6 +68,7 @@ function Login({ onSignedIn }: { onSignedIn: (who: Who) => void }) {
     try {
       const who = await api<Who>("POST", "login", { name, password: password.value });
       setCsrf(who.csrf);
+      rememberStaff(who.dashboards);
       form.reset();
       setStatus("");
       onSignedIn(who);
@@ -132,8 +134,9 @@ function Setup() {
       const signed = await api<Who>("POST", "setup", { token, password });
       forgetSetupToken();
       setCsrf(signed.csrf);
+      rememberStaff(signed.dashboards);
       form.reset();
-      router.replace(`/staff/${signed.dashboards[0] ?? ""}`);
+      router.replace(`/hub/${signed.dashboards[0] ?? "sign-in"}`);
     } catch (err) {
       setStatus((err as Error).message);
       setBusy(false);
@@ -141,9 +144,8 @@ function Setup() {
   };
 
   if (token === null) return <p className="text-sm text-white/50">Checking your link…</p>;
-  const intro = !token
-    ? "This page needs the link Kira DMs you. Run /staff password on Discord to get one."
-    : error || (!link ? "Checking your link…" : null);
+  const intro =
+    error || (!token ? "This page needs the link Kira DMs you. Run /staff password on Discord to get one." : !link ? "Checking your link…" : null);
   if (intro) return <p className="max-w-xl text-[15px] leading-relaxed text-white/70">{intro}</p>;
   return (
     <section aria-labelledby="set-password" className="max-w-md">
@@ -190,7 +192,7 @@ function Help() {
     <section className="max-w-3xl">
       <p className="text-lg leading-relaxed text-white/70">
         The Horizon Team and the Mods run these two dashboards together. Here is how they work.{" "}
-        <Link href="/staff" className={LINK}>
+        <Link href="/hub/sign-in" className={LINK}>
           Back to the dashboards
         </Link>
         .
@@ -292,22 +294,7 @@ function Help() {
 function Signed({ view, who, onSignedOut }: { view: Dashboard; who: Who; onSignedOut: (all: boolean) => void }) {
   return (
     <>
-      <div className="mb-8 flex flex-col gap-4 rounded-2xl bg-[#18112c] px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
-        <nav aria-label="Dashboards" className="flex gap-1">
-          {who.dashboards.length > 1 &&
-            who.dashboards.map((d) => (
-              <Link
-                key={d}
-                href={`/staff/${d}`}
-                aria-current={d === view ? "page" : undefined}
-                className={`inline-flex h-9 items-center rounded-lg px-3.5 text-sm font-medium transition-colors ${
-                  d === view ? "bg-white text-[#100a1f]" : "text-white/65 hover:bg-white/[0.08] hover:text-white"
-                }`}
-              >
-                {NAMES[d]}
-              </Link>
-            ))}
-        </nav>
+      <div className="mb-8 flex flex-col gap-4 rounded-2xl bg-[#18112c] px-4 py-3 sm:flex-row sm:items-center sm:justify-end">
         <div className="flex flex-wrap items-center gap-2 text-sm">
           <span className="text-white/60">Signed in as {who.name}</span>
           <button type="button" onClick={() => onSignedOut(false)} className={SECONDARY_SM}>
@@ -324,7 +311,7 @@ function Signed({ view, who, onSignedOut }: { view: Dashboard; who: Who; onSigne
           {who.dashboards.map((d, i) => (
             <span key={d}>
               {i > 0 && " or "}
-              <Link href={`/staff/${d}`} className={LINK}>
+              <Link href={`/hub/${d}`} className={LINK}>
                 Open the {NAMES[d]} dashboard
               </Link>
             </span>
@@ -344,29 +331,34 @@ export function StaffApp({ view }: { view: string }) {
   const router = useRouter();
   const [who, setWho] = useState<Who | null | undefined>(undefined);
   const [message, setMessage] = useState("");
-  const needsSession = view !== "setup" && view !== "help";
+  const needsSession = view !== "setup" && view !== "staff-help";
+  const hinted = useStaffTabs();
 
   useEffect(() => {
     if (!needsSession) return;
     api<Who>("GET", "me").then(
       (w) => {
         setCsrf(w.csrf);
+        rememberStaff(w.dashboards);
         setWho(w);
       },
       (e: ApiError) => {
-        if (e.status === 401) setWho(null);
+        if (e.status === 401) {
+          rememberStaff([]);
+          setWho(null);
+        }
         else setMessage(e.message);
       },
     );
   }, [needsSession]);
 
   useEffect(() => {
-    if (who && !isDashboard(view) && who.dashboards[0]) router.replace(`/staff/${who.dashboards[0]}`);
+    if (who && !isDashboard(view) && who.dashboards[0]) router.replace(`/hub/${who.dashboards[0]}`);
   }, [who, view, router]);
 
   useEffect(() => {
-    const [, title] = TITLES[view] ?? TITLES[""];
-    document.title = `${title} · Horizon`;
+    const [, title] = TITLES[view] ?? TITLES["sign-in"];
+    document.title = `${title} · Horizon hub`;
   }, [view]);
 
   const signOut = async (all: boolean) => {
@@ -374,12 +366,13 @@ export function StaffApp({ view }: { view: string }) {
       await api("POST", all ? "logout-all" : "logout");
     } catch {}
     setCsrf("");
+    rememberStaff([]);
     setWho(null);
     setMessage(all ? "Signed out on every device." : "Signed out.");
   };
 
   let body: ReactNode;
-  if (view === "help") body = <Help />;
+  if (view === "staff-help") body = <Help />;
   else if (view === "setup") body = <Setup />;
   else if (message && who === undefined) body = null;
   else if (who === undefined) body = <p className="text-sm text-white/50">Checking your session…</p>;
@@ -396,9 +389,12 @@ export function StaffApp({ view }: { view: string }) {
   else body = <Signed view={view} who={who} onSignedOut={signOut} />;
 
   return (
-    <main className="mx-auto w-full max-w-6xl px-6 pt-32 pb-24 sm:pt-36 lg:px-10">
-      <Header view={view} message={message} />
-      {body}
+    <main>
+      <div className="mx-auto w-full max-w-6xl px-6 pt-32 pb-8 sm:pt-36 lg:px-10">
+        <Header view={view} message={message} />
+      </div>
+      <HubStaffBar dashboards={who ? who.dashboards : hinted} current={view} />
+      <div className="mx-auto w-full max-w-6xl px-6 pt-10 pb-24 lg:px-10">{body}</div>
     </main>
   );
 }

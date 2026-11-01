@@ -26,7 +26,9 @@ npm run lint
 
 ```
 app/                    the routes: /, /hub, /mods, /mods/<id>, /mods/submit, /mods/policy, /releases,
-                        /benchmarks, /stats, /docs, /docs/<page>, /privacy, /staff, /apply
+                        /benchmarks, /stats, /docs, /docs/<page>, /privacy, /apply, and the staff's
+                        pages inside the hub: /hub/team, /hub/mod, /hub/sign-in, /hub/setup, /hub/staff-help
+                        (the old /staff/* addresses redirect there)
 app/api/                the registry and players proxies, and release view counts
 app/staff/api/          the staff dashboards' proxy to Kira's service
 app/data/               /data/roadmap.json and /data/journal.json, which Kira reads

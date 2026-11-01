@@ -113,7 +113,7 @@ export function ModDashboard({ who }: { who: Who }) {
     <div>
       <div className="flex flex-wrap items-center justify-between gap-3">
         <Tabs tabs={tabs} active={tab} onSelect={selectTab} label="Moderation dashboard" />
-        <Link href="/staff/help" className="text-sm text-white/55 hover:text-white">
+        <Link href="/hub/staff-help" className="text-sm text-white/55 hover:text-white">
           How this works
         </Link>
       </div>

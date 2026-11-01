@@ -1,6 +1,8 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useMemo, useRef, useState, useSyncExternalStore, type KeyboardEvent, type ReactNode } from "react";
+import { readStaffHint, staffDashboards, subscribeStaffHint, type Dashboard } from "@/components/staff/api";
 
 export const TABS = [
   { id: "overview", label: "Overview" },
@@ -59,6 +61,50 @@ function setHash(id: string) {
 
 const TAB_CLASS =
   "inline-flex h-9 shrink-0 items-center rounded-lg px-3.5 text-sm font-medium transition-colors outline-none focus-visible:ring-2 focus-visible:ring-[#a98fff]";
+const TAB_ON = "bg-white text-background";
+const TAB_OFF = "text-white/65 hover:bg-white/[0.08] hover:text-white";
+const BAR = "sticky top-18 z-30 border-b border-white/[0.08] bg-background/80 backdrop-blur-md";
+const BAR_ROW = "mx-auto flex w-full max-w-6xl flex-col gap-3 px-6 py-3 sm:flex-row sm:items-center sm:justify-between lg:px-10";
+export const STAFF_TABS: Record<Dashboard, string> = { team: "Team", mod: "Moderation" };
+
+// The staff's own tabs (/hub/team, /hub/mod), after the public ones: only in a browser that signed in to them.
+export function useStaffTabs(): Dashboard[] {
+  const hint = useSyncExternalStore(subscribeStaffHint, readStaffHint, () => "");
+  return useMemo(() => staffDashboards(hint), [hint]);
+}
+
+function StaffTabs({ dashboards, current }: { dashboards: Dashboard[]; current?: string }) {
+  if (!dashboards.length) return null;
+  return (
+    <nav aria-label="Staff" className="flex shrink-0 gap-1 border-l border-white/[0.12] pl-2">
+      {dashboards.map((d) => (
+        <Link key={d} href={`/hub/${d}`} aria-current={d === current ? "page" : undefined} className={`${TAB_CLASS} ${d === current ? TAB_ON : TAB_OFF}`}>
+          {STAFF_TABS[d]}
+        </Link>
+      ))}
+    </nav>
+  );
+}
+
+// The hub's tab bar on the staff pages: the public tabs lead back to /hub.
+export function HubStaffBar({ dashboards, current }: { dashboards: Dashboard[]; current?: string }) {
+  return (
+    <div className={BAR}>
+      <div className={BAR_ROW}>
+        <div className="flex min-w-0 items-center gap-1">
+          <nav aria-label="Hub" className="-mx-1 flex min-w-0 gap-1 overflow-x-auto px-1">
+            {TABS.map((t) => (
+              <a key={t.id} href={`/hub#${t.id}`} className={`${TAB_CLASS} ${TAB_OFF}`}>
+                {t.label}
+              </a>
+            ))}
+          </nav>
+          <StaffTabs dashboards={dashboards} current={current} />
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export function HubShell({
   areas,
@@ -82,6 +128,7 @@ export function HubShell({
   const hash = useSyncExternalStore(subscribeHash, readHash, () => "");
   const held = anchors[hash];
   const tab: Tab = isTab(hash) ? hash : held && isTab(held) ? held : "overview";
+  const staff = useStaffTabs();
 
   useEffect(() => {
     if (!hash || isTab(hash)) return;
@@ -114,28 +161,31 @@ export function HubShell({
 
   return (
     <div ref={root} className="hub" data-tab={tab} data-detail={detail}>
-      <div className="sticky top-18 z-30 border-b border-white/[0.08] bg-background/80 backdrop-blur-md">
-        <div className="mx-auto flex w-full max-w-6xl flex-col gap-3 px-6 py-3 sm:flex-row sm:items-center sm:justify-between lg:px-10">
-          <div role="tablist" aria-label="Hub" className="-mx-1 flex gap-1 overflow-x-auto px-1">
-            {TABS.map((t) => {
-              const active = t.id === tab;
-              return (
-                <button
-                  key={t.id}
-                  id={`tab-${t.id}`}
-                  type="button"
-                  role="tab"
-                  aria-selected={active}
-                  aria-controls={t.id}
-                  tabIndex={active ? 0 : -1}
-                  onClick={() => choose(t.id)}
-                  onKeyDown={onKeyDown}
-                  className={`${TAB_CLASS} ${active ? "bg-white text-background" : "text-white/65 hover:bg-white/[0.08] hover:text-white"}`}
-                >
-                  {t.label}
-                </button>
-              );
-            })}
+      <div className={BAR}>
+        <div className={BAR_ROW}>
+          <div className="flex min-w-0 items-center gap-1">
+            <div role="tablist" aria-label="Hub" className="-mx-1 flex gap-1 overflow-x-auto px-1">
+              {TABS.map((t) => {
+                const active = t.id === tab;
+                return (
+                  <button
+                    key={t.id}
+                    id={`tab-${t.id}`}
+                    type="button"
+                    role="tab"
+                    aria-selected={active}
+                    aria-controls={t.id}
+                    tabIndex={active ? 0 : -1}
+                    onClick={() => choose(t.id)}
+                    onKeyDown={onKeyDown}
+                    className={`${TAB_CLASS} ${active ? TAB_ON : TAB_OFF}`}
+                  >
+                    {t.label}
+                  </button>
+                );
+              })}
+            </div>
+            <StaffTabs dashboards={staff} />
           </div>
 
           <div role="group" aria-label="Detail" className="flex shrink-0 rounded-lg bg-white/[0.06] p-1">
