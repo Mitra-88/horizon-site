@@ -3,13 +3,14 @@
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { Applications } from "@/components/staff/applications";
+import { Cases } from "@/components/staff/cases";
 import { api, type Application, type People, type Who } from "@/components/staff/api";
 import { BarChart, DataSet, Tile, fmt, type Row } from "@/components/staff/charts";
 import { selectTab, tabFromHash, useHash, useScrollToHash } from "@/components/staff/hash";
 import { Inbox, inboxCount, inboxGroups } from "@/components/staff/inbox";
 import { Guard, Panel, Tabs } from "@/components/staff/ui";
 
-const IDS = ["inbox", "applications", "stats"];
+const IDS = ["inbox", "cases", "applications", "stats"];
 const LABELS: Record<string, string> = {
   reports: "Reports",
   modmail: "Mod-mail threads",
@@ -105,6 +106,7 @@ export function ModDashboard({ who }: { who: Who }) {
   const count = apps ? inboxCount(inboxGroups({ apps, me: who.user, names: [], act: () => {} }).groups) : 0;
   const tabs = [
     { id: "inbox", label: "Inbox", count },
+    { id: "cases", label: "Cases" },
     { id: "applications", label: "Applications" },
     { id: "stats", label: "Stats" },
   ];
@@ -129,6 +131,9 @@ export function ModDashboard({ who }: { who: Who }) {
             <Guard what="The Inbox">
               <Inbox dashboard="mod" apps={apps} me={who.user} names={[]} onDone={load} />
             </Guard>
+          </Panel>
+          <Panel id="cases" active={tab}>
+            <Guard what="The cases">{tab === "cases" ? <Cases /> : null}</Guard>
           </Panel>
           <Panel id="applications" active={tab}>
             <Applications apps={apps} people={people} dashboard="mod" onDone={load} />
