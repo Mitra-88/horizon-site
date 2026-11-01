@@ -11,7 +11,7 @@ async function handle(request: NextRequest, { params }: Context) {
     prefix: "/staff/api",
     segments: path,
     methods: ["GET", "POST"],
-    forward: ["accept", "content-type", "cookie", "user-agent", "x-staff-csrf"],
+    forward: ["accept", "content-type", "cookie", "origin", "user-agent", "x-staff-csrf"],
     inject: (r) => ({ "x-staff-proxy-key": process.env.STAFF_PROXY_KEY ?? "", "x-staff-client-ip": clientIp(r) }),
     maxBody: 256 * 1024,
     buffer: true,
