@@ -9,9 +9,13 @@ RUN npm run build
 
 FROM node:24-bookworm-slim
 WORKDIR /app
-ENV NODE_ENV=production NEXT_TELEMETRY_DISABLED=1 PORT=8080
-COPY --from=build --chown=node:node /app ./
+ENV NODE_ENV=production NEXT_TELEMETRY_DISABLED=1 PORT=8080 HOSTNAME=0.0.0.0
+COPY --from=build --chown=node:node /app/.next/standalone ./
+COPY --from=build --chown=node:node /app/.next/static ./.next/static
+COPY --from=build --chown=node:node /app/public ./public
+COPY --from=build --chown=node:node /app/content ./content
+COPY --from=build --chown=node:node /app/assets ./assets
 RUN mkdir -p .data && chown node:node .data
 USER node
 EXPOSE 8080
-CMD ["sh", "-c", "exec node_modules/.bin/next start -H 0.0.0.0 -p \"${PORT:-8080}\""]
+CMD ["node", "server.js"]
