@@ -43,7 +43,7 @@ export default async function HubPage() {
   return (
     <main>
       <section className="relative isolate overflow-hidden pt-36 pb-12 sm:pt-44 sm:pb-16">
-        <PixelAurora className="absolute top-0 left-0 -z-10" />
+        <PixelAurora moonTop={104} className="absolute top-0 left-0 -z-10" />
         <div className="mx-auto w-full max-w-6xl px-6 lg:px-10">
           <p className="rise flex items-center text-sm font-medium text-white/60" style={delay(0)}>
             Hub
