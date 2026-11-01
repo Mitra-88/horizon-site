@@ -55,6 +55,8 @@ The `/docs/api/*` pages come from `docs/api/` in the game's repository, read fro
   tagged data expires at once and Kira loads the main pages again. Files of a main branch are read at its current
   commit (`rawMainUrl`), because raw.githubusercontent.com keeps a branch's files for five minutes. Without the call,
   each loader's own `cacheLife` applies, as before.
+- **Through Kira**: `components/github-api.ts` sends the REST reads to `GITHUB_PROXY_URL` (Kira's allowlisted proxy),
+  so revalidating on every change doesn't run into the 60 requests an hour this host gets without a token.
 - **The game's `main`**: `README.md` (parity numbers), `roadmap/roadmap.json` (the hub) and `docs/api/*.md`.
 - **The mod registry**: the index at horizon-rust.github.io/horizon-mods, ratings and submissions through
   `REGISTRY_UPSTREAM`.
@@ -76,6 +78,7 @@ Railway service variables:
 | --- | --- |
 | `GITHUB_TOKEN` | Lifts GitHub's rate limit at build and at run time |
 | `REVALIDATE_SECRET` | The bearer token Kira sends to `POST /api/revalidate` (1Password `Site revalidate secret`; the same value is Kira's `KIRA_SITE_REVALIDATE_SECRET`). Without it the route answers 404 |
+| `GITHUB_PROXY_URL` | `https://mcp.playhorizon.dev/github/proxy`: GitHub's REST API read through Kira (its GitHub App and ETag cache, with `REVALIDATE_SECRET` as the bearer), since this service has no GitHub token; when Kira doesn't answer, reads go to api.github.com directly |
 | `REGISTRY_UPSTREAM` | The registry's submission service; `/api/mods/*` is proxied to it |
 | `STAFF_UPSTREAM`, `STAFF_PROXY_KEY` | Kira's staff service and the key both sides hold; `/staff/api/*` is proxied to it |
 | `RELEASE_VIEWS_SALT` | Salt for the hashed release views. Without it the server keeps one in `.data/` |

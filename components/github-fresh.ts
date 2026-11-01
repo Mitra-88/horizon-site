@@ -1,4 +1,5 @@
 import { cacheLife, cacheTag } from "next/cache";
+import { githubFetch } from "@/components/github-api";
 
 // What the site reads from GitHub, by cache tag. Kira calls POST /api/revalidate with these tags when GitHub's
 // webhook says they changed (a push to main, an issue or pull request, a release), so the pages follow within a
@@ -19,14 +20,8 @@ export async function mainSha(repo: string): Promise<string> {
   "use cache";
   cacheTag(tagOf(repo));
   try {
-    const res = await fetch(`https://api.github.com/repos/${repo}/commits/main`, {
-      headers: {
-        Accept: "application/vnd.github.sha",
-        ...(process.env.GITHUB_TOKEN ? { Authorization: `Bearer ${process.env.GITHUB_TOKEN}` } : {}),
-      },
-      signal: AbortSignal.timeout(15_000),
-    });
-    const sha = (await res.text()).trim();
+    const res = await githubFetch(`/repos/${repo}/commits/main`);
+    const sha = res.ok ? String((await res.json())?.sha ?? "") : "";
     if (!res.ok || !/^[0-9a-f]{40}$/.test(sha)) throw new Error(`GitHub responded ${res.status} ${res.statusText}`);
     cacheLife({ stale: 300, revalidate: 900, expire: 86400 });
     return sha;

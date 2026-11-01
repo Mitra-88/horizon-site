@@ -1,5 +1,6 @@
 import { cacheLife, cacheTag } from "next/cache";
 import { TAGS } from "@/components/github-fresh";
+import { githubFetch } from "@/components/github-api";
 import { GITHUB_URL } from "@/components/links";
 
 const REPO = "horizon-rust/horizon";
@@ -41,12 +42,9 @@ const kindOf = (r: GitHubRelease): ReleaseKind =>
 export async function getReleases(): Promise<Release[] | null> {
   "use cache";
   cacheTag(TAGS.releases);
-  const headers: Record<string, string> = { Accept: "application/vnd.github.full+json" };
-  if (process.env.GITHUB_TOKEN) headers.Authorization = `Bearer ${process.env.GITHUB_TOKEN}`;
-
   let releases: GitHubRelease[];
   try {
-    const res = await fetch(`https://api.github.com/repos/${REPO}/releases?per_page=${RELEASE_LIMIT + 10}`, { headers });
+    const res = await githubFetch(`/repos/${REPO}/releases?per_page=${RELEASE_LIMIT + 10}`, { full: true });
     if (!res.ok) throw new Error(`GitHub responded ${res.status} ${res.statusText}`);
     releases = await res.json();
   } catch (error) {

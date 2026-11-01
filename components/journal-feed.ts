@@ -1,5 +1,6 @@
 import { cacheLife, cacheTag } from "next/cache";
 import { rawMainUrl, TAGS } from "@/components/github-fresh";
+import { githubFetch } from "@/components/github-api";
 import { journalJson, slimIssue } from "@/vendor/horizon-site/hub.js";
 import { isGame } from "@/vendor/horizon-site/versions.js";
 
@@ -17,9 +18,9 @@ const githubHeaders = (): Record<string, string> => ({
   ...(process.env.GITHUB_TOKEN ? { Authorization: `Bearer ${process.env.GITHUB_TOKEN}` } : {}),
 });
 
-async function github(url: string) {
-  const res = await fetch(url, { headers: githubHeaders(), signal: AbortSignal.timeout(TIMEOUT) });
-  if (!res.ok) throw new Error(`${url}: ${res.status} from GitHub`);
+async function github(path: string) {
+  const res = await githubFetch(path);
+  if (!res.ok) throw new Error(`${path}: ${res.status} from GitHub`);
   return res.json();
 }
 
@@ -43,18 +44,18 @@ export async function roadmapText(): Promise<string | null> {
 async function allReleases(): Promise<RawRelease[]> {
   const releases: RawRelease[] = [];
   for (let page = 1; page <= 5; page++) {
-    const batch: RawRelease[] = await github(`https://api.github.com/repos/${REPO}/releases?per_page=100&page=${page}`);
+    const batch: RawRelease[] = await github(`/repos/${REPO}/releases?per_page=100&page=${page}`);
     releases.push(...batch.filter((r) => !r.draft));
     if (batch.length < 100) break;
   }
-  if (!releases.some((r) => isGame(r.tag_name) && !r.prerelease)) releases.push(await github(`https://api.github.com/repos/${REPO}/releases/latest`));
+  if (!releases.some((r) => isGame(r.tag_name) && !r.prerelease)) releases.push(await github(`/repos/${REPO}/releases/latest`));
   return releases;
 }
 
 async function hubLive(roadmap: Roadmap) {
   const linked = new Set(roadmap.items.flatMap((i) => (i.links || []).map((l) => Number((l.match(/^#(\d+)$/) || [])[1])).filter(Boolean)));
-  const urls = [1, 2, 3].map((p) => `https://api.github.com/repos/${REPO}/issues?state=open&per_page=100&page=${p}`);
-  urls.push(`https://api.github.com/repos/${REPO}/issues?state=closed&sort=updated&direction=desc&per_page=100`);
+  const urls = [1, 2, 3].map((p) => `/repos/${REPO}/issues?state=open&per_page=100&page=${p}`);
+  urls.push(`/repos/${REPO}/issues?state=closed&sort=updated&direction=desc&per_page=100`);
   const list: ReturnType<typeof slimIssue>[] = [];
   for (const url of urls) list.push(...((await github(url)) as RawIssue[]).map(slimIssue));
   const missing = [...linked].filter((n) => !list.some((i) => i.n === n));
