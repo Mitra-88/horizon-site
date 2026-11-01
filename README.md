@@ -63,6 +63,7 @@ The `/docs/api/*` pages come from `docs/api/` in the game's repository, read fro
 - **The game's `main`**: `README.md` (parity numbers), `roadmap/roadmap.json` (the hub) and `docs/api/*.md`.
 - **The mod registry**: the index at horizon-rust.github.io/horizon-mods, ratings and submissions through
   `REGISTRY_UPSTREAM`.
+- **The official server's market**: `/hub/market` reads Kira's `/smp/market.json` (the page the SMP mod writes on the server, read by Kira once a minute) through `/api/market`.
 - **Telemetry**: the Players page reads `telemetry.playhorizon.dev` (or `TELEMETRY_URL`) through this site's server.
 
 ## Kira's feeds
@@ -86,6 +87,7 @@ Railway service variables:
 | `STAFF_UPSTREAM`, `STAFF_PROXY_KEY` | Kira's staff service and the key both sides hold; `/staff/api/*` is proxied to it |
 | `RELEASE_VIEWS_SALT` | Salt for the hashed release views. Without it the server keeps one in `.data/` |
 | `TELEMETRY_URL` | Optional, defaults to `https://telemetry.playhorizon.dev` |
+| `KIRA_URL` | Optional, Kira's address for `/api/market`; defaults to `https://kira-production-500e.up.railway.app` |
 | `SITE_URL` | Optional, defaults to `https://playhorizon.dev`; used for canonical links, the sitemap and share cards |
 
 Release view counts live in `.data/`, which is reset by every deploy unless a volume is mounted at `/app/.data`.
