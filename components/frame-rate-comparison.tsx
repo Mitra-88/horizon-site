@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, type CSSProperties, type ReactNode } from "react";
+import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import { HorizonMark, MinecraftIcon } from "@/components/icons";
 
 const FPS = { horizon: 150, standard: 50 };
@@ -15,6 +15,36 @@ const INTRO = { delay: 700, duration: 1600 };
 const intro: Vars = { "--delay": `${INTRO.delay}ms`, "--dur": `${INTRO.duration}ms` };
 
 const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v));
+
+const easeOut = (t: number) => 1 - Math.pow(1 - t, 3);
+
+function useCountUp(target: number) {
+  const [shown, setShown] = useState(target);
+  const current = useRef<number | null>(null);
+
+  useEffect(() => {
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const first = current.current === null;
+    const from = first ? 0 : (current.current ?? target);
+    const delay = reduced || !first ? 0 : INTRO.delay;
+    const duration = reduced ? 0 : first ? INTRO.duration : 450;
+    const begin = performance.now() + delay;
+    let frame = 0;
+
+    const tick = (now: number) => {
+      const t = duration === 0 ? 1 : clamp((now - begin) / duration, 0, 1);
+      const value = Math.round(from + (target - from) * easeOut(t));
+      current.current = value;
+      setShown(value);
+      if (t < 1) frame = requestAnimationFrame(tick);
+    };
+
+    frame = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(frame);
+  }, [target]);
+
+  return shown;
+}
 
 function Readout({
   icon,
@@ -32,6 +62,7 @@ function Readout({
   style?: Vars;
 }) {
   const tone = strong ? "text-white" : "text-white/55";
+  const shown = useCountUp(value);
   return (
     <div className="flex items-end justify-between gap-4">
       <span className={`inline-flex items-center gap-2 text-[15px] ${strong ? "font-medium" : ""} ${tone}`}>
@@ -42,7 +73,7 @@ function Readout({
         className={`font-display text-[2.5rem] leading-none font-semibold tracking-[-0.02em] tabular-nums ${tone} ${className}`}
         style={style}
       >
-        <span aria-hidden className="stat-count" style={{ ...intro, "--num": value } as Vars} />
+        <span aria-hidden>{shown}</span>
         <span className="sr-only">{value}</span>
         <span className="ml-1.5 font-sans text-sm font-medium tracking-normal text-white/50">fps</span>
       </span>

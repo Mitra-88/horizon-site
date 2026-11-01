@@ -41,28 +41,6 @@ body {
   animation: rise 0.9s cubic-bezier(0.2, 0.7, 0.2, 1) var(--delay, 0ms) backwards;
 }
 
-@property --num {
-  syntax: "<integer>";
-  inherits: false;
-  initial-value: 0;
-}
-
-.stat-count {
-  counter-reset: stat var(--num);
-  transition: --num 0.45s ease-out;
-  animation: stat-count var(--dur) var(--ease, cubic-bezier(0.2, 0.7, 0.2, 1)) var(--delay) backwards;
-}
-
-.stat-count::after {
-  content: counter(stat);
-}
-
-@keyframes stat-count {
-  from {
-    --num: 0;
-  }
-}
-
 .stat-bar {
   clip-path: inset(0 calc(100% - var(--fill)) 0 0 round 2px);
   transition: clip-path 0.45s ease-out;
@@ -567,7 +545,6 @@ body {
 }
 
 .race-fill {
-  width: 100%;
   transform-origin: left center;
   animation: race var(--dur, 1s) linear both;
 }
@@ -580,7 +557,6 @@ body {
   .reveal,
   .logo-float,
   .rise,
-  .stat-count,
   .stat-bar,
   .fps-range,
   .overload-shake,

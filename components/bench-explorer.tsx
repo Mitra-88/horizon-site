@@ -88,6 +88,32 @@ function GameLabel({ game }: { game: "horizon" | "vanilla" }) {
   );
 }
 
+function BarRow({
+  game,
+  value,
+  wins,
+  valueClassName = "",
+  valueStyle,
+  children,
+}: {
+  game: "horizon" | "vanilla";
+  value: string;
+  wins: boolean;
+  valueClassName?: string;
+  valueStyle?: Vars;
+  children: ReactNode;
+}) {
+  return (
+    <div className="mt-2.5 grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-3 gap-y-1.5 sm:mt-2 sm:grid-cols-[minmax(0,1fr)_4.75rem]">
+      <span className="text-xs text-white/50 sm:hidden">{game === "horizon" ? "Horizon" : "Java Edition"}</span>
+      <span className={`text-right text-sm tabular-nums sm:col-start-2 sm:row-start-1 ${wins ? "font-semibold text-white" : "text-white/55"} ${valueClassName}`} style={valueStyle}>
+        {value}
+      </span>
+      <div className="col-span-2 h-2.5 overflow-hidden rounded-[4px] bg-white/[0.05] sm:col-span-1 sm:col-start-1 sm:row-start-1 sm:h-3">{children}</div>
+    </div>
+  );
+}
+
 function PairBars({ rows }: { rows: { label: string; hint?: string; h: number; v: number; format: (n: number) => string; better: "high" | "low"; note?: string }[] }) {
   return (
     <div className="mt-4 space-y-5">
@@ -107,15 +133,12 @@ function PairBars({ rows }: { rows: { label: string; hint?: string; h: number; v
                 ["vanilla", r.v, vWins],
               ] as const
             ).map(([game, value, wins]) => (
-              <div key={game} className="mt-2 grid grid-cols-[minmax(0,1fr)_4.75rem] items-center gap-3">
-                <div className="h-3 overflow-hidden rounded-[4px] bg-white/[0.05]">
-                  <div
-                    className="h-full rounded-[4px] transition-[width] duration-700 ease-out"
-                    style={{ width: `${Math.max(2, (value / max) * 100)}%`, background: game === "horizon" ? HORIZON : JAVA }}
-                  />
-                </div>
-                <span className={`text-right text-sm tabular-nums ${wins ? "font-semibold text-white" : "text-white/55"}`}>{r.format(value)}</span>
-              </div>
+              <BarRow key={game} game={game} value={r.format(value)} wins={wins}>
+                <div
+                  className="h-full rounded-[4px] transition-[width] duration-700 ease-out"
+                  style={{ width: `${Math.max(2, (value / max) * 100)}%`, background: game === "horizon" ? HORIZON : JAVA }}
+                />
+              </BarRow>
             ))}
             {r.note && <p className="mt-2 text-xs leading-relaxed text-white/45">{r.note}</p>}
           </div>
@@ -149,21 +172,20 @@ function Race({ rows, replayKey }: { rows: { label: string; h: number; v: number
               ["vanilla", r.v],
             ] as const
           ).map(([game, ms]) => {
-            const style: Vars = { "--dur": `${Math.round((ms / max) * total)}ms`, background: game === "horizon" ? HORIZON : JAVA };
+            const duration = `${Math.round((ms / max) * total)}ms`;
+            const style: Vars = { "--dur": duration, width: `${Math.max(2, (ms / max) * 100)}%`, background: game === "horizon" ? HORIZON : JAVA };
             const wins = game === "horizon" ? r.h < r.v * 0.97 : r.v < r.h * 0.97;
             return (
-              <div key={game} className="mt-2 grid grid-cols-[minmax(0,1fr)_4.75rem] items-center gap-3">
-                <div className="h-3 overflow-hidden rounded-[4px] bg-white/[0.05]">
-                  {seen && <div key={`${replayKey}-${round}`} className="race-fill h-full rounded-[4px]" style={style} />}
-                </div>
-                <span
-                  key={`${replayKey}-${round}-t`}
-                  className={`race-time text-right text-sm tabular-nums ${wins ? "font-semibold text-white" : "text-white/55"}`}
-                  style={{ "--dur": seen ? `${Math.round((ms / max) * total)}ms` : "99s" } as Vars}
-                >
-                  {seconds(ms)}
-                </span>
-              </div>
+              <BarRow
+                key={`${game}-${replayKey}-${round}`}
+                game={game}
+                value={seconds(ms)}
+                wins={wins}
+                valueClassName="race-time"
+                valueStyle={{ "--dur": seen ? duration : "99s" }}
+              >
+                {seen && <div className="race-fill h-full rounded-[4px]" style={style} />}
+              </BarRow>
             );
           })}
         </div>
