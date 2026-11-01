@@ -24,7 +24,7 @@ dev server. Doc share cards are served by `app/og/docs/[...slug]/route.ts` inste
 - **The game's `main` on GitHub**: `README.md` (parity numbers), `roadmap/roadmap.json` (the hub, and
   `/data/roadmap.json`, which Kira reads), `docs/api/*.md` (the `/docs/api` pages). Change those in the game's
   repository, never here.
-- **GitHub's API**: releases, contributors, the roadmap's issues and pull requests.
+- **GitHub's API**: releases, contributors, the roadmap's issues and pull requests. Each loader has a cache tag (`components/github-fresh.ts`) that Kira revalidates through `POST /api/revalidate` when GitHub's webhook says it changed.
 - **Other services**: the mod registry (`REGISTRY_UPSTREAM`), Kira's staff service (`STAFF_UPSTREAM`), the telemetry
   server (`telemetry.playhorizon.dev`).
 - **This repository**: the pages (`app/`, `components/`), the player docs (`content/docs/`), our benchmark runs

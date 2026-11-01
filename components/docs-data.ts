@@ -1,7 +1,8 @@
 import { readFile } from "node:fs/promises";
 import { readFileSync } from "node:fs";
 import { join, posix } from "node:path";
-import { cacheLife } from "next/cache";
+import { cacheLife, cacheTag } from "next/cache";
+import { rawMainUrl, TAGS } from "@/components/github-fresh";
 import { inline, markdown, plainText, type DocHeading } from "@/components/docs-markdown";
 
 const REPO = "horizon-rust/horizon";
@@ -61,7 +62,7 @@ function imageSize(src: string) {
 }
 
 async function repoFile(path: string) {
-  const res = await fetch(`https://raw.githubusercontent.com/${REPO}/main/${path}`, { signal: AbortSignal.timeout(15000) });
+  const res = await fetch(await rawMainUrl(REPO, path), { signal: AbortSignal.timeout(15000) });
   if (!res.ok) throw new Error(`${path}: GitHub responded ${res.status}`);
   return res.text();
 }
@@ -97,6 +98,7 @@ export async function getDocsNav(): Promise<DocGroup[]> {
 
 export async function getDocs(): Promise<Doc[]> {
   "use cache";
+  cacheTag(TAGS.main);
   const nav = await getDocsNav();
   const slugs = new Set(nav.flatMap((g) => g.pages));
   const { harnesses, percent } = await parityNumbers();

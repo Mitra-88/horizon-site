@@ -1,4 +1,5 @@
-import { cacheLife } from "next/cache";
+import { cacheLife, cacheTag } from "next/cache";
+import { rawMainUrl, TAGS } from "@/components/github-fresh";
 import { KINDS, type ModProject, type Ratings } from "@/components/mods-logic";
 
 const INDEX_URL = "https://horizon-rust.github.io/horizon-mods/index.json";
@@ -30,6 +31,7 @@ function readIndex(index: unknown): ModProject[] | null {
 
 export async function getMods(): Promise<ModProject[] | null> {
   "use cache";
+  cacheTag(TAGS.mods);
   try {
     const res = await fetch(INDEX_URL);
     if (!res.ok) throw new Error(`The registry responded ${res.status} ${res.statusText}`);
@@ -65,12 +67,12 @@ export async function getMod(id: string) {
   return mods?.find((p) => p.id === id) ?? null;
 }
 
-const POLICY_RAW = "https://raw.githubusercontent.com/horizon-rust/horizon-mods/main/MOD-POLICY.md";
 
 export async function getModPolicy(): Promise<string | null> {
   "use cache";
+  cacheTag(TAGS.mods);
   try {
-    const res = await fetch(POLICY_RAW, { signal: AbortSignal.timeout(15_000) });
+    const res = await fetch(await rawMainUrl("horizon-rust/horizon-mods", "MOD-POLICY.md"), { signal: AbortSignal.timeout(15_000) });
     if (!res.ok) throw new Error(`GitHub responded ${res.status} ${res.statusText}`);
     const text = await res.text();
     cacheLife({ stale: 900, revalidate: 3600, expire: 86400 });

@@ -1,5 +1,7 @@
 import Image from "next/image";
-import { cacheLife } from "next/cache";
+import { cacheLife, cacheTag } from "next/cache";
+import { TAGS } from "@/components/github-fresh";
+import { githubFetch } from "@/components/github-api";
 import { ClaudeIcon, ExternalLinkIcon } from "@/components/icons";
 import { GITHUB_URL } from "@/components/links";
 
@@ -17,13 +19,11 @@ type Card = { name: string; detail: string; avatar: string; url: string };
 
 export async function getContributors(): Promise<Contributor[] | null> {
   "use cache";
-  const headers: Record<string, string> = { Accept: "application/vnd.github+json" };
-  if (process.env.GITHUB_TOKEN) headers.Authorization = `Bearer ${process.env.GITHUB_TOKEN}`;
-
+  cacheTag(TAGS.main);
   const all: GitHubContributor[] = [];
   try {
     for (let page = 1; page <= 5; page++) {
-      const res = await fetch(`https://api.github.com/repos/${REPO}/contributors?per_page=100&page=${page}`, { headers });
+      const res = await githubFetch(`/repos/${REPO}/contributors?per_page=100&page=${page}`);
       if (!res.ok) throw new Error(`GitHub responded ${res.status} ${res.statusText}`);
       const batch: GitHubContributor[] = await res.json();
       all.push(...batch);
