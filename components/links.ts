@@ -1,0 +1,10 @@
+export const DOWNLOAD_URL = "/docs/install";
+export const GITHUB_URL = "https://github.com/horizon-rust/horizon";
+export const WINDOWS_URL = "/docs/install#download-the-launcher";
+export const LINUX_URL = "/docs/install#download-the-launcher";
+export const CONTRIBUTORS_URL = "#contributors";
+export const DISCORD_URL = "https://discord.gg/HcTeMZxe5E";
+export const SPONSOR_URL = "https://github.com/sponsors/ludovic111";
+export const BUILD_URL = "/docs/how-horizon-is-built";
+export const SCULK_URL = "https://my.sculkhosting.com/ref/horizon";
+export const RUST_WIKI_URL = "https://en.wikipedia.org/wiki/Rust_(programming_language)";

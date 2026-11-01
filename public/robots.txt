@@ -1,6 +1,0 @@
-User-agent: *
-Allow: /
-Disallow: /staff
-Disallow: /apply
-
-Sitemap: https://playhorizon.dev/sitemap.xml

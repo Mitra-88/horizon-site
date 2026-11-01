@@ -1,20 +1,17 @@
-# Railway builds this repository with the Dockerfile at its root.
-# Stage 1 renders dist/ from src/ and the game repository's files on its main (no npm dependencies needed).
-FROM node:22-alpine AS build
-WORKDIR /site
-COPY build.mjs ./
-COPY src ./src
-COPY docs ./docs
-COPY data ./data
-COPY public ./public
-COPY LEGAL.md ./
+FROM node:24-bookworm-slim AS build
+WORKDIR /app
+ENV NEXT_TELEMETRY_DISABLED=1
+COPY package.json package-lock.json ./
+RUN npm ci
+COPY . .
 ARG GITHUB_TOKEN
-RUN node build.mjs
+RUN npm run build
 
-# Stage 2 serves it with Caddy on $PORT.
-FROM caddy:2-alpine
-COPY Caddyfile /etc/caddy/Caddyfile
-COPY --from=build /site/dist /srv
-ENV PORT=8080
-# The Content-Security-Policy allows the page's inline script and style by the hashes the build wrote.
-CMD ["sh", "-c", "CSP_SCRIPT=\"$(cat /srv/.csp-script)\" CSP_STYLE=\"$(cat /srv/.csp-style)\" exec caddy run --config /etc/caddy/Caddyfile --adapter caddyfile"]
+FROM node:24-bookworm-slim
+WORKDIR /app
+ENV NODE_ENV=production NEXT_TELEMETRY_DISABLED=1 PORT=8080
+COPY --from=build --chown=node:node /app ./
+RUN mkdir -p .data && chown node:node .data
+USER node
+EXPOSE 8080
+CMD ["sh", "-c", "exec node_modules/.bin/next start -H 0.0.0.0 -p \"${PORT:-8080}\""]
