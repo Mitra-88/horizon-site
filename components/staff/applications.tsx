@@ -305,7 +305,7 @@ export function Applications({ apps, people, dashboard, onDone }: { apps: Applic
     <div className="space-y-4">
       <p className="text-[15px] text-white/60">
         Verified contributors come first.{" "}
-        <Link href="/staff/help#applications" className={LINK}>
+        <Link href="/hub/staff-help#applications" className={LINK}>
           How the vote works
         </Link>
         .
