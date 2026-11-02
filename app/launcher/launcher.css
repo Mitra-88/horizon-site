@@ -1,0 +1,79 @@
+.hzl {
+  --tint: 0.06;
+  --blur: 24px;
+  --accent: #6b4bff;
+  --accent-soft: color-mix(in oklab, var(--accent) 52%, white);
+  --base: color-mix(in oklab, var(--accent) 10%, #14111d);
+  --on-accent: #ffffff;
+  --live: #4ade80;
+  --warn: #f2c46b;
+  color: #fff;
+  font-family: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+.hzl-glass {
+  background: color-mix(in srgb, white calc(var(--tint) * 100%), color-mix(in oklab, var(--base) 22%, transparent));
+  -webkit-backdrop-filter: blur(var(--blur)) saturate(140%);
+  backdrop-filter: blur(var(--blur)) saturate(140%);
+}
+
+.hzl-float {
+  background: color-mix(in srgb, white calc(var(--tint) * 100%), color-mix(in oklab, var(--base) 22%, transparent));
+  -webkit-backdrop-filter: blur(calc(var(--blur) + 24px)) saturate(140%) brightness(0.62);
+  backdrop-filter: blur(calc(var(--blur) + 24px)) saturate(140%) brightness(0.62);
+}
+
+.hzl-mono {
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+}
+
+.hzl ::selection {
+  background: var(--accent);
+  color: #fff;
+}
+
+.hzl :focus-visible {
+  outline: 2px solid var(--accent-soft);
+  outline-offset: 2px;
+}
+
+.hzl * {
+  scrollbar-width: thin;
+  scrollbar-color: rgb(255 255 255 / 0.14) transparent;
+}
+
+.hzl input::placeholder {
+  color: rgb(255 255 255 / 0.4);
+}
+
+@keyframes hzl-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+
+.hzl-pop {
+  animation: hzl-in 0.2s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+@keyframes hzl-line {
+  from {
+    opacity: 0;
+    transform: translateY(3px);
+  }
+}
+
+.hzl-line {
+  animation: hzl-line 0.25s ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hzl *,
+  .hzl-pop,
+  .hzl-line {
+    animation: none !important;
+    transition: none !important;
+  }
+}

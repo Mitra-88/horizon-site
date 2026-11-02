@@ -34,6 +34,7 @@ const nextConfig: NextConfig = {
       { source: "/staff/:path*", headers: privateHeaders },
       { source: "/hub/:view(team|mod|sign-in|setup|staff-help)", headers: privateHeaders },
       { source: "/apply", headers: privateHeaders },
+      { source: "/launcher", headers: privateHeaders },
       { source: "/mods/submit", headers: [{ key: "X-Frame-Options", value: "DENY" }, { key: "Content-Security-Policy", value: "frame-ancestors 'none'" }] },
     ];
   },
