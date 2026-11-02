@@ -67,6 +67,10 @@ export function ModSubmitForm() {
     const picked = (f.elements.namedItem("file") as HTMLInputElement).files?.[0];
     const sig = (f.elements.namedItem("signature") as HTMLInputElement).files?.[0];
     if (!picked) return setResult({ ok: false, message: "Pick the file to submit." });
+    if (!Object.hasOwn(EXTENSIONS, picked.name.split(".").pop()?.toLowerCase() ?? ""))
+      return setResult({ ok: false, message: `${picked.name} isn't a .hmod, .hnmod, .hpack or .zip.` });
+    if (sig && !sig.name.toLowerCase().endsWith(".minisig"))
+      return setResult({ ok: false, message: `${sig.name} isn't a .minisig signature.` });
     if (picked.size > MAX_FILE) return setResult({ ok: false, message: `${picked.name} is over 64 MB, the registry's limit.` });
     const again = (name: string) =>
       `Your browser can't read ${name} any more: it changed, moved or is open in another program since you picked it (a new build?). Pick it again, then submit.`;
@@ -181,7 +185,9 @@ export function ModSubmitForm() {
               <input
                 name="file"
                 type="file"
-                accept=".hmod,.hnmod,.hpack,.zip"
+                // iOS greys out files whose extension it has no type for (.hmod…): application/octet-stream lets
+                // any file through there, and submit checks the extension.
+                accept=".hmod,.hnmod,.hpack,.zip,application/zip,application/octet-stream"
                 required
                 onChange={onFile}
                 className="block w-full text-sm text-white/70 file:mr-3 file:h-9 file:rounded-lg file:border-0 file:bg-white/10 file:px-3 file:text-sm file:font-medium file:text-white hover:file:bg-white/15"
@@ -261,7 +267,7 @@ export function ModSubmitForm() {
               <input
                 name="signature"
                 type="file"
-                accept=".minisig"
+                accept=".minisig,application/octet-stream,text/plain"
                 className="block w-full text-sm text-white/70 file:mr-3 file:h-9 file:rounded-lg file:border-0 file:bg-white/10 file:px-3 file:text-sm file:font-medium file:text-white hover:file:bg-white/15"
               />
               <Hint>The file&apos;s .minisig.</Hint>
