@@ -32,6 +32,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.5,
     })),
     { url: absolute("/mods/policy"), changeFrequency: "monthly", priority: 0.3 },
+    { url: absolute("/artists"), changeFrequency: "monthly", priority: 0.4 },
     { url: absolute("/privacy"), changeFrequency: "yearly", priority: 0.2 },
   ];
 }
