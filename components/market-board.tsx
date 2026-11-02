@@ -9,6 +9,8 @@ type Item = {
   id: string;
   name: string;
   category: string | null;
+  // One price, to buy and to sell (SMP 0.29); `buy`/`sell` repeat it on the sides the market trades (null: it doesn't).
+  price?: number;
   buy: number | null;
   sell: number | null;
   mid: number;
@@ -40,6 +42,13 @@ const TOP = 14;
 const BOTTOM = 30;
 
 const num = (n?: number | null, digits = 0) => (n == null ? "–" : Number(n).toLocaleString("en", { maximumFractionDigits: digits }));
+// An item's one price, as the game shows it: whole coins from 10 up, else to the cent.
+const price = (i: Item) => {
+  const p = i.price ?? i.mid;
+  return num(p, p >= 10 ? 0 : 2);
+};
+// The side the market doesn't trade, if any.
+const side = (i: Item) => (i.sell == null ? "buy only" : i.buy == null ? "sell only" : "");
 const time = (ms: number) => new Date(ms).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 
 function Change({ value }: { value: number | null }) {
@@ -144,7 +153,7 @@ function Chart({ item, range, currency }: { item: Item; range: "day" | "month"; 
         ))}
       </svg>
       <figcaption className="mt-2 text-[13px] text-white/50">
-        The mid price ({currency} per item, between what the market asks and pays), and in violet the items traded in each{" "}
+        The price ({currency} per item, the same to buy and to sell), and in violet the items traded in each{" "}
         {range === "day" ? "5 minutes" : "hour"}.
       </figcaption>
     </figure>
@@ -200,7 +209,8 @@ export function MarketBoard() {
         <section aria-labelledby="chart-title" className="rounded-2xl bg-[#18112c] p-5 sm:p-6">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <h2 id="chart-title" className="text-[15px] font-medium text-white">
-              {item.name}: buy {num(item.buy)} · sell {num(item.sell)} {data.currency}{" "}
+              {item.name}: {price(item)} {data.currency}
+              {side(item) ? <span className="ml-1 text-white/50">({side(item)})</span> : null}{" "}
               <span className="ml-2 text-white/60">
                 <Change value={item.change_24h} /> in 24 hours
               </span>
@@ -258,8 +268,7 @@ export function MarketBoard() {
             <thead className="text-[12px] tracking-wide text-white/50 uppercase">
               <tr>
                 <th className="px-4 py-3 font-medium">Item</th>
-                <th className="px-4 py-3 text-right font-medium">Buy</th>
-                <th className="px-4 py-3 text-right font-medium">Sell</th>
+                <th className="px-4 py-3 text-right font-medium">Price</th>
                 <th className="px-4 py-3 text-right font-medium">1 hour</th>
                 <th className="px-4 py-3 text-right font-medium">24 hours</th>
                 <th className="px-4 py-3 text-right font-medium">Traded, 24 h</th>
@@ -280,8 +289,10 @@ export function MarketBoard() {
                       {i.name}
                     </button>
                   </td>
-                  <td className="px-4 py-2 text-right text-white/80 tabular-nums">{num(i.buy)}</td>
-                  <td className="px-4 py-2 text-right text-white/80 tabular-nums">{num(i.sell)}</td>
+                  <td className="px-4 py-2 text-right text-white/80 tabular-nums">
+                    {price(i)}
+                    {side(i) ? <span className="block text-[11px] text-white/45">{side(i)}</span> : null}
+                  </td>
                   <td className="px-4 py-2 text-right">
                     <Change value={i.change_1h} />
                   </td>
@@ -298,7 +309,8 @@ export function MarketBoard() {
           </table>
         </div>
         <p className="mt-3 text-[13px] leading-relaxed text-white/50">
-          Buy is what the market asks, sell what it pays, in {data.currency} per item, tax not included. Items bought from the market can&apos;t
+          One price per item, in {data.currency}, the same to buy and to sell; the {data.tax_percent}% tax comes on top of each
+          trade, and a big trade moves the price as it goes. Items bought from the market can&apos;t
           be sold back to it for 24 hours. Times are in your time zone.
         </p>
       </section>
