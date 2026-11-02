@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import type { ReactNode } from "react";
-import { ExternalLinkIcon } from "@/components/icons";
+import { DiscordIcon, ExternalLinkIcon, GitHubIcon } from "@/components/icons";
 import {
   areaName,
   COLUMNS,
@@ -23,6 +23,7 @@ import {
 } from "@/components/hub-logic";
 import { BoardFilter, BugReport, CopyCommand, JournalFilter } from "@/components/hub-tools";
 import { DISCORD_URL } from "@/components/links";
+import type { OrgPerson, OrgTier } from "@/components/org-chart";
 
 type Live = Map<number, HubIssue>;
 
@@ -619,6 +620,100 @@ export function ContributePanel({
           </ul>
         </Block>
       )}
+    </Panel>
+  );
+}
+
+// The People tab: the Discord server's staff roles, top to bottom, as Kira reads them (components/org-chart.ts).
+const TIER_TEXT: Record<string, { title: string; about: string; empty?: string }> = {
+  owner: { title: "👑 Owner", about: "Started Horizon and owns the Discord server." },
+  team: { title: "🌌 Horizon Team", about: "Maintainers and core contributors: they review and merge pull requests, and moderate too." },
+  chiefmod: { title: "🛡️ Chief of Mods", about: "Leads the moderators: the first person to reach for moderation questions." },
+  mod: { title: "🛡️ Mods", about: "Keep the Discord server friendly: they time out members and delete messages. Bans go through the Horizon Team." },
+  support: {
+    title: "🤝 Support",
+    about: "Help players in #horizon-support and mark their posts solved.",
+    empty: "Nobody yet. Want to help players? Run /apply on Discord.",
+  },
+};
+
+function PersonCard({ person }: { person: OrgPerson }) {
+  return (
+    <li className="flex items-center gap-3 rounded-xl bg-white/[0.04] p-4">
+      {person.avatar ? (
+        <Image src={person.avatar} alt="" width={40} height={40} className="size-10 shrink-0 rounded-full bg-white/[0.06]" />
+      ) : (
+        <span aria-hidden className="grid size-10 shrink-0 place-items-center rounded-full bg-white/[0.08] text-sm font-medium text-white/70">
+          {[...person.name][0]?.toUpperCase()}
+        </span>
+      )}
+      <span className="min-w-0 flex-1">
+        <span className="flex min-w-0 items-center gap-2">
+          <span className="truncate text-[15px] font-medium text-white">{person.name}</span>
+          {person.job && <span className={`${CHIP} shrink-0 bg-[#6b4bff]/20 text-[#d9ceff]`}>{person.job}</span>}
+        </span>
+        <span className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-white/45">
+          <span className="inline-flex min-w-0 items-center gap-1.5">
+            <DiscordIcon className="size-3.5 shrink-0" />
+            <span className="sr-only">Discord: </span>
+            <span className="truncate">{person.username}</span>
+          </span>
+          {person.github && (
+            <a
+              href={`https://github.com/${person.github}`}
+              className="inline-flex min-w-0 items-center gap-1.5 text-white/60 transition-colors hover:text-white"
+            >
+              <GitHubIcon className="size-3.5 shrink-0" />
+              <span className="sr-only">GitHub: </span>
+              <span className="truncate">{person.github}</span>
+            </a>
+          )}
+        </span>
+      </span>
+    </li>
+  );
+}
+
+export function PeoplePanel({ tiers }: { tiers: OrgTier[] | null }) {
+  return (
+    <Panel id="people">
+      <Block title="Who runs Horizon">
+        <p className="mt-2 max-w-3xl text-[15px] leading-relaxed text-white/60">
+          The roles on Horizon&apos;s Discord server, from the top down, updated from Discord every few minutes. A GitHub account shows when
+          it is confirmed: run <code className="text-white/75">/link-github &lt;your login&gt; credit:True</code> on Discord to add yours.
+        </p>
+        {tiers ? (
+          <ol className="mt-8 ml-1 border-l border-white/[0.1]">
+            {tiers.map((tier) => {
+              const t = TIER_TEXT[tier.key] ?? { title: tier.post, about: "" };
+              return (
+                <li key={tier.key} id={`people-${tier.key}`} className="relative scroll-mt-40 pb-10 pl-6 last:pb-0 sm:pl-8">
+                  <span aria-hidden className="absolute top-2 -left-[5px] size-2.5 rounded-full bg-[#a98fff] ring-4 ring-background" />
+                  <h3 className="text-[17px] font-medium text-white">{t.title}</h3>
+                  {t.about && <p className="mt-1 max-w-3xl text-sm leading-relaxed text-white/55">{t.about}</p>}
+                  {tier.people.length > 0 ? (
+                    <ul className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+                      {tier.people.map((p) => (
+                        <PersonCard key={p.username || p.name} person={p} />
+                      ))}
+                    </ul>
+                  ) : (
+                    <p className="mt-3 text-sm text-white/45">{t.empty ?? "Nobody right now."}</p>
+                  )}
+                </li>
+              );
+            })}
+          </ol>
+        ) : (
+          <p className="mt-5 max-w-xl text-[15px] leading-relaxed text-white/60">
+            The list couldn&apos;t be loaded from Discord just now. The roles are on{" "}
+            <a href={DISCORD_URL} className="text-[#a98fff] underline underline-offset-4">
+              Horizon&apos;s Discord server
+            </a>
+            .
+          </p>
+        )}
+      </Block>
     </Panel>
   );
 }

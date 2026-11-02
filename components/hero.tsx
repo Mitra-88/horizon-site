@@ -3,7 +3,7 @@ import type { CSSProperties } from "react";
 import { FrameRateComparison } from "@/components/frame-rate-comparison";
 import { HorizonScene } from "@/components/horizon-scene";
 import { DownloadIcon, GitHubIcon, LinuxIcon, RustIcon, WindowsIcon } from "@/components/icons";
-import { getReleases, launcherBuild } from "@/components/github-releases";
+import { getLauncherDownloads, getReleases, launcherBuild } from "@/components/github-releases";
 import { LauncherLink, LauncherMeta } from "@/components/launcher-download";
 import { GITHUB_URL, RUST_WIKI_URL } from "@/components/links";
 
@@ -18,7 +18,8 @@ function Dot({ className = "mx-2" }: { className?: string }) {
 }
 
 export async function Hero() {
-  const launcher = launcherBuild(await getReleases());
+  const [releases, downloads] = await Promise.all([getReleases(), getLauncherDownloads()]);
+  const launcher = launcherBuild(releases);
   return (
     <section className="relative isolate flex min-h-svh flex-col overflow-hidden">
       <HorizonScene className="absolute inset-0 -z-10" />
@@ -93,6 +94,14 @@ export async function Hero() {
             <span className="basis-full whitespace-nowrap sm:basis-auto">
               <Dot className="mr-2 hidden sm:inline" />
               <LauncherMeta build={launcher} dot={<Dot />} />
+              {downloads !== null && (
+                <>
+                  {launcher && <Dot />}
+                  <span title="Downloads of the launcher from GitHub, all versions, updates included">
+                    <span className="tabular-nums">{downloads.toLocaleString("en-US")}</span> downloads
+                  </span>
+                </>
+              )}
             </span>
           </div>
         </div>

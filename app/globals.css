@@ -274,6 +274,7 @@ body {
 .hub[data-tab="board"] [data-panel]:not([data-panel="board"]),
 .hub[data-tab="journal"] [data-panel]:not([data-panel="journal"]),
 .hub[data-tab="contribute"] [data-panel]:not([data-panel="contribute"]),
+.hub[data-tab="people"] [data-panel]:not([data-panel="people"]),
 .hub:not([data-detail="dev"]) .hub-dev,
 .hub[data-detail="dev"] .hub-plain {
   display: none;

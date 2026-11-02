@@ -10,6 +10,7 @@ export const TABS = [
   { id: "board", label: "Kanban" },
   { id: "journal", label: "Journal" },
   { id: "contribute", label: "Contribute" },
+  { id: "people", label: "People" },
 ] as const;
 
 type Tab = (typeof TABS)[number]["id"];

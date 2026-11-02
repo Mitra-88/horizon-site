@@ -3,7 +3,8 @@ import { getContributors } from "@/components/contributors";
 import { getReleases } from "@/components/github-releases";
 import { getBoard, getHubIssues, getRoadmap } from "@/components/hub-data";
 import { journalAnchor, journalFrom, REPO } from "@/components/hub-logic";
-import { BoardPanel, ContributePanel, JournalPanel, OverviewPanel, RoadmapPanel } from "@/components/hub-panels";
+import { BoardPanel, ContributePanel, JournalPanel, OverviewPanel, PeoplePanel, RoadmapPanel } from "@/components/hub-panels";
+import { getOrgChart } from "@/components/org-chart";
 import { HubShell } from "@/components/hub-shell";
 import { PixelAurora } from "@/components/pixel-aurora";
 import { pageMetadata } from "@/components/site";
@@ -18,18 +19,20 @@ export const metadata = pageMetadata({
 const delay = (ms: number) => ({ "--delay": `${ms}ms` }) as CSSProperties;
 
 export default async function HubPage() {
-  const [roadmap, issues, board, releases, contributors] = await Promise.all([
+  const [roadmap, issues, board, releases, contributors, people] = await Promise.all([
     getRoadmap(),
     getHubIssues(),
     getBoard(),
     getReleases(),
     getContributors(),
+    getOrgChart(),
   ]);
   const live = new Map((issues ?? []).map((i) => [i.n, i]));
   const areas = roadmap ? roadmap.areas.filter((a) => roadmap.items.some((i) => i.area === a.id)) : [];
   const journal = roadmap ? journalFrom(releases ?? [], issues ?? [], roadmap) : [];
 
   const anchors: Record<string, string> = { "hub-contributors": "contribute", report: "contribute" };
+  for (const t of people ?? []) anchors[`people-${t.key}`] = "people";
   for (const s of roadmap?.statuses ?? []) anchors[s.id] = "roadmap";
   for (const i of roadmap?.items ?? []) anchors[i.id] = "roadmap";
   for (const e of journal) anchors[journalAnchor(e)] = "journal";
@@ -73,6 +76,7 @@ export default async function HubPage() {
           <BoardPanel columns={board} roadmap={roadmap} />
           <JournalPanel entries={journal} roadmap={roadmap} />
           <ContributePanel roadmap={roadmap} contributors={contributors} live={live} version={version} />
+          <PeoplePanel tiers={people} />
         </HubShell>
       ) : (
         <div className="mx-auto w-full max-w-6xl px-6 pb-24 lg:px-10">

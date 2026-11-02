@@ -90,3 +90,32 @@ export function launcherBuild(releases: Release[] | null): LauncherBuild | null 
   }
   return { version: release.tag.replace(/^launcher@/, ""), files };
 }
+
+// The launcher's files, as published on every release (its own launcher@ releases, and the game releases that carried
+// it before them); not the game's files, SHA256SUMS or signatures.
+const LAUNCHER_ASSET = /^horizon-launcher-(windows|linux|macos)-[\w.-]+\.(zip|tar\.gz|dmg|AppImage)$/;
+const MAX_RELEASE_PAGES = 10;
+
+// The launcher's downloads over all releases (GitHub's download counts, so self-updates count too), or null when
+// GitHub can't be read: callers hide the number then. Every page of releases is read on the server, through Kira's
+// proxy (components/github-api.ts), and kept half an hour; a release refreshes it through the releases tag.
+export async function getLauncherDownloads(): Promise<number | null> {
+  "use cache";
+  cacheTag(TAGS.releases);
+  let total = 0;
+  try {
+    for (let page = 1; page <= MAX_RELEASE_PAGES; page++) {
+      const res = await githubFetch(`/repos/${REPO}/releases?per_page=100&page=${page}`);
+      if (!res.ok) throw new Error(`GitHub responded ${res.status} ${res.statusText}`);
+      const batch: { assets: { name: string; download_count: number }[] }[] = await res.json();
+      for (const r of batch) for (const a of r.assets) if (LAUNCHER_ASSET.test(a.name)) total += a.download_count;
+      if (batch.length < 100) break;
+    }
+  } catch (error) {
+    console.error(`Couldn't count the launcher's downloads for ${REPO}:`, error);
+    cacheLife("minutes");
+    return null;
+  }
+  cacheLife({ stale: 300, revalidate: 1800, expire: 86400 });
+  return total > 0 ? total : null;
+}

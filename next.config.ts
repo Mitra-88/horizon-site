@@ -4,7 +4,12 @@ const nextConfig: NextConfig = {
   output: "standalone",
   allowedDevOrigins: ["202.61.226.46"],
   images: {
-    remotePatterns: [{ protocol: "https", hostname: "avatars.githubusercontent.com", pathname: "/u/**", search: "?v=4" }],
+    remotePatterns: [
+      { protocol: "https", hostname: "avatars.githubusercontent.com", pathname: "/u/**", search: "?v=4" },
+      // The hub's People tab: Discord avatars, as Kira's /staff.json gives them (components/org-chart.ts checks the form).
+      { protocol: "https", hostname: "cdn.discordapp.com", pathname: "/avatars/**", search: "?size=128" },
+      { protocol: "https", hostname: "cdn.discordapp.com", pathname: "/embed/avatars/**", search: "" },
+    ],
   },
   experimental: {
     agentFeedback: true,
