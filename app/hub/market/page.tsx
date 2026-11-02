@@ -33,7 +33,7 @@ export default function MarketPage() {
           </h1>
           <p className="mt-6 max-w-2xl text-lg leading-relaxed text-white/70">
             On the Official Horizon SMP (play.playhorizon.dev) prices move with what players sell and buy, once a minute, and drift back
-            toward their base between trades. Every trade pays a small tax to the server&apos;s Treasury. In game, <code>/market</code> shows
+            toward their base between trades. In game, <code>/market</code> shows
             the same prices and gives a chart as a map. See also the server&apos;s{" "}
             <Link href="/stats#official" className={LINK}>
               player count

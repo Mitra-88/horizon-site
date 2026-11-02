@@ -26,8 +26,8 @@ type Market = {
   generated: number;
   currency: string;
   moving: boolean;
-  tax_percent: number;
-  taxes_collected: number;
+  tax_percent?: number;
+  taxes_collected?: number;
   daily_summary?: { day: number; lines: string[] };
   items: Item[];
 };
@@ -191,7 +191,9 @@ export function MarketBoard() {
           <Tile value={num(data.items.length)} label="items traded" note={`Updated ${time(data.generated)}, again every minute`} />
           <Tile value={num(traded)} label="items traded in 24 hours" />
           <Tile value={movers[0] ? movers[0].name : "–"} label="biggest move today" note={movers[0] ? `${movers[0].change_24h! > 0 ? "▲" : "▼"} ${Math.abs(movers[0].change_24h!).toFixed(1)}% in 24 hours` : ""} />
-          <Tile value={`${num(data.taxes_collected)} ${data.currency}`} label="taxes to the Treasury" note={`${data.tax_percent}% of each trade`} />
+          {data.tax_percent ? (
+            <Tile value={`${num(data.taxes_collected ?? 0)} ${data.currency}`} label="taxes to the Treasury" note={`${data.tax_percent}% of each trade`} />
+          ) : null}
         </div>
         {data.daily_summary?.lines.length ? (
           <div className="mt-4 rounded-2xl bg-[#18112c] p-5 sm:p-6">
@@ -309,8 +311,7 @@ export function MarketBoard() {
           </table>
         </div>
         <p className="mt-3 text-[13px] leading-relaxed text-white/50">
-          One price per item, in {data.currency}, the same to buy and to sell; the {data.tax_percent}% tax comes on top of each
-          trade, and a big trade moves the price as it goes. Items bought from the market can&apos;t
+          One price per item, in {data.currency}, the same to buy and to sell{data.tax_percent ? `; the ${data.tax_percent}% tax comes on top of each trade` : ", with no tax"}, and a big trade moves the price as it goes. Items bought from the market can&apos;t
           be sold back to it for 24 hours. Times are in your time zone.
         </p>
       </section>
