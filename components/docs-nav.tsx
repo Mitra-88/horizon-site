@@ -2,15 +2,30 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import type { DocIndexEntry } from "@/components/docs-data";
 import { DocsSearch } from "@/components/docs-search";
 import { ChevronDownIcon } from "@/components/icons";
 
 export type DocsNavGroup = { group: string; items: { path: string; title: string }[] };
 
-export function DocsNav({ groups, index }: { groups: DocsNavGroup[]; index: DocIndexEntry[] }) {
-  const pathname = usePathname();
+type DocsNavProps = { groups: DocsNavGroup[]; index: DocIndexEntry[] };
+
+// The current path is runtime data: reading it outside <Suspense> stops Next.js from rendering /docs/[...slug]
+// (CLIENT_HOOK_DYNAMIC, 500 on every doc page). The fallback is the same nav with no page marked as current.
+export function DocsNav(props: DocsNavProps) {
+  return (
+    <Suspense fallback={<DocsNavView {...props} pathname="" />}>
+      <DocsNavAtPath {...props} />
+    </Suspense>
+  );
+}
+
+function DocsNavAtPath(props: DocsNavProps) {
+  return <DocsNavView {...props} pathname={usePathname()} />;
+}
+
+function DocsNavView({ groups, index, pathname }: DocsNavProps & { pathname: string }) {
   const [open, setOpen] = useState(false);
   const [openedAt, setOpenedAt] = useState(pathname);
   if (open && openedAt !== pathname) {

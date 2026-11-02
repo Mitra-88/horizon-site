@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useState, useSyncExternalStore } from "react";
+import { Suspense, useEffect, useState, useSyncExternalStore } from "react";
 import { GitHubIcon, HorizonMark, MenuIcon, XIcon } from "@/components/icons";
 import type { LauncherBuild } from "@/components/github-releases";
 import { LauncherLink } from "@/components/launcher-download";
@@ -26,14 +26,29 @@ const subscribe = (onChange: () => void) => {
   return () => window.removeEventListener("scroll", onChange);
 };
 
-export function SiteHeader({ releaseIds = [], launcher = null }: { releaseIds?: number[]; launcher?: LauncherBuild | null }) {
+type SiteHeaderProps = { releaseIds?: number[]; launcher?: LauncherBuild | null };
+
+// The current path is runtime data: read outside <Suspense> it stops Next.js from rendering pages that aren't
+// prerendered (CLIENT_HOOK_DYNAMIC). The fallback is the same header with no link marked as current.
+export function SiteHeader(props: SiteHeaderProps) {
+  return (
+    <Suspense fallback={<SiteHeaderView {...props} pathname="" />}>
+      <SiteHeaderAtPath {...props} />
+    </Suspense>
+  );
+}
+
+function SiteHeaderAtPath(props: SiteHeaderProps) {
+  return <SiteHeaderView {...props} pathname={usePathname()} />;
+}
+
+function SiteHeaderView({ releaseIds = [], launcher = null, pathname }: SiteHeaderProps & { pathname: string }) {
   const scrolled = useSyncExternalStore(
     subscribe,
     () => window.scrollY > 8,
     () => false,
   );
   const unseen = useUnseenCount(releaseIds);
-  const pathname = usePathname();
   const isCurrent = (href: string) => !href.includes("#") && (pathname === href || pathname.startsWith(`${href}/`));
   const [menuOpen, setMenuOpen] = useState(false);
   const [menuPath, setMenuPath] = useState(pathname);
