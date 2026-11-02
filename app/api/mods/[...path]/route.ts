@@ -11,7 +11,7 @@ async function handle(request: NextRequest, { params }: Context) {
     prefix: "/api/mods",
     segments: path,
     methods: ["GET", "POST"],
-    forward: ["accept", "content-type", "cookie", "user-agent", "x-csrf-token"],
+    forward: ["accept", "content-type", "cookie", "origin", "user-agent", "x-csrf-token"],
     maxBody: 70 * 1024 * 1024,
     buffer: false,
     timeoutMs: 180_000,
