@@ -1,7 +1,7 @@
 {
  "format": "horizon-benchmark-summary",
  "version": 1,
- "generated": "2026-10-23T01:09:54Z",
+ "generated": "2026-11-04T16:30:52Z",
  "min_installs": 3,
  "groups": [
   {
@@ -21,7 +21,7 @@
    ],
    "repeats": 3,
    "load_avg_1m": 55.691,
-   "note": "On macOS this Horizon build presents its frames in step with the 144 Hz display even with VSync off, so its average frame rate here is capped at 144: compare the 1% lows and frame times instead. The Mac mini was also running other jobs during the runs (CI, simulators; 1-minute load average 20 to 56 on 14 threads), which costs both games, vanilla more at render distance 32.",
+   "note": "Measured on 2026-10-22 with Horizon v2026.10.22.04 and not measured again on 2026-11-04: that day the Mac mini's session was locked, so Horizon could only draw offscreen, which isn't a fair comparison with Java Edition's window. On macOS this Horizon build presents its frames in step with the 144 Hz display even with VSync off, so its average frame rate here is capped at 144: compare the 1% lows and frame times instead. The Mac mini was also running other jobs during the runs (CI, simulators; 1-minute load average 20 to 56 on 14 threads), which costs both games, vanilla more at render distance 32.",
    "capped_fps": 144,
    "medians": {
     "avg_fps": 144,
@@ -228,7 +228,7 @@
    ],
    "repeats": 2,
    "load_avg_1m": 0.988,
-   "note": "A 2016 laptop: 2 cores / 4 threads and Intel integrated graphics, Linux with Mesa 26.1.8 (Horizon on Vulkan, vanilla on OpenGL). It has no screen attached, so both games drew to a GPU compositor (sway on the Intel GPU) in a 1280x720 window. Horizon ran two flights per scene, vanilla two separate games of one. Render distance 32 is not shown: in 5 minutes neither game finished loading the spawn, and given 25, Horizon kept only about 900 to 1,400 chunk columns resident on this machine instead of the 3,200 a full view holds, so the two games would not have drawn the same world.",
+   "note": "Measured on 2026-10-22 with Horizon v2026.10.22.04 and not measured again on 2026-11-04: this laptop now runs other work and no longer runs benchmarks. A 2016 laptop: 2 cores / 4 threads and Intel integrated graphics, Linux with Mesa 26.1.8 (Horizon on Vulkan, vanilla on OpenGL). It has no screen attached, so both games drew to a GPU compositor (sway on the Intel GPU) in a 1280x720 window. Horizon ran two flights per scene, vanilla two separate games of one. Render distance 32 is not shown: in 5 minutes neither game finished loading the spawn, and given 25, Horizon kept only about 900 to 1,400 chunk columns resident on this machine instead of the 3,200 a full view holds, so the two games would not have drawn the same world. Players see less on this kind of hardware: in the last 30 days of real play (opt-in telemetry), the 480 installs with an HD Graphics 620 had a middle frame of about 16 ms (61 FPS, many of them with VSync on) and their slowest 1% of frames at about 34 ms (29 FPS), against the 39 FPS 1% low measured here; Intel's built-in graphics as a whole, about a quarter of all play hours, spent a third of their hours under 60 FPS.",
    "medians": {
     "avg_fps": 209,
     "low_1pct_fps": 39,
@@ -321,8 +321,8 @@
    "game": "horizon",
    "source": "us",
    "machine": "Desktop (RTX 4080, i7-13700KF)",
-   "measured": "2026-10-23",
-   "version": "v2026.10.22.13",
+   "measured": "2026-11-04",
+   "version": "Nightly 2026-11-04 (67dad0d)",
    "backend": "vulkan",
    "os": "linux",
    "window": [
@@ -330,39 +330,39 @@
     720
    ],
    "repeats": 3,
-   "load_avg_1m": 17.934,
-   "note": "Linux (NixOS) with the NVIDIA 595 driver. The desktop is in daily use, so both games drew to a separate GPU compositor (a headless sway rendering on the RTX 4080) in a 1280x720 window, never on its screen: Horizon through Wayland, vanilla through Xwayland, both on Vulkan. Other jobs were running during the runs (1-minute load average 18 to 25 on 24 threads), which costs both games, chunk loading most.",
+   "load_avg_1m": 28.408,
+   "note": "Measured on 2026-11-04 with Horizon's Nightly of that day. Linux (NixOS) with the NVIDIA 595 driver. Both games drew to a separate GPU compositor (a headless sway rendering on the RTX 4080) in a 1280x720 window, never on its screen, both through Wayland on Vulkan. The desktop also runs Horizon's CI and other builds: each game started at a 1-minute load average of 28 to 30 on 24 threads, and it rose to 40 to 70 during the runs (18 to 25 on 2026-10-23). That costs both games, most in the 1% lows and the start-up times; the first start of each series also read the game from a cold disk. Java Edition at render distance 32 crashed twice under that load (a GPU timeout waiting for the next frame) before a third series finished.",
    "medians": {
-    "avg_fps": 2993,
-    "low_1pct_fps": 311,
-    "p95_ms": 0.5,
-    "world_ms": 17973,
-    "chunk_load_ms": 1797,
-    "rss_peak_mb": 1414,
-    "rss_steady_mb": 1202,
-    "cpu_p50_ms": 0.3,
+    "avg_fps": 2224,
+    "low_1pct_fps": 308,
+    "p95_ms": 1,
+    "world_ms": 74754,
+    "chunk_load_ms": 4403,
+    "rss_peak_mb": 1546,
+    "rss_steady_mb": 1348,
+    "cpu_p50_ms": 0.2,
     "gpu_p50_ms": 0.1
    },
    "scenes": {
     "village": {
-     "avg_fps": 2594,
-     "low_1pct_fps": 254,
-     "chunk_load_ms": 1260
+     "avg_fps": 2959,
+     "low_1pct_fps": 368,
+     "chunk_load_ms": 5571
     },
     "forest": {
-     "avg_fps": 3427,
-     "low_1pct_fps": 328,
-     "chunk_load_ms": 1592
+     "avg_fps": 2334,
+     "low_1pct_fps": 337,
+     "chunk_load_ms": 3318
     },
     "ocean": {
-     "avg_fps": 3277,
-     "low_1pct_fps": 388,
-     "chunk_load_ms": 2660
+     "avg_fps": 2193,
+     "low_1pct_fps": 345,
+     "chunk_load_ms": 2463
     },
     "mountain": {
-     "avg_fps": 2673,
-     "low_1pct_fps": 275,
-     "chunk_load_ms": 1675
+     "avg_fps": 1412,
+     "low_1pct_fps": 182,
+     "chunk_load_ms": 6261
     }
    }
   },
@@ -373,8 +373,8 @@
    "game": "horizon",
    "source": "us",
    "machine": "Desktop (RTX 4080, i7-13700KF)",
-   "measured": "2026-10-23",
-   "version": "v2026.10.22.13",
+   "measured": "2026-11-04",
+   "version": "Nightly 2026-11-04 (67dad0d)",
    "backend": "vulkan",
    "os": "linux",
    "window": [
@@ -382,38 +382,38 @@
     720
    ],
    "repeats": 3,
-   "load_avg_1m": 22.354,
+   "load_avg_1m": 29.665,
    "medians": {
-    "avg_fps": 672,
-    "low_1pct_fps": 89,
-    "p95_ms": 3.6,
-    "world_ms": 8999,
-    "chunk_load_ms": 4677,
-    "rss_peak_mb": 1957,
-    "rss_steady_mb": 1646,
-    "cpu_p50_ms": 1.1,
-    "gpu_p50_ms": 0.3
+    "avg_fps": 800,
+    "low_1pct_fps": 140,
+    "p95_ms": 2.7,
+    "world_ms": 86586,
+    "chunk_load_ms": 17579,
+    "rss_peak_mb": 2051,
+    "rss_steady_mb": 1811,
+    "cpu_p50_ms": 0.8,
+    "gpu_p50_ms": 0.4
    },
    "scenes": {
     "village": {
-     "avg_fps": 686,
-     "low_1pct_fps": 93,
-     "chunk_load_ms": 2702
+     "avg_fps": 854,
+     "low_1pct_fps": 130,
+     "chunk_load_ms": 11083
     },
     "forest": {
-     "avg_fps": 590,
-     "low_1pct_fps": 76,
-     "chunk_load_ms": 4823
+     "avg_fps": 898,
+     "low_1pct_fps": 179,
+     "chunk_load_ms": 15020
     },
     "ocean": {
-     "avg_fps": 868,
-     "low_1pct_fps": 113,
-     "chunk_load_ms": 3629
+     "avg_fps": 735,
+     "low_1pct_fps": 135,
+     "chunk_load_ms": 12399
     },
     "mountain": {
-     "avg_fps": 544,
-     "low_1pct_fps": 73,
-     "chunk_load_ms": 7552
+     "avg_fps": 713,
+     "low_1pct_fps": 118,
+     "chunk_load_ms": 31816
     }
    }
   },
@@ -424,7 +424,7 @@
    "game": "vanilla",
    "source": "us",
    "machine": "Desktop (RTX 4080, i7-13700KF)",
-   "measured": "2026-10-23",
+   "measured": "2026-11-04",
    "version": "26.3",
    "backend": "vulkan",
    "os": "linux",
@@ -433,38 +433,38 @@
     720
    ],
    "repeats": 3,
-   "load_avg_1m": 25.007,
+   "load_avg_1m": 28.788,
    "medians": {
-    "avg_fps": 2600,
-    "low_1pct_fps": 312,
-    "p95_ms": 0.5,
-    "world_ms": 30470,
-    "chunk_load_ms": 10837,
-    "rss_peak_mb": 3078,
-    "rss_steady_mb": 2883,
+    "avg_fps": 1824,
+    "low_1pct_fps": 201,
+    "p95_ms": 1.1,
+    "world_ms": 191064,
+    "chunk_load_ms": 20512,
+    "rss_peak_mb": 3108,
+    "rss_steady_mb": 2985,
     "cpu_p50_ms": null,
     "gpu_p50_ms": null
    },
    "scenes": {
     "village": {
-     "avg_fps": 2482,
-     "low_1pct_fps": 385,
-     "chunk_load_ms": 8003
+     "avg_fps": 2162,
+     "low_1pct_fps": 163,
+     "chunk_load_ms": 18724
     },
     "forest": {
-     "avg_fps": 2368,
-     "low_1pct_fps": 209,
-     "chunk_load_ms": 9654
+     "avg_fps": 1842,
+     "low_1pct_fps": 255,
+     "chunk_load_ms": 8852
     },
     "ocean": {
-     "avg_fps": 2727,
-     "low_1pct_fps": 247,
-     "chunk_load_ms": 10442
+     "avg_fps": 1525,
+     "low_1pct_fps": 191,
+     "chunk_load_ms": 21216
     },
     "mountain": {
-     "avg_fps": 2824,
-     "low_1pct_fps": 407,
-     "chunk_load_ms": 15249
+     "avg_fps": 1769,
+     "low_1pct_fps": 196,
+     "chunk_load_ms": 33255
     }
    }
   },
@@ -475,7 +475,7 @@
    "game": "vanilla",
    "source": "us",
    "machine": "Desktop (RTX 4080, i7-13700KF)",
-   "measured": "2026-10-23",
+   "measured": "2026-11-04",
    "version": "26.3",
    "backend": "vulkan",
    "os": "linux",
@@ -484,38 +484,38 @@
     720
    ],
    "repeats": 3,
-   "load_avg_1m": 21.652,
+   "load_avg_1m": 28.799,
    "medians": {
-    "avg_fps": 849,
-    "low_1pct_fps": 112,
-    "p95_ms": 3.1,
-    "world_ms": 58554,
-    "chunk_load_ms": 31819,
-    "rss_peak_mb": 3484,
-    "rss_steady_mb": 3419,
+    "avg_fps": 696,
+    "low_1pct_fps": 64,
+    "p95_ms": 4.1,
+    "world_ms": 235049,
+    "chunk_load_ms": 79051,
+    "rss_peak_mb": 3372,
+    "rss_steady_mb": 3291,
     "cpu_p50_ms": null,
     "gpu_p50_ms": null
    },
    "scenes": {
     "village": {
-     "avg_fps": 881,
-     "low_1pct_fps": 110,
-     "chunk_load_ms": 19818
+     "avg_fps": 526,
+     "low_1pct_fps": 44,
+     "chunk_load_ms": 79828
     },
     "forest": {
-     "avg_fps": 1072,
-     "low_1pct_fps": 165,
-     "chunk_load_ms": 28927
+     "avg_fps": 599,
+     "low_1pct_fps": 62,
+     "chunk_load_ms": 61173
     },
     "ocean": {
-     "avg_fps": 894,
-     "low_1pct_fps": 142,
-     "chunk_load_ms": 19246
+     "avg_fps": 1175,
+     "low_1pct_fps": 120,
+     "chunk_load_ms": 61762
     },
     "mountain": {
-     "avg_fps": 551,
-     "low_1pct_fps": 33,
-     "chunk_load_ms": 59283
+     "avg_fps": 486,
+     "low_1pct_fps": 29,
+     "chunk_load_ms": 113440
     }
    }
   }

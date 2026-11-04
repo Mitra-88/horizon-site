@@ -60,7 +60,9 @@ const COMMAND = "horizon-client --benchmark standard --render-distance 12";
 export default async function BenchmarksPage() {
   const { machines, rows } = await getBenchmarks();
   const lost = losses(machines);
-  const measured = machines[0]?.measured;
+  // Machines can be measured on different days (the ThinkPad's runs are older than the others'): give the span.
+  const days = machines.map((m) => m.measured).filter(Boolean).sort();
+  const measured = days.length ? (days[0] === days.at(-1) ? `on ${days[0]}` : `between ${days[0]} and ${days.at(-1)}`) : null;
   const trace = machines.find((m) => m.id === "macmini")?.runs["12"];
 
   return (
@@ -168,7 +170,7 @@ export default async function BenchmarksPage() {
               <p>
                 VSync off, no frame cap, a 1280x720 window, simulation distance 12, everything else at vanilla&apos;s defaults. Java Edition 26.3 runs as
                 players get it, with the official launcher&apos;s Java options. Each figure is the median over the runs
-                {measured ? `, measured on ${measured}` : ""}.
+                {measured ? `, measured ${measured}` : ""}.
               </p>
               <p>
                 The full method and its caveats are in{" "}
