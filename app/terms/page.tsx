@@ -74,8 +74,7 @@ export default function TermsPage() {
 
       <Part title="Under 18">
         <p>
-          If you&apos;re under 18, ask a parent or guardian before you buy anything: they need to agree to the purchase and to these terms. Free
-          items need no payment details.
+          If you&apos;re under 18, ask a parent or guardian before you buy anything: they need to agree to the purchase and to these terms. Free items cost nothing.
         </p>
       </Part>
 

@@ -4,8 +4,7 @@ import type { ReactNode } from "react";
 export const SELLER = "Ludovic Marie";
 export const SELLER_PLACE = "Switzerland";
 // Mojang's Usage Guidelines ask for an email (not a chat or forum) wherever items are sold.
-// TODO(Ludovic): no playhorizon.dev address exists yet (no MX record). Set one here, e.g. a Porkbun forward.
-export const CONTACT_EMAIL: string | null = null;
+export const CONTACT_EMAIL: string | null = "contact@playhorizon.dev";
 export const CONTACT_PAGE = "https://lu4ovic.com/#contact";
 export const NOT_OFFICIAL = "NOT AN OFFICIAL MINECRAFT PRODUCT. NOT APPROVED BY OR ASSOCIATED WITH MOJANG OR MICROSOFT.";
 export const PADDLE_BUYER_TERMS = "https://www.paddle.com/legal/checkout-buyer-terms";
