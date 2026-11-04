@@ -14,7 +14,7 @@ Get the newest launcher from the [Download button on the home page](/), which pi
 
 - **Linux:** download `horizon-launcher-linux-x86_64.tar.gz`, extract it and run `horizon-launcher`.
 - **macOS:** download `horizon-launcher-macos-arm64.dmg`, open it and drag Horizon onto Applications, then open it from Applications, not from the disk image. The first time, macOS says it cannot check the app, because it is not signed with a paid Apple developer account. On macOS 14 and earlier, right-click Horizon, choose **Open**, then **Open** again. On macOS 15 and later, open it once, then go to **System Settings, Privacy & Security** and choose **Open Anyway**. After that it opens normally.
-- **Windows:** download `horizon-launcher-windows-x64.zip`, extract it (right-click, **Extract All**) and run `horizon-launcher.exe` from the extracted folder. Opened straight from inside the ZIP, Windows runs a temporary copy that it throws away later.
+- **Windows:** download `horizon-launcher-setup.exe` and run it. It installs the launcher for your account (no administrator needed) with a Start menu shortcut, and the launcher updates itself from there; **Apps & features** removes it. If you'd rather not install it, `horizon-launcher-windows-x64.zip` holds the same launcher: extract it (right-click, **Extract All**) and run `horizon-launcher.exe` from the extracted folder, not from inside the ZIP, where Windows runs a temporary copy it throws away later.
 
 Every release also carries `SHA256SUMS` and a signature, `SHA256SUMS.sig`, if you want to check your download. The launcher does not check that signature for you yet.
 

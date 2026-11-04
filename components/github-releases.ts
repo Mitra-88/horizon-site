@@ -74,8 +74,10 @@ export async function getReleases(): Promise<Release[] | null> {
 export type DesktopOs = "windows" | "macos" | "linux";
 export type LauncherBuild = { version: string; files: Partial<Record<DesktopOs, { url: string; size: number }>> };
 
+// Windows gets the per-user setup: it installs into %LOCALAPPDATA%, where the launcher can update itself (a copy run
+// from inside a ZIP or a protected folder can't, horizon#9287).
 const LAUNCHER_FILES: Record<DesktopOs, RegExp> = {
-  windows: /windows-x64\.zip$/i,
+  windows: /^horizon-launcher-setup\.exe$/i,
   macos: /macos-arm64\.dmg$/i,
   linux: /linux-x86_64\.tar\.gz$/i,
 };
@@ -93,7 +95,7 @@ export function launcherBuild(releases: Release[] | null): LauncherBuild | null 
 
 // The launcher's files, as published on every release (its own launcher@ releases, and the game releases that carried
 // it before them); not the game's files, SHA256SUMS or signatures.
-const LAUNCHER_ASSET = /^horizon-launcher-(windows|linux|macos)-[\w.-]+\.(zip|tar\.gz|dmg|AppImage)$/;
+const LAUNCHER_ASSET = /^horizon-launcher-((windows|linux|macos)-[\w.-]+\.(zip|tar\.gz|dmg|AppImage)|setup(-arm64)?\.exe)$/;
 const MAX_RELEASE_PAGES = 10;
 
 // The launcher's downloads over all releases (GitHub's download counts, so self-updates count too), or null when
