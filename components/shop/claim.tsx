@@ -326,6 +326,12 @@ function Panel({ children, endsLabel }: { children: ReactNode; endsLabel: string
     <div role="region" aria-label="Claim the founder set" aria-live="polite" className="rounded-2xl bg-white/[0.06] p-5 backdrop-blur-xl sm:p-6">
       {children}
       {endsLabel && <p className="mt-5 text-[13px] text-white/45">Free (0 CHF) until {endsLabel}. One claim per Minecraft account.</p>}
+      {endsLabel && (
+        <p className="mt-2 text-[13px] text-white/45">
+          In a country Paddle doesn&apos;t serve, such as Russia or Belarus? Claim the set for free in the Horizon launcher&apos;s Wardrobe
+          instead.
+        </p>
+      )}
     </div>
   );
 }

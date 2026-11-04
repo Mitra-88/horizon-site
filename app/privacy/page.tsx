@@ -132,6 +132,11 @@ export default function PrivacyPage() {
           <ul className="list-disc space-y-2 pl-5 marker:text-white/30">
             <li>the items it owns and since when, what it wears, whether its cosmetics are hidden, and when it claimed the founder set;</li>
             <li>
+              if the founder set was claimed in the launcher&apos;s Wardrobe because Paddle doesn&apos;t serve your country: that country&apos;s
+              two-letter code. The service finds it from your IP address in a database it holds itself (IP geolocation by{" "}
+              <Out href="https://db-ip.com">DB-IP</Out>, CC BY 4.0) and keeps the country only, never the address;
+            </li>
+            <li>
               for each order: Paddle&apos;s transaction id, the item, the amount and currency paid, its state (paid, refunded, disputed) and its date,
               so the launcher can show your purchase history and refunds can take the item back.
             </li>
