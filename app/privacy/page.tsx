@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { Contact, PADDLE_PRIVACY, SELLER } from "@/components/legal";
 import { pageMetadata } from "@/components/site";
 
 export const metadata = pageMetadata({
@@ -118,13 +119,33 @@ export default function PrivacyPage() {
           </p>
         </Part>
 
+        <Part title="Cosmetics and purchases">
+          <p>
+            Horizon&apos;s cosmetics service is run by {SELLER}, who is responsible for what it keeps; this website only shows its catalogue. You claim
+            and buy cosmetics in the launcher, never on this site. For each Minecraft account, keyed by its UUID, the service keeps:
+          </p>
+          <ul className="list-disc space-y-2 pl-5 marker:text-white/30">
+            <li>the items it owns and since when, what it wears, whether its cosmetics are hidden, and when it claimed the founder set;</li>
+            <li>
+              for each order: Paddle&apos;s transaction id, the item, the amount and currency paid, its state (paid, refunded, disputed) and its date,
+              so the launcher can show your purchase history and refunds can take the item back.
+            </li>
+          </ul>
+          <p>
+            Nothing else: no name, email, address or payment details. Paddle.com, the merchant of record, takes the payment and keeps your email,
+            country and payment details under <Out href={PADDLE_PRIVACY}>Paddle&apos;s privacy policy</Out>; of what Paddle sends, the service keeps
+            only the lines above. Orders are kept as long as tax law requires a record of them. To see or delete
+            what the service holds about your account, write to <Contact />.
+          </p>
+        </Part>
+
         <Part title="Who is responsible, and your rights">
           <p>
             This website is developed and run by Anthony S of <Out href="https://dezerx.com">DezerX</Out>, who is responsible for what it keeps. You can ask
             what it holds about you, or have it deleted, through dezerx.com. Because only a hash of your address is kept, include the IP address you used,
             so your entry can be found. You can also complain to the data protection authority where you live.
           </p>
-          <p className="text-sm text-white/45">Last updated on 31 October 2026.</p>
+          <p className="text-sm text-white/45">Last updated on 4 November 2026.</p>
         </Part>
       </article>
     </main>

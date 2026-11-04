@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Bricolage_Grotesque, Geist, Geist_Mono } from "next/font/google";
 import { getReleases, launcherBuild } from "@/components/github-releases";
+import { getShopStatus } from "@/components/shop-data";
 import { AUTHOR, KEYWORDS, SITE_DESCRIPTION, SITE_NAME, SITE_TITLE, SITE_URL } from "@/components/site";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
@@ -43,14 +44,14 @@ export const viewport: Viewport = {
 };
 
 export default async function RootLayout({ children }: LayoutProps<"/">) {
-  const releases = await getReleases();
+  const [releases, shop] = await Promise.all([getReleases(), getShopStatus()]);
   return (
     <html
       lang="en"
       className={`${geist.variable} ${geistMono.variable} ${bricolage.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
-        <SiteHeader releaseIds={releases?.map((r) => r.id) ?? []} launcher={launcherBuild(releases)} />
+        <SiteHeader releaseIds={releases?.map((r) => r.id) ?? []} launcher={launcherBuild(releases)} shop={shop.open} />
         {children}
         <SiteFooter />
       </body>

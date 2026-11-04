@@ -19,6 +19,9 @@ const NAV = [
   { label: "Players", href: "/stats" },
 ];
 
+// The founder shop's entry, shown only while its claim window is open (components/shop-data.ts).
+const SHOP = { label: "Shop", href: "/shop" };
+
 const NAV_LINK = "inline-flex items-center gap-1.5 transition-colors hover:text-white";
 
 const subscribe = (onChange: () => void) => {
@@ -26,7 +29,7 @@ const subscribe = (onChange: () => void) => {
   return () => window.removeEventListener("scroll", onChange);
 };
 
-type SiteHeaderProps = { releaseIds?: number[]; launcher?: LauncherBuild | null };
+type SiteHeaderProps = { releaseIds?: number[]; launcher?: LauncherBuild | null; shop?: boolean };
 
 // The current path is runtime data: read outside <Suspense> it stops Next.js from rendering pages that aren't
 // prerendered (CLIENT_HOOK_DYNAMIC). The fallback is the same header with no link marked as current.
@@ -42,7 +45,8 @@ function SiteHeaderAtPath(props: SiteHeaderProps) {
   return <SiteHeaderView {...props} pathname={usePathname()} />;
 }
 
-function SiteHeaderView({ releaseIds = [], launcher = null, pathname }: SiteHeaderProps & { pathname: string }) {
+function SiteHeaderView({ releaseIds = [], launcher = null, shop = false, pathname }: SiteHeaderProps & { pathname: string }) {
+  const nav = shop ? [...NAV, SHOP] : NAV;
   const scrolled = useSyncExternalStore(
     subscribe,
     () => window.scrollY > 8,
@@ -76,8 +80,9 @@ function SiteHeaderView({ releaseIds = [], launcher = null, pathname }: SiteHead
           <span className="font-display text-[19px] font-semibold tracking-[-0.02em]">Horizon</span>
         </Link>
 
-        <nav aria-label="Main" className="hidden items-center gap-8 text-sm text-white/65 lg:flex">
-          {NAV.map((item) => (
+        {/* With the shop's entry the row is one link longer: tighter gaps below xl keep Download inside 1024 px. */}
+        <nav aria-label="Main" className={`hidden items-center text-sm text-white/65 lg:flex ${shop ? "gap-5 xl:gap-8" : "gap-8"}`}>
+          {nav.map((item) => (
             <Link
               key={item.href}
               href={item.href}
@@ -133,7 +138,7 @@ function SiteHeaderView({ releaseIds = [], launcher = null, pathname }: SiteHead
       {menuOpen && (
         <nav id="mobile-menu" aria-label="Main" className="mx-auto h-[calc(100dvh-4.5rem)] w-full max-w-6xl overflow-y-auto px-6 pt-2 pb-6 lg:hidden">
           <ul className="grid gap-0.5">
-            {NAV.map((item) => (
+            {nav.map((item) => (
               <li key={item.href}>
                 <Link
                   href={item.href}

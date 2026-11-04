@@ -2,6 +2,7 @@ import type { MetadataRoute } from "next";
 import { getDocs } from "@/components/docs-data";
 import { getReleases } from "@/components/github-releases";
 import { getMods } from "@/components/mods-data";
+import { getShopStatus } from "@/components/shop-data";
 import { absolute, SITE_URL } from "@/components/site";
 
 const newest = (dates: (string | undefined)[]) => dates.filter((d): d is string => Boolean(d)).sort().at(-1);
@@ -9,7 +10,7 @@ const newest = (dates: (string | undefined)[]) => dates.filter((d): d is string 
 const KEY_DOCS = new Set(["index", "install", "faq", "multiplayer", "hosting"]);
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const [docs, releases, mods] = await Promise.all([getDocs(), getReleases(), getMods()]);
+  const [docs, releases, mods, shop] = await Promise.all([getDocs(), getReleases(), getMods(), getShopStatus()]);
   const released = releases?.[0]?.published;
   const modsUpdated = newest((mods ?? []).map((p) => p.versions[0]?.published));
 
@@ -32,6 +33,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.5,
     })),
     { url: absolute("/mods/policy"), changeFrequency: "monthly", priority: 0.3 },
+    ...(shop.open && !shop.preview ? [{ url: absolute("/shop"), changeFrequency: "weekly" as const, priority: 0.6 }] : []),
+    { url: absolute("/terms"), changeFrequency: "yearly" as const, priority: 0.2 },
+    { url: absolute("/refunds"), changeFrequency: "yearly" as const, priority: 0.2 },
     { url: absolute("/artists"), changeFrequency: "monthly", priority: 0.4 },
     { url: absolute("/privacy"), changeFrequency: "yearly", priority: 0.2 },
   ];

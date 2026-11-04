@@ -1,0 +1,38 @@
+/* The founder shop's 3D preview (components/shop/voxel.tsx): CSS 3D boxes, nothing drawn on a canvas. */
+
+.vx-stage {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  perspective: 1400px;
+  perspective-origin: 50% 40%;
+}
+
+.vx-rig,
+.vx-rig * {
+  transform-style: preserve-3d;
+}
+
+.vx-rig,
+.vx-box,
+.vx-bone {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 0;
+  height: 0;
+}
+
+.vx-box,
+.vx-bone {
+  left: 0;
+  top: 0;
+}
+
+.vx-face {
+  position: absolute;
+  backface-visibility: hidden;
+  background-repeat: no-repeat;
+  image-rendering: pixelated;
+}

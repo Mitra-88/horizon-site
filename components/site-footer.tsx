@@ -3,6 +3,14 @@ import type { ReactNode } from "react";
 import { GitHubIcon, HorizonMark, MicrosoftIcon, MojangIcon, RustIcon } from "@/components/icons";
 import { GITHUB_URL } from "@/components/links";
 
+// Paddle's website review and Mojang's guidelines want these reachable from every page.
+const LEGAL = [
+  { href: "/privacy", label: "Privacy policy" },
+  { href: "/terms", label: "Terms of sale" },
+  { href: "/refunds", label: "Refunds" },
+  { href: "/shop", label: "Shop" },
+];
+
 const GITHUB_PRIVACY_URL = "https://docs.github.com/site-policy/privacy-policies/github-general-privacy-statement";
 
 function Out({ href, children }: { href: string; children: ReactNode }) {
@@ -51,7 +59,8 @@ export function SiteFooter() {
               site is developed by Anthony S of <Out href="https://dezerx.com">DezerX</Out>, who is responsible for it. Horizon
               contains no Minecraft code, assets or data,
               and this site offers no game files: you need your own legally obtained copy of Minecraft: Java Edition.
-              Minecraft is a trademark of Mojang Synergies AB.
+              Minecraft is a trademark of Mojang Synergies AB. Horizon&apos;s cosmetics are sold by Ludovic Marie through
+              Paddle.com, the merchant of record.
             </p>
           </div>
           <div>
@@ -74,13 +83,16 @@ export function SiteFooter() {
               those requests. The launcher sends nothing unless you allow it:{" "}
               <Out href={`${GITHUB_URL}/blob/main/docs/telemetry.md`}>what it can send, and how to delete it</Out>.
             </p>
-            <p className="mt-3">
-              <Link
-                href="/privacy"
-                className="font-medium text-white/80 underline decoration-white/25 underline-offset-4 transition-colors hover:text-white hover:decoration-white/60"
-              >
-                Privacy policy
-              </Link>
+            <p className="mt-3 flex flex-wrap gap-x-4 gap-y-1">
+              {LEGAL.map(({ href, label }) => (
+                <Link
+                  key={href}
+                  href={href}
+                  className="font-medium text-white/80 underline decoration-white/25 underline-offset-4 transition-colors hover:text-white hover:decoration-white/60"
+                >
+                  {label}
+                </Link>
+              ))}
             </p>
           </div>
         </div>

@@ -65,6 +65,10 @@ The `/docs/api/*` pages come from `docs/api/` in the game's repository, read fro
   `REGISTRY_UPSTREAM`.
 - **The official server's market**: `/hub/market` reads Kira's `/smp/market.json` (the page the SMP mod writes on the server, read by Kira once a minute) through `/api/market`.
 - **Telemetry**: the Players page reads `telemetry.playhorizon.dev` (or `TELEMETRY_URL`) through this site's server.
+- **Cosmetics**: `/shop` (the founder set, free to claim in the launcher) reads `cosmetics.playhorizon.dev`'s
+  `/v1/catalogue` and the items' files through this site's server, cached for a minute. The page, its nav entry and its
+  sitemap line exist only while the service says the claim window is open; otherwise `/shop` is a 404. Nobody signs in
+  on the site.
 
 ## Kira's feeds
 
@@ -89,6 +93,8 @@ Railway service variables:
 | `TELEMETRY_URL` | Optional, defaults to `https://telemetry.playhorizon.dev` |
 | `KIRA_URL` | Optional, Kira's address for `/api/market`; defaults to `https://kira-production-500e.up.railway.app` |
 | `SITE_URL` | Optional, defaults to `https://playhorizon.dev`; used for canonical links, the sitemap and share cards |
+| `COSMETICS_UPSTREAM` | Optional, defaults to `https://cosmetics.playhorizon.dev`: the cosmetics service `/shop` reads (server side only). Point it at a local stand-in for development and tests only, never on production |
+| `SHOP_PREVIEW` | `1` shows `/shop` with a sample seven-day claim window (from the start of the current hour) while the service's window is closed, for previews. Never set it on production (it is ignored where `RAILWAY_ENVIRONMENT_NAME` is `production`) |
 
 Release view counts live in `.data/`, which is reset by every deploy unless a volume is mounted at `/app/.data`.
 
