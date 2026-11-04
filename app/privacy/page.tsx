@@ -89,9 +89,10 @@ export default function PrivacyPage() {
             Contributors&apos; and mod authors&apos; pictures come from avatars.githubusercontent.com, mod icons from horizon-rust.github.io, and every
             download from github.com. Those requests go from your browser to GitHub, and{" "}
             <Out href="https://docs.github.com/site-policy/privacy-policies/github-general-privacy-statement">GitHub&apos;s privacy statement</Out> covers
-            them. Nothing else on this site is loaded from another company, except on the checkout page (/shop/pay), which the
-            launcher opens for a purchase or a claim: it loads Paddle.js from cdn.paddle.com, and Paddle&apos;s checkout runs in it under{" "}
-            <Out href="https://www.paddle.com/legal/privacy">Paddle&apos;s privacy policy</Out>.
+            them. Nothing else on this site is loaded from another company, except in the shop (/shop and /shop/pay): once you
+            start a claim or a purchase there, it loads Paddle.js from cdn.paddle.com, and Paddle&apos;s checkout runs in it under{" "}
+            <Out href="https://www.paddle.com/legal/privacy">Paddle&apos;s privacy policy</Out>. The face shown to confirm a Minecraft account is that
+            account&apos;s skin, loaded from textures.minecraft.net (Mojang).
           </p>
         </Part>
 
@@ -123,8 +124,10 @@ export default function PrivacyPage() {
 
         <Part title="Cosmetics and purchases">
           <p>
-            Horizon&apos;s cosmetics service is run by {SELLER}, who is responsible for what it keeps; this website only shows its catalogue. You claim
-            and buy cosmetics in the launcher, never on this site. For each Minecraft account, keyed by its UUID, the service keeps:
+            Horizon&apos;s cosmetics service is run by {SELLER}, who is responsible for what it keeps. You claim and buy cosmetics on this site&apos;s
+            shop, without signing in: your browser sends the Minecraft name you type to the service (cosmetics.playhorizon.dev), which looks it up
+            in Mojang&apos;s public profiles and keeps the answer in memory for ten minutes. For each Minecraft account, keyed by its UUID, the service
+            keeps:
           </p>
           <ul className="list-disc space-y-2 pl-5 marker:text-white/30">
             <li>the items it owns and since when, what it wears, whether its cosmetics are hidden, and when it claimed the founder set;</li>

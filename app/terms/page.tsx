@@ -17,8 +17,8 @@ export default function TermsPage() {
       accent="when you get a cosmetic."
       intro={
         <p>
-          These terms cover the cosmetics of the Horizon launcher and game, free or paid, from the <Link href="/shop" className={LINK}>shop</Link> or
-          the launcher&apos;s Wardrobe. By claiming or buying one, you agree to them.
+          These terms cover the cosmetics of the Horizon launcher and game, free or paid, from the <Link href="/shop" className={LINK}>shop</Link> on
+          this site. By claiming or buying one, you agree to them.
         </p>
       }
     >
@@ -44,23 +44,24 @@ export default function TermsPage() {
           <li>Seen by Horizon players. Other clients and servers see a normal player.</li>
           <li>No capes, nothing that looks like one, no random rewards (no loot boxes), no virtual currency, nothing with real-world value.</li>
           <li>
-            Bound to the Minecraft account you were signed in with when you claimed or bought it, on every computer you sign in to. Horizon keeps
-            it for as long as it runs the cosmetics service.
+            Bound to the Minecraft account named in the order (you confirm it, by its name and skin, before the checkout), on every computer you
+            sign in to. An item bought for someone else&apos;s account is theirs. Horizon keeps it for as long as it runs the cosmetics service.
           </li>
         </ul>
       </Part>
 
       <Part title="Prices">
         <p>
-          Every price is on the <Link href="/shop" className={LINK}>shop page</Link> and in the launcher, before you sign in. The founder set is free
+          Every price is on the <Link href="/shop" className={LINK}>shop page</Link>, and nobody signs in to see it. The founder set is free
           (0 CHF). Paddle shows the final price, with any sales tax or VAT for your country, before you confirm, and charges nothing else.
         </p>
       </Part>
 
       <Part title="Delivery">
         <p>
-          You claim or buy in the launcher, signed in with your Microsoft account. The item is on your account as soon as Paddle confirms the order,
-          usually within a minute; you can wear it from the Wardrobe. If it doesn&apos;t arrive, write to us with the order number from Paddle&apos;s
+          You claim or buy on the <Link href="/shop" className={LINK}>shop page</Link>: you type the Minecraft name the item goes to, confirm the
+          account, and Paddle&apos;s checkout opens on the page. The item is on that account as soon as Paddle confirms the order, usually within a
+          minute; you wear it from the Wardrobe in the Horizon launcher, signed in with that account. If it doesn&apos;t arrive, write to us with the order number from Paddle&apos;s
           receipt.
         </p>
       </Part>

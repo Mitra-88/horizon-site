@@ -2,8 +2,9 @@
 
 import { useEffect, useState } from "react";
 
-// Paddle.js on Horizon's default payment link: the launcher opens /shop/pay?_ptxn=txn_… for a checkout the cosmetics
-// service created, and Paddle.js opens that transaction's overlay by itself. Nothing here grants anything: Paddle's
+// Paddle.js on Horizon's default payment link: Paddle's own links (its emails, an older launcher) open /shop/pay?_ptxn=txn_…
+// for a checkout the cosmetics service created, and Paddle.js opens that transaction's overlay by itself. The shop
+// itself (/shop) opens its checkouts in place. Nothing here grants anything: Paddle's
 // webhook tells the cosmetics service, which grants the items.
 
 type PaddleEvent = { name?: string };
@@ -56,11 +57,11 @@ export function PaddleCheckout({ token, sandbox }: { token: string; sandbox: boo
 
   const text: Record<State, [string, string]> = {
     loading: ["Opening Paddle's checkout…", "It opens over this page."],
-    open: ["Paddle's checkout is open.", "Follow it to the end; your items arrive in the launcher about a minute later."],
-    done: ["Done, thank you.", "Go back to the launcher: your items appear in the Wardrobe within a minute. Paddle emails you the receipt."],
-    closed: ["The checkout was closed.", "Nothing was charged. Start again from the launcher's Wardrobe whenever you like."],
-    none: ["Nothing to check out here.", "Purchases and claims start in the launcher's Wardrobe, which opens this page for you."],
-    refused: ["Paddle couldn't open this checkout.", "Nothing was charged. Start again from the launcher's Wardrobe; if it happens again, write to us."],
+    open: ["Paddle's checkout is open.", "Follow it to the end; your items reach the launcher's Wardrobe about a minute later."],
+    done: ["Done, thank you.", "Your items are now on their way to the launcher's Wardrobe: they appear within a minute. Paddle emails you the receipt."],
+    closed: ["The checkout was closed.", "Nothing was charged. Start again from the shop whenever you like."],
+    none: ["Nothing to check out here.", "Claims and purchases start on the shop page: playhorizon.dev/shop."],
+    refused: ["Paddle couldn't open this checkout.", "Nothing was charged. Start again from the shop; if it happens again, write to us."],
     failed: ["Paddle's checkout couldn't load.", "Check your connection or turn off what blocks cdn.paddle.com, then reload this page."],
   };
   const [title, line] = text[state];

@@ -1,19 +1,22 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import type { ReactNode } from "react";
+import { connection } from "next/server";
+import { Suspense, type ReactNode } from "react";
 import { getReleases, launcherBuild } from "@/components/github-releases";
 import { DownloadIcon } from "@/components/icons";
 import { LauncherLink } from "@/components/launcher-download";
 import { PixelAurora } from "@/components/pixel-aurora";
+import { FounderClaim } from "@/components/shop/claim";
 import { ClaimDate, Countdown, FounderSet } from "@/components/shop/shop-view";
-import { getShopArt, getShopStatus } from "@/components/shop-data";
+import { COSMETICS_API, getShopArt, getShopStatus } from "@/components/shop-data";
 import { Contact, NOT_OFFICIAL, PADDLE_BUYER_TERMS, SELLER } from "@/components/legal";
 import { pageMetadata } from "@/components/site";
 import "./shop.css";
 
 // Always there, with every price, before anyone signs in (Paddle's website review, Mojang's guidelines). The claim's
 // dates and countdown show only while the cosmetics service says its window is open (components/shop-data.ts); the
-// header's link and the sitemap's line too.
+// header's link and the sitemap's line too. The shop is here only: the claim (and, later, purchases) run on this page
+// with Paddle's overlay, bound to the Minecraft account the buyer names; the launcher's Wardrobe shows what they own.
 
 export async function generateMetadata(): Promise<Metadata> {
   const shop = await getShopStatus();
@@ -36,6 +39,13 @@ function Step({ n, title, children }: { n: number; title: string; children: Reac
       <div className="mt-2 text-[15px] leading-relaxed text-white/70">{children}</div>
     </li>
   );
+}
+
+// Paddle's client-side token (public by design), read at request time like /shop/pay does.
+async function Claim({ open, endsLabel }: { open: boolean; endsLabel: string | null }) {
+  await connection();
+  const token = process.env.PADDLE_CLIENT_TOKEN?.trim() ?? "";
+  return <FounderClaim api={COSMETICS_API} token={/^(live|test)_[A-Za-z0-9]{10,64}$/.test(token) ? token : null} open={open} endsLabel={endsLabel} />;
 }
 
 function Fact({ title, children }: { title: string; children: ReactNode }) {
@@ -66,8 +76,8 @@ export default async function ShopPage() {
             <span className="text-accent block pb-1">is free.</span>
           </h1>
           <p className="mt-6 max-w-2xl text-lg leading-relaxed text-white/70">
-            Four things for the players who were here first: a cap, a T-shirt, a backpack and a name tag. Claim them in the
-            Horizon launcher{endsAt === null ? " once the claim opens" : ""}; once claimed, they&apos;re yours to keep.
+            Four things for the players who were here first: a cap, a T-shirt, a backpack and a name tag. Claim them on this page
+            {endsAt === null ? " once the claim opens" : ""}, then wear them from the Horizon launcher&apos;s Wardrobe; they&apos;re yours to keep.
           </p>
 
           <div className="mt-8 flex flex-col gap-5 rounded-2xl bg-white/[0.06] p-5 backdrop-blur-xl sm:flex-row sm:items-center sm:justify-between sm:p-6">
@@ -89,19 +99,19 @@ export default async function ShopPage() {
               </div>
             )}
             <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+              <a
+                href="#claim"
+                className="inline-flex h-12 items-center justify-center rounded-[10px] bg-[#6b4bff] px-5 text-[15px] font-medium text-white transition-colors hover:bg-[#7a5dff]"
+              >
+                {endsAt !== null ? "Claim the set" : "How to claim"}
+              </a>
               <LauncherLink
                 build={launcher}
-                className="inline-flex h-12 items-center justify-center gap-2.5 rounded-[10px] bg-[#6b4bff] px-5 text-[15px] font-medium text-white transition-colors hover:bg-[#7a5dff]"
+                className="inline-flex h-12 items-center justify-center gap-2.5 rounded-[10px] bg-white/[0.08] px-5 text-[15px] font-medium text-white transition-colors hover:bg-white/[0.14]"
               >
                 <DownloadIcon className="size-[18px]" />
                 Get the launcher
               </LauncherLink>
-              <a
-                href="#claim"
-                className="inline-flex h-12 items-center justify-center rounded-[10px] bg-white/[0.08] px-5 text-[15px] font-medium text-white transition-colors hover:bg-white/[0.14]"
-              >
-                How to claim
-              </a>
             </div>
           </div>
 
@@ -115,30 +125,33 @@ export default async function ShopPage() {
 
       <section id="claim" aria-labelledby="claim-title" className="scroll-mt-20">
         <div className="mx-auto w-full max-w-6xl px-6 py-16 sm:py-20 lg:px-10">
-          <p className="text-sm font-medium text-white/60">How to claim</p>
+          <p className="text-sm font-medium text-white/60">Claim it</p>
           <h2 id="claim-title" className="mt-3 font-display text-[clamp(1.75rem,4vw,2.5rem)] leading-tight font-semibold tracking-[-0.03em] text-white">
-            In the launcher, in three steps.
+            Here, in three steps.
           </h2>
-          <ol className="mt-8 grid gap-3 md:grid-cols-3">
-            <Step n={1} title="Get the launcher">
-              Download Horizon&apos;s launcher for Windows, macOS or Linux, or update the one you have.{" "}
-              <LauncherLink build={launcher} className={LINK}>
-                Download it
-              </LauncherLink>
-              .
-            </Step>
-            <Step n={2} title="Sign in with Microsoft">
-              Sign in with the Microsoft account that owns Minecraft: Java Edition. Microsoft&apos;s own sign-in opens; Horizon never sees your password.
-            </Step>
-            <Step n={3} title="Claim the set">
-              Open <span className="text-white">Wardrobe</span> in the launcher&apos;s top bar, then its <span className="text-white">Shop</span> tab, and press{" "}
-              <span className="text-white">Claim the founder set</span>. A free Paddle checkout (0 CHF) opens in your browser to record the claim; once
-              it&apos;s done, wear what you like from the Wardrobe tab.
-            </Step>
-          </ol>
+          <div className="mt-8 grid gap-6 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] lg:items-start">
+            <Suspense fallback={<div className="h-[184px] rounded-2xl bg-white/[0.06]" />}>
+              <Claim open={endsAt !== null} endsLabel={endsAt !== null ? lastDayShort(endsAt) : null} />
+            </Suspense>
+            <ol className="grid gap-3">
+              <Step n={1} title="Name your account">
+                Type the Minecraft: Java Edition name the set goes to, and check it&apos;s your skin&apos;s face that shows.
+              </Step>
+              <Step n={2} title="A free checkout">
+                Paddle&apos;s checkout opens on this page: an email for the receipt and your country, nothing to pay (0 CHF).
+              </Step>
+              <Step n={3} title="Wear it in the launcher">
+                Open <span className="text-white">Wardrobe</span> in the{" "}
+                <LauncherLink build={launcher} className={LINK}>
+                  Horizon launcher
+                </LauncherLink>
+                , signed in with that account: the set is there.
+              </Step>
+            </ol>
+          </div>
           <p className="mt-6 max-w-3xl rounded-2xl bg-white/[0.03] p-5 text-[15px] leading-relaxed text-white/70 ring-1 ring-white/[0.08]">
-            <span className="font-medium text-white">This website never signs you in.</span> The founder set costs nothing. If a page, a message or a mod
-            asks for your password or for money to get it, it isn&apos;t Horizon.
+            <span className="font-medium text-white">This website never signs you in.</span> It only needs your Minecraft name, and the founder set
+            costs nothing. If a page, a message or a mod asks for your password or for money to get it, it isn&apos;t Horizon.
           </p>
         </div>
       </section>
@@ -155,7 +168,7 @@ export default async function ShopPage() {
             </Fact>
             <Fact title="What it changes">How you look. Nothing about how the game plays.</Fact>
             <Fact title="Bound to your account">
-              The set belongs to the Minecraft account you claim it with, on every computer you sign in to. It&apos;s yours to keep.
+              The set belongs to the Minecraft account you name when you claim it, on every computer you sign in to. It&apos;s yours to keep.
             </Fact>
             <Fact title="Hide it">
               <span className="text-white">Show my cosmetics</span> in the Wardrobe turns yours off for everyone. You can hide other players&apos; cosmetics too,
@@ -172,7 +185,7 @@ export default async function ShopPage() {
           </dl>
           <div className="mt-14 max-w-3xl rounded-2xl bg-white/[0.03] p-5 text-[15px] leading-relaxed text-white/70 ring-1 ring-white/[0.08]">
             <p>
-              <span className="font-medium text-white">Prices, and who sells.</span> Every price is on this page and in the launcher before you sign in;
+              <span className="font-medium text-white">Prices, and who sells.</span> Every price is on this page, and nobody signs in to see it;
               the founder set is free (0 CHF). Cosmetics are made by {SELLER} and sold through Paddle.com, the merchant of record, under{" "}
               <a href={PADDLE_BUYER_TERMS} target="_blank" rel="noreferrer" className={LINK}>
                 Paddle&apos;s buyer terms

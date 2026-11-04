@@ -1,10 +1,12 @@
 import { cacheLife } from "next/cache";
 
-// The founder shop reads Horizon's cosmetics service (horizon-rust/horizon-cosmetics, private), on the server only:
-// the browser never calls it, nobody signs in here, and nothing about a visitor is sent. Claiming happens in the
-// launcher. The page and its nav entry exist only while the service says the founder set's claim window is open.
+// The founder shop reads Horizon's cosmetics service (horizon-rust/horizon-cosmetics, private) on the server. Only the
+// claim calls it from the browser (components/shop/claim.tsx): the Minecraft name the buyer types, and the checkout.
+// Nobody signs in here. The page and its nav entry exist only while the service says the founder set's claim window is open.
 
 const UPSTREAM = (process.env.COSMETICS_UPSTREAM || "https://cosmetics.playhorizon.dev").replace(/\/+$/, "");
+// What the browser calls for the claim (CORS allows this site only): always the production service.
+export const COSMETICS_API = "https://cosmetics.playhorizon.dev";
 
 // For previews only: shows the page with a sample window while the service's window isn't open. Ignored on Railway's
 // production environment, so a stray variable there can't open the shop early. The sample window is as long as the
