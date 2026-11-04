@@ -89,7 +89,9 @@ export default function PrivacyPage() {
             Contributors&apos; and mod authors&apos; pictures come from avatars.githubusercontent.com, mod icons from horizon-rust.github.io, and every
             download from github.com. Those requests go from your browser to GitHub, and{" "}
             <Out href="https://docs.github.com/site-policy/privacy-policies/github-general-privacy-statement">GitHub&apos;s privacy statement</Out> covers
-            them. Nothing else on this site is loaded from another company.
+            them. Nothing else on this site is loaded from another company, except on the checkout page (/shop/pay), which the
+            launcher opens for a purchase or a claim: it loads Paddle.js from cdn.paddle.com, and Paddle&apos;s checkout runs in it under{" "}
+            <Out href="https://www.paddle.com/legal/privacy">Paddle&apos;s privacy policy</Out>.
           </p>
         </Part>
 
