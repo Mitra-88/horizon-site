@@ -19,7 +19,7 @@ const NAV = [
   { label: "Players", href: "/stats" },
 ];
 
-// The founder shop's entry, shown only while its claim window is open (components/shop-data.ts).
+// The shop's entry, shown while something is on sale or the founder claim is open (components/shop-data.ts).
 const SHOP = { label: "Shop", href: "/shop" };
 
 const NAV_LINK = "inline-flex items-center gap-1.5 transition-colors hover:text-white";

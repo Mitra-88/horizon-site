@@ -33,7 +33,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.5,
     })),
     { url: absolute("/mods/policy"), changeFrequency: "monthly", priority: 0.3 },
-    ...(shop.open && !shop.preview ? [{ url: absolute("/shop"), changeFrequency: "weekly" as const, priority: 0.6 }] : []),
+    ...((shop.open || shop.selling) && !shop.preview ? [{ url: absolute("/shop"), changeFrequency: "weekly" as const, priority: 0.6 }] : []),
     { url: absolute("/terms"), changeFrequency: "yearly" as const, priority: 0.2 },
     { url: absolute("/refunds"), changeFrequency: "yearly" as const, priority: 0.2 },
     { url: absolute("/artists"), changeFrequency: "monthly", priority: 0.4 },

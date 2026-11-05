@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, type FormEvent, type ReactNode } from "react";
+import { prepareSkin } from "@/components/shop/model";
 import { loadPaddle, type PaddleJs } from "@/components/shop/paddle-js";
 
 // The founder claim, on the site: the buyer names the Minecraft account (the cosmetics service looks it up at Mojang and
@@ -57,9 +58,47 @@ async function call(api: string, path: string, init?: RequestInit): Promise<{ ok
 
 const errorText = (body: Record<string, unknown>) => (typeof body.error === "string" && MESSAGES[body.error]) || UNREACHABLE;
 
-/** The skin's face and hat layer, drawn pixel for pixel from Mojang's texture; a plain tile without a skin. */
+/** The skin's face and hat layer, drawn pixel for pixel from Mojang's texture as vanilla prepares it (a legacy 64×32
+ * skin's solid hat layer is no hat); a plain tile without a skin. */
 export function SkinFace({ skin, name, size = 56 }: { skin: string | null; name: string; size?: number }) {
-  if (!skin || !SKIN.test(skin))
+  const ref = useRef<HTMLCanvasElement>(null);
+  const ok = !!skin && SKIN.test(skin);
+  useEffect(() => {
+    const canvas = ref.current;
+    if (!ok || !canvas) return;
+    let live = true;
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    img.onload = () => {
+      if (!live) return;
+      const src = document.createElement("canvas");
+      src.width = img.naturalWidth;
+      src.height = img.naturalHeight;
+      const g = src.getContext("2d", { willReadFrequently: true });
+      const out = canvas.getContext("2d");
+      if (!g || !out) return;
+      g.drawImage(img, 0, 0);
+      const prepared = prepareSkin(g.getImageData(0, 0, src.width, src.height));
+      if (!prepared) return;
+      const face = document.createElement("canvas");
+      face.width = face.height = 8;
+      const f = face.getContext("2d");
+      if (!f) return;
+      const layer = document.createElement("canvas");
+      layer.width = layer.height = 64;
+      layer.getContext("2d")?.putImageData(prepared, 0, 0);
+      f.drawImage(layer, 8, 8, 8, 8, 0, 0, 8, 8);
+      f.drawImage(layer, 40, 8, 8, 8, 0, 0, 8, 8);
+      out.imageSmoothingEnabled = false;
+      out.clearRect(0, 0, 8, 8);
+      out.drawImage(face, 0, 0);
+    };
+    img.src = skin!;
+    return () => {
+      live = false;
+    };
+  }, [ok, skin]);
+  if (!ok)
     return (
       <span
         aria-hidden
@@ -69,18 +108,7 @@ export function SkinFace({ skin, name, size = 56 }: { skin: string | null; name:
         {name.slice(0, 1).toUpperCase()}
       </span>
     );
-  const px = size / 8;
-  const layer = (x: number) => ({
-    backgroundImage: `url(${skin})`,
-    backgroundSize: `${64 * px}px auto`,
-    backgroundPosition: `-${x * px}px -${8 * px}px`,
-  });
-  return (
-    <span aria-hidden style={{ width: size, height: size }} className="relative inline-block shrink-0 overflow-hidden rounded-lg bg-black/30 [image-rendering:pixelated]">
-      <span className="absolute inset-0 [image-rendering:pixelated]" style={layer(8)} />
-      <span className="absolute inset-0 [image-rendering:pixelated]" style={layer(40)} />
-    </span>
-  );
+  return <canvas ref={ref} aria-hidden width={8} height={8} style={{ width: size, height: size }} className="shrink-0 rounded-lg bg-black/30 [image-rendering:pixelated]" />;
 }
 
 export function FounderClaim({ api, token, open, endsLabel }: { api: string; token: string | null; open: boolean; endsLabel: string | null }) {

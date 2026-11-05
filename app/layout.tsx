@@ -51,7 +51,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
       className={`${geist.variable} ${geistMono.variable} ${bricolage.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
-        <SiteHeader releaseIds={releases?.map((r) => r.id) ?? []} launcher={launcherBuild(releases)} shop={shop.open} />
+        <SiteHeader releaseIds={releases?.map((r) => r.id) ?? []} launcher={launcherBuild(releases)} shop={shop.open || shop.selling} />
         {children}
         <SiteFooter />
       </body>

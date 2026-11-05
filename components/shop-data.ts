@@ -1,25 +1,57 @@
 import { cacheLife } from "next/cache";
+import { formatPrice } from "@/components/shop/pricing";
 
-// The founder shop reads Horizon's cosmetics service (horizon-rust/horizon-cosmetics, private) on the server. Only the
-// claim calls it from the browser (components/shop/claim.tsx): the Minecraft name the buyer types, and the checkout.
-// Nobody signs in here. The page and its nav entry exist only while the service says the founder set's claim window is open.
+// The shop reads Horizon's cosmetics service (horizon-rust/horizon-cosmetics, private) on the server: the catalogue
+// (items, sets, prices per currency, the founder claim's window) and the item files. The browser calls it only for
+// what one visitor does: the Minecraft name they type (its skin and what it owns) and the checkout. Nobody signs in
+// here. Every price comes from the catalogue; an item without prices isn't on sale and shows no price or Buy button.
 
 const UPSTREAM = (process.env.COSMETICS_UPSTREAM || "https://cosmetics.playhorizon.dev").replace(/\/+$/, "");
-// What the browser calls for the claim (CORS allows this site only): always the production service.
-export const COSMETICS_API = "https://cosmetics.playhorizon.dev";
+const PRODUCTION = process.env.RAILWAY_ENVIRONMENT_NAME === "production";
+// What the browser calls (CORS allows this site only): the production service, except in a local preview.
+export const COSMETICS_API = (!PRODUCTION && process.env.COSMETICS_BROWSER_API) || "https://cosmetics.playhorizon.dev";
 
 // For previews only: shows the page with a sample window while the service's window isn't open. Ignored on Railway's
 // production environment, so a stray variable there can't open the shop early. The sample window is as long as the
 // real one: seven days from the start of the current hour. Production reads the service's own dates only.
-const PREVIEW = process.env.SHOP_PREVIEW === "1" && process.env.RAILWAY_ENVIRONMENT_NAME !== "production";
+const PREVIEW = process.env.SHOP_PREVIEW === "1" && !PRODUCTION;
 const PREVIEW_DAYS = 7;
+// The service's preview key (1Password Agents "Horizon shop preview key"): a collection the service still hides. Never
+// on production: there the catalogue shows what is on sale, and nothing else.
+const PREVIEW_KEY = !PRODUCTION && /^[A-Za-z0-9_-]{8,128}$/.test(process.env.SHOP_PREVIEW_KEY ?? "") ? process.env.SHOP_PREVIEW_KEY! : null;
 
-// What the founder set holds, as the launcher's Wardrobe sorts it. Launcher themes are free in the launcher's Settings
-// and never part of the shop, so an item of any other slot is left out.
+// What the shop holds, as the launcher's Wardrobe sorts it. Launcher themes are free in the launcher's Settings and
+// never part of the shop, so an item of any other slot is left out.
 export type ShopSlot = "head" | "torso" | "back" | "shoulder" | "name_tag";
-// `price`: what the shop shows before anyone signs in ("Free" for the founder set, else the service's price).
-export type ShopItem = { id: string; hash: string; slot: ShopSlot; name: string; price: string; line?: string };
-export type ShopStatus = { open: boolean; endsAt: number | null; items: ShopItem[]; preview: boolean };
+export const CURRENCIES = ["USD", "EUR", "CHF", "GBP"] as const;
+export type Currency = (typeof CURRENCIES)[number];
+/** Minor units (cents), the amount the buyer sees, per currency. */
+export type Prices = Partial<Record<Currency, number>>;
+// `price`: the label shown before anyone signs in ("Free" for the founder set, else the USD price).
+export type ShopItem = {
+  id: string;
+  hash: string;
+  slot: ShopSlot;
+  name: string;
+  price: string;
+  line?: string;
+  prices?: Prices;
+  collection?: string;
+  founder?: boolean;
+  supporter?: boolean;
+};
+export type ShopSet = { id: string; name: string; line?: string; items: string[]; prices: Prices; collection?: string };
+export type ShopCollection = { id: string; name: string; line?: string };
+export type Supporter = { item: string; min: Prices; max: Prices };
+export type ShopStatus = { open: boolean; endsAt: number | null; items: ShopItem[]; preview: boolean; selling: boolean };
+export type Catalogue = {
+  currencies: Currency[];
+  /** Everything a card shows: items on sale, the Supporter badge, and the founder set while its claim is open. */
+  items: ShopItem[];
+  sets: ShopSet[];
+  collections: ShopCollection[];
+  supporter: Supporter | null;
+};
 
 // The item file, as horizon's `crates/horizon-cosmetics` reads it (docs/cosmetics.md in the game's repository).
 export type Vec3 = [number, number, number];
@@ -38,7 +70,7 @@ export type ItemArt = {
 };
 
 const SLOTS = new Set<ShopSlot>(["head", "torso", "back", "shoulder", "name_tag"]);
-const ID = /^[a-z0-9_]{1,48}$/;
+const ID = /^[a-z0-9_]{1,64}$/;
 const HASH = /^[0-9a-f]{1,64}$/;
 const COLOUR = /^#[0-9a-f]{6}$/i;
 const BASE64 = /^[A-Za-z0-9+/]+={0,2}$/;
@@ -50,6 +82,7 @@ const num = (v: unknown, fallback = 0) => (typeof v === "number" && Number.isFin
 const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v));
 const vec3 = (v: unknown, limit = 64): Vec3 =>
   Array.isArray(v) && v.length === 3 ? (v.map((x) => clamp(num(x), -limit, limit)) as Vec3) : [0, 0, 0];
+const english = (v: unknown, max: number) => (obj(v) && typeof v.en_us === "string" && v.en_us.trim() ? v.en_us.trim().slice(0, max) : undefined);
 
 async function upstream(path: string) {
   const res = await fetch(`${UPSTREAM}${path}`, { signal: AbortSignal.timeout(10_000), headers: { accept: "application/json" } });
@@ -57,51 +90,121 @@ async function upstream(path: string) {
   return (await res.json()) as unknown;
 }
 
-/** The service's `price` (`{amount: cents, currency}`) as the shop writes it; none: free. */
-function priceLabel(price: unknown) {
-  if (!obj(price) || typeof price.amount !== "number" || !Number.isFinite(price.amount) || price.amount <= 0) return "Free";
-  const currency = typeof price.currency === "string" && /^[A-Z]{3}$/.test(price.currency) ? price.currency : "USD";
-  return new Intl.NumberFormat("en-US", { style: "currency", currency }).format(price.amount / 100);
+/** Prices per currency: whole minor units from 1 to 100,000 (1,000.00), in the currencies the site knows. */
+function readPrices(v: unknown): Prices | undefined {
+  if (!obj(v)) return undefined;
+  const out: Prices = {};
+  for (const c of CURRENCIES) {
+    const a = v[c];
+    if (typeof a === "number" && Number.isInteger(a) && a > 0 && a <= 100_000) out[c] = a;
+  }
+  return out.USD !== undefined ? out : undefined;
 }
 
-function readCatalogue(json: unknown): Omit<ShopStatus, "preview"> | null {
+
+type Read = { claim: Omit<ShopStatus, "preview" | "selling" | "items">; founder: string[]; catalogue: Catalogue };
+
+function readCatalogue(json: unknown): Read | null {
   if (!obj(json) || !obj(json.claim) || !Array.isArray(json.items)) return null;
   const claim = json.claim;
   const founder = Array.isArray(claim.items) ? claim.items.filter((i): i is string => typeof i === "string") : [];
+  const endsAt = typeof claim.ends_at === "number" && Number.isFinite(claim.ends_at) ? claim.ends_at : null;
+  const open = claim.state === "open" && endsAt !== null;
+  const sales = json.sales === true;
   const items: ShopItem[] = [];
   for (const raw of json.items) {
-    if (!obj(raw) || typeof raw.id !== "string" || !ID.test(raw.id) || !founder.includes(raw.id)) continue;
+    if (!obj(raw) || typeof raw.id !== "string" || !ID.test(raw.id)) continue;
     if (typeof raw.hash !== "string" || !HASH.test(raw.hash) || !SLOTS.has(raw.slot as ShopSlot)) continue;
-    const names = obj(raw.names) ? raw.names : {};
-    const name = typeof names.en_us === "string" ? names.en_us.slice(0, 48) : raw.id;
-    const lines = obj(raw.lines) ? raw.lines : {};
-    const line = typeof lines.en_us === "string" && lines.en_us.trim() ? lines.en_us.trim().slice(0, 160) : undefined;
-    items.push({ id: raw.id, hash: raw.hash, slot: raw.slot as ShopSlot, name, price: priceLabel(raw.price), ...(line ? { line } : {}) });
+    const isFounder = founder.includes(raw.id);
+    const supporter = raw.supporter === true;
+    const prices = sales && !isFounder ? readPrices(raw.prices) : undefined;
+    // Shown: an item on sale, the Supporter badge (while the service offers it), the founder set's items.
+    if (!isFounder && !prices && !supporter) continue;
+    const collection = typeof raw.collection === "string" && ID.test(raw.collection) ? raw.collection : undefined;
+    items.push({
+      id: raw.id,
+      hash: raw.hash,
+      slot: raw.slot as ShopSlot,
+      name: english(raw.names, 48) ?? raw.id,
+      price: prices ? formatPrice(prices.USD!, "USD") : "Free",
+      ...(english(raw.lines, 200) ? { line: english(raw.lines, 200) } : {}),
+      ...(prices ? { prices } : {}),
+      ...(collection ? { collection } : {}),
+      ...(isFounder ? { founder: true } : {}),
+      ...(supporter ? { supporter: true } : {}),
+    });
   }
-  // The order the service gives the set in.
-  items.sort((a, b) => founder.indexOf(a.id) - founder.indexOf(b.id));
-  const endsAt = typeof claim.ends_at === "number" && Number.isFinite(claim.ends_at) ? claim.ends_at : null;
-  return { open: claim.state === "open" && endsAt !== null, endsAt, items };
+  const sp = obj(json.supporter) ? json.supporter : null;
+  const supporterItem = sp && typeof sp.item === "string" ? items.find((i) => i.id === sp.item && i.supporter) : undefined;
+  const min = sp ? readPrices(sp.min) : undefined;
+  const max = sp ? readPrices(sp.max) : undefined;
+  const supporter = sales && supporterItem && min && max ? { item: supporterItem.id, min, max } : null;
+  const shown = items.filter((i) => (i.founder ? open || PREVIEW : i.supporter ? supporter?.item === i.id : true));
+  for (const i of shown) if (i.supporter && supporter) i.price = `From ${formatPrice(supporter.min.USD!, "USD")}`;
+  const known = new Set(shown.filter((i) => i.prices).map((i) => i.id));
+  const sets: ShopSet[] = [];
+  for (const raw of Array.isArray(json.sets) && sales ? json.sets : []) {
+    if (!obj(raw) || typeof raw.id !== "string" || !ID.test(raw.id) || !Array.isArray(raw.items)) continue;
+    const ids = raw.items.filter((i): i is string => typeof i === "string");
+    const prices = readPrices(raw.prices);
+    if (!prices || ids.length < 2 || !ids.every((i) => known.has(i))) continue;
+    const collection = typeof raw.collection === "string" && ID.test(raw.collection) ? raw.collection : undefined;
+    sets.push({
+      id: raw.id,
+      name: english(raw.names, 64) ?? raw.id,
+      items: ids,
+      prices,
+      ...(english(raw.lines, 200) ? { line: english(raw.lines, 200) } : {}),
+      ...(collection ? { collection } : {}),
+    });
+  }
+  const collections: ShopCollection[] = [];
+  for (const raw of Array.isArray(json.collections) ? json.collections : [])
+    if (obj(raw) && typeof raw.id === "string" && ID.test(raw.id))
+      collections.push({ id: raw.id, name: english(raw.names, 48) ?? raw.id, ...(english(raw.lines, 240) ? { line: english(raw.lines, 240) } : {}) });
+  const currencies = (Array.isArray(json.currencies) ? json.currencies : ["USD"]).filter((c): c is Currency => CURRENCIES.includes(c as Currency));
+  // The founder set in the order the service gives it, after everything else.
+  shown.sort((a, b) => Number(!!a.founder) - Number(!!b.founder) || founder.indexOf(a.id) - founder.indexOf(b.id));
+  return {
+    claim: { open, endsAt },
+    founder,
+    catalogue: { currencies: currencies.includes("USD") ? currencies : ["USD", ...currencies], items: shown, sets, collections, supporter },
+  };
 }
 
-/** The founder set and its claim window; `open` is false when the service is down or answers anything unexpected. */
-export async function getShopStatus(): Promise<ShopStatus> {
+const EMPTY: Catalogue = { currencies: ["USD"], items: [], sets: [], collections: [], supporter: null };
+
+async function loadCatalogue(): Promise<Read | null> {
   "use cache";
-  let live: Omit<ShopStatus, "preview"> | null = null;
   try {
-    live = readCatalogue(await upstream("/v1/catalogue"));
+    const live = readCatalogue(await upstream(PREVIEW_KEY ? `/v1/catalogue?preview=${encodeURIComponent(PREVIEW_KEY)}` : "/v1/catalogue"));
     if (!live) throw new Error("The catalogue came back in a format this site doesn't read");
     cacheLife({ stale: 60, revalidate: 60, expire: 3600 });
+    return live;
   } catch (error) {
     console.error("Couldn't load the cosmetics catalogue:", error);
     cacheLife({ stale: 60, revalidate: 60, expire: 300 });
+    return null;
   }
-  if (live?.open) return { ...live, preview: false };
-  if (PREVIEW && live?.items.length) {
+}
+
+/** The founder set's claim window, and whether anything is on sale; `open` is false when the service is down. */
+export async function getShopStatus(): Promise<ShopStatus> {
+  const live = await loadCatalogue();
+  const founder = live?.catalogue.items.filter((i) => i.founder) ?? [];
+  const selling = live?.catalogue.items.some((i) => i.prices || i.supporter) ?? false;
+  if (live?.claim.open) return { ...live.claim, items: founder, preview: false, selling };
+  if (PREVIEW && live) {
+    // Founder items are listed only while the window is open: the preview window shows them from the raw list.
     const start = Math.floor(Date.now() / 3_600_000) * 3600;
-    return { open: true, endsAt: start + PREVIEW_DAYS * 86_400, items: live.items, preview: true };
+    return { open: true, endsAt: start + PREVIEW_DAYS * 86_400, items: founder, preview: true, selling };
   }
-  return { open: false, endsAt: null, items: live?.items ?? [], preview: false };
+  return { open: false, endsAt: null, items: [], preview: false, selling };
+}
+
+/** What the shop's cards show. */
+export async function getCatalogue(): Promise<Catalogue> {
+  return (await loadCatalogue())?.catalogue ?? EMPTY;
 }
 
 function readPart(raw: unknown, depth: number, count: { parts: number; cubes: number }): ArtPart | null {
@@ -150,7 +253,7 @@ function readArt(json: unknown, id: string): ItemArt | null {
   };
 }
 
-/** The founder set's item files, for the page's 3D preview. Items that fail to load are left out. */
+/** The item files, for the page's 3D previews. Items that fail to load are left out. */
 export async function getShopArt(items: ShopItem[]): Promise<ItemArt[]> {
   "use cache";
   const art = await Promise.all(
