@@ -1,0 +1,325 @@
+"use client";
+
+import { useEffect, useRef, useSyncExternalStore, type ReactNode } from "react";
+import type { ItemArt, ShopSlot, Vec3 } from "@/components/shop-data";
+import { fitDistance, itemBounds, project, ShopGL, textureSizes, type Scene } from "@/components/shop/renderer";
+
+// The shop's 3D: the big viewer (the shared canvas, live) and the cards' pictures (drawn once each by the same context,
+// when a card scrolls into view). Animations run at the game's 20 ticks a second, only while the viewer is on screen,
+// the tab is visible, and the visitor hasn't asked for reduced motion.
+
+const noop = () => () => {};
+
+/** The page's GL context (null where WebGL isn't there, or on the server). */
+export function useShopGL() {
+  return useSyncExternalStore(noop, () => ShopGL.get(), () => null);
+}
+
+export function usePrefersStill() {
+  return useSyncExternalStore(
+    (onChange) => {
+      const q = window.matchMedia("(prefers-reduced-motion: reduce)");
+      q.addEventListener("change", onChange);
+      return () => q.removeEventListener("change", onChange);
+    },
+    () => window.matchMedia("(prefers-reduced-motion: reduce)").matches,
+    () => true,
+  );
+}
+
+// ── framing ──
+
+export type Focus = "all" | ShopSlot;
+
+type Camera = { yaw: number; pitch: number; target: Vec3; radius: number };
+
+const WHOLE: Camera = { yaw: -28, pitch: 8, target: [0, 0.42, 0], radius: 1.32 };
+const FOCUS: Record<Focus, Camera> = {
+  all: WHOLE,
+  head: { yaw: -32, pitch: 10, target: [0, -0.32, 0], radius: 0.62 },
+  torso: { yaw: -26, pitch: 6, target: [0, 0.3, 0], radius: 0.9 },
+  back: { yaw: 155, pitch: 10, target: [0, 0.2, 0], radius: 1.0 },
+  shoulder: { yaw: -48, pitch: 10, target: [0, -0.12, 0], radius: 0.82 },
+  name_tag: { yaw: -20, pitch: 4, target: [0, -0.2, 0], radius: 1.0 },
+};
+
+const THUMB_YAW: Partial<Record<ShopSlot, number>> = { head: -34, torso: -28, back: 150, shoulder: -44 };
+
+// ── the cards' pictures: one queue, one snapshot a frame ──
+
+type Job = { canvas: HTMLCanvasElement; scene: () => Scene | null; done: () => void };
+const queue: Job[] = [];
+let pumping = 0;
+
+function pump() {
+  pumping = 0;
+  const gl = ShopGL.get();
+  const job = queue.shift();
+  if (!gl || !job) return;
+  const scene = job.scene();
+  if (scene && gl.snapshot(scene, job.canvas)) job.done();
+  if (queue.length) pumping = requestAnimationFrame(pump);
+}
+
+function enqueue(job: Job) {
+  const at = queue.findIndex((j) => j.canvas === job.canvas);
+  if (at >= 0) queue.splice(at, 1);
+  queue.push(job);
+  pumping ||= requestAnimationFrame(pump);
+}
+
+/** A card's picture: the player (your skin) wearing `items`, framed on them (or whole, for a set). */
+export function Thumb({ items, slot, skin, slim, whole = false, className = "", label }: { items: ItemArt[]; slot?: ShopSlot; skin: string | null; slim: boolean; whole?: boolean; className?: string; label: string }) {
+  const ref = useRef<HTMLCanvasElement>(null);
+  const gl = useShopGL();
+  const key = `${skin}|${slim}|${whole}|${items.map((i) => i.id).join(",")}`;
+  useEffect(() => {
+    const canvas = ref.current;
+    if (!canvas || !gl || !skin) return;
+    let drawn = false;
+    const draw = () => {
+      const dpr = Math.min(2, window.devicePixelRatio || 1);
+      const w = Math.max(1, Math.round(canvas.clientWidth * dpr));
+      const h = Math.max(1, Math.round(canvas.clientHeight * dpr));
+      canvas.width = w;
+      canvas.height = h;
+      enqueue({
+        canvas,
+        scene: () => {
+          const aspect = w / h;
+          const framed = whole ? { centre: WHOLE.target, radius: 1.2 } : itemBounds(items, slim, textureSizes(gl, items));
+          return {
+            skin,
+            slim,
+            items,
+            ticks: 0,
+            yaw: whole ? -26 : (THUMB_YAW[slot ?? "head"] ?? -30),
+            pitch: 10,
+            target: framed.centre,
+            distance: fitDistance(framed.radius * 1.12, aspect),
+            idle: false,
+          };
+        },
+        done: () => {
+          drawn = true;
+          canvas.dataset.drawn = "";
+        },
+      });
+    };
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting && !drawn) draw();
+      },
+      { rootMargin: "200px" },
+    );
+    io.observe(canvas);
+    const undo = gl.onRestore(() => {
+      drawn = false;
+      draw();
+    });
+    return () => {
+      io.disconnect();
+      undo();
+      const at = queue.findIndex((j) => j.canvas === canvas);
+      if (at >= 0) queue.splice(at, 1);
+    };
+    // `key` names everything the picture shows.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [gl, key]);
+  return <canvas ref={ref} role="img" aria-label={label} className={`block h-full w-full opacity-0 transition-opacity duration-300 data-[drawn]:opacity-100 motion-reduce:transition-none ${className}`} />;
+}
+
+// ── the big viewer ──
+
+export type ViewerProps = {
+  skin: string | null;
+  slim: boolean;
+  worn: ItemArt[];
+  focus: Focus;
+  /** Bumped to frame `focus` again (a card tried twice). */
+  focusKey: number;
+  tag: ReactNode;
+  label: string;
+};
+
+const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
+
+export function Viewer({ skin, slim, worn, focus, focusKey, tag, label }: ViewerProps) {
+  const host = useRef<HTMLDivElement>(null);
+  const tagRef = useRef<HTMLDivElement>(null);
+  const gl = useShopGL();
+  const still = usePrefersStill();
+  const props = useRef({ skin, slim, worn, focus });
+  const goal = useRef<Camera>({ ...FOCUS[focus] });
+  const wake = useRef<() => void>(() => {});
+
+  useEffect(() => {
+    props.current = { skin, slim, worn, focus };
+    wake.current();
+  }, [skin, slim, worn, focus]);
+
+  useEffect(() => {
+    goal.current = { ...FOCUS[focus] };
+    wake.current();
+  }, [focus, focusKey]);
+
+  useEffect(() => {
+    const el = host.current;
+    if (!el || !gl) return;
+    const detach = gl.attach(el);
+    const cam: Camera = { ...goal.current, target: [...goal.current.target] };
+    let frame = 0;
+    let seen = true;
+    let drag: { x: number; y: number; yaw: number; pitch: number; id: number } | null = null;
+    let last = performance.now();
+
+    const draw = (now: number) => {
+      const p = props.current;
+      if (!p.skin) return;
+      const dpr = Math.min(2, window.devicePixelRatio || 1);
+      const w = Math.max(1, Math.round(el.clientWidth * dpr));
+      const h = Math.max(1, Math.round(el.clientHeight * dpr));
+      const scene: Scene = {
+        skin: p.skin,
+        slim: p.slim,
+        items: p.worn,
+        ticks: still ? 0 : (now / 1000) * 20,
+        yaw: cam.yaw,
+        pitch: cam.pitch,
+        target: cam.target,
+        distance: fitDistance(cam.radius, w / h),
+        idle: !still,
+      };
+      gl.render(scene, w, h);
+      const t = tagRef.current;
+      if (t) {
+        const at = project(scene, w, h, [0, -0.86, 0]);
+        t.style.transform = at ? `translate3d(${at[0] / dpr}px, ${at[1] / dpr}px, 0) translate(-50%, -100%)` : "";
+        t.style.visibility = at ? "" : "hidden";
+      }
+    };
+    const tick = (now: number) => {
+      frame = 0;
+      const dt = Math.min(0.1, (now - last) / 1000);
+      last = now;
+      const g = goal.current;
+      const k = still ? 1 : 1 - Math.exp(-dt * 7);
+      let moving = false;
+      if (!drag) {
+        // The short way round to the goal's yaw.
+        const dy = ((((g.yaw - cam.yaw) % 360) + 540) % 360) - 180;
+        cam.yaw += dy * k;
+        cam.pitch = lerp(cam.pitch, g.pitch, k);
+        moving ||= Math.abs(dy) > 0.05 || Math.abs(g.pitch - cam.pitch) > 0.05;
+      }
+      cam.radius = lerp(cam.radius, g.radius, k);
+      for (let i = 0; i < 3; i++) cam.target[i] = lerp(cam.target[i], g.target[i], k);
+      moving ||= Math.abs(g.radius - cam.radius) > 0.001;
+      draw(now);
+      if (seen && !document.hidden && (!still || moving || drag)) frame = requestAnimationFrame(tick);
+    };
+    const start = () => {
+      if (!frame) {
+        last = performance.now();
+        frame = requestAnimationFrame(tick);
+      }
+    };
+    wake.current = start;
+    const onDown = (e: PointerEvent) => {
+      if (e.button !== 0) return;
+      drag = { x: e.clientX, y: e.clientY, yaw: cam.yaw, pitch: cam.pitch, id: e.pointerId };
+      el.setPointerCapture(e.pointerId);
+      el.dataset.drag = "";
+      start();
+    };
+    const onMove = (e: PointerEvent) => {
+      if (!drag || e.pointerId !== drag.id) return;
+      cam.yaw = drag.yaw + (e.clientX - drag.x) * 0.5;
+      cam.pitch = Math.max(-25, Math.min(40, drag.pitch + (e.clientY - drag.y) * 0.25));
+      goal.current = { ...goal.current, yaw: cam.yaw, pitch: cam.pitch };
+      start();
+    };
+    const onUp = () => {
+      drag = null;
+      delete el.dataset.drag;
+    };
+    const onKey = (e: KeyboardEvent) => {
+      const turn = { ArrowLeft: -20, ArrowRight: 20 }[e.key as "ArrowLeft"];
+      if (!turn) return;
+      e.preventDefault();
+      goal.current = { ...goal.current, yaw: goal.current.yaw + turn };
+      start();
+    };
+    const io = new IntersectionObserver(([entry]) => {
+      seen = entry.isIntersecting;
+      if (seen) start();
+    });
+    const ro = new ResizeObserver(() => start());
+    io.observe(el);
+    ro.observe(el);
+    el.addEventListener("pointerdown", onDown);
+    el.addEventListener("pointermove", onMove);
+    el.addEventListener("pointerup", onUp);
+    el.addEventListener("pointercancel", onUp);
+    el.addEventListener("keydown", onKey);
+    document.addEventListener("visibilitychange", start);
+    const undo = gl.onRestore(start);
+    start();
+    return () => {
+      cancelAnimationFrame(frame);
+      wake.current = () => {};
+      io.disconnect();
+      ro.disconnect();
+      undo();
+      el.removeEventListener("pointerdown", onDown);
+      el.removeEventListener("pointermove", onMove);
+      el.removeEventListener("pointerup", onUp);
+      el.removeEventListener("pointercancel", onUp);
+      el.removeEventListener("keydown", onKey);
+      document.removeEventListener("visibilitychange", start);
+      detach();
+    };
+  }, [gl, still]);
+
+  /** Turns the view to `yaw` (the Front / Side / Back buttons). */
+  const face = (yaw: number) => {
+    goal.current = { ...goal.current, yaw };
+    wake.current();
+  };
+
+  return (
+    <div className="flex h-full flex-col">
+      <div
+        ref={host}
+        tabIndex={0}
+        role="img"
+        aria-roledescription="3D preview"
+        aria-label={`${label} Drag, or use the left and right arrow keys, to turn it.`}
+        className="relative min-h-0 flex-1 cursor-grab touch-pan-y overflow-hidden outline-none select-none focus-visible:ring-2 focus-visible:ring-[#a98fff] data-[drag]:cursor-grabbing"
+      >
+        {!gl && (
+          <p className="absolute inset-0 flex items-center justify-center p-6 text-center text-[15px] text-white/55">
+            This browser can&apos;t draw the 3D preview. Every item and price is still listed below.
+          </p>
+        )}
+        <div ref={tagRef} aria-hidden className="pointer-events-none absolute top-0 left-0 will-change-transform">
+          {tag}
+        </div>
+      </div>
+      <div className="flex flex-wrap items-center gap-1.5 px-3 pt-2 pb-3" role="group" aria-label="Turn the preview">
+        {(
+          [
+            ["Front", -20],
+            ["Side", -90],
+            ["Back", 160],
+          ] as const
+        ).map(([text, yaw]) => (
+          <button key={text} type="button" onClick={() => face(yaw)} className="inline-flex h-9 items-center rounded-lg px-3 text-sm font-medium text-white/70 transition-colors hover:bg-white/[0.06] hover:text-white">
+            {text}
+          </button>
+        ))}
+        <span className="ml-auto text-sm text-white/45">Drag to turn</span>
+      </div>
+    </div>
+  );
+}
