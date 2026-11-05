@@ -35,7 +35,7 @@ python3 native/tools/native.py check /path/to/playtime zoom fps-overlay
 python3 native/tools/native.py build /path/to/playtime
 ```
 
-builds the game with your mod (Horizon's `fast` profile) and prints where it is. Start it with `--resources` pointing at prepared game files: each version the launcher installed has them in its `.local/horizon-client/26.3` folder. Or build with the launcher, as players do, and play the **Native mods** instance:
+builds the game with your mod (Horizon's `fast` profile) and prints where it is. Start it with `--resources` pointing at prepared game files: each version the launcher installed has them in its `.local/horizon-client/26.3` folder. Or build with the launcher, as players do, and play the instance it builds for (the one picked in the launcher, or `--instance NAME`):
 
 ```sh
 horizon-launcher native-build /path/to/playtime/mixins/playtime --trust-native-code

@@ -52,6 +52,11 @@ bindings = [
 | `[compatibility] horizon_revision` | The Horizon commit the mod was made and tested on ([below](#hook-points-or-a-pinned-commit)). |
 | `[[module]]` | A file of yours added to the game as a module: `source` becomes `crate::game::<name>`. Your state, your logic and your tests go there. |
 | `[[injection]]` | One hook: `target` is the function, `kind` where in it your code runs (`HEAD`: first), `helper` the file with your code, and `bindings` what it receives. |
+| `hook`, `hook_version` | In an `[[injection]]`, in place of `target`: a hook point by its name in Horizon's catalog, `native-hooks.json` (`hook = "tick"`, `hook_version = 1`). horizon-mixins 0.6.0 or later. |
+| `[api]` | `path = "engine"`: the folder of the mod's [typed API](/docs/mod-code#the-typed-api) crate. The launcher links it into the game and calls its `hooks()`. |
+| `[dependencies]` | Other typed mods this one calls, by id and version requirement: `base_mod = "^1"`, or `{ version = "^2", optional = true }`. |
+| `[[crate]]` | A Cargo package of the bundle that the game depends on, for a big mod's heavy code: helpers call it, and Cargo compiles it once. It may use only crates in Horizon's `Cargo.lock`. |
+| `[[post_build]]` | A program of one of your crates that runs after the game is built. |
 
 **Helpers.** A helper file holds one function, whose parameters are the bindings in order. Keep it short: read what the hook gives, call into your module, and write back what the hook asks for. Playtime's `command.rs`:
 
@@ -74,7 +79,7 @@ A binding's `value` is an expression in the hooked function: `&mut *self` for th
 
 Horizon changes every day, and a hook names a function of its source. What a mod builds on depends on what it hooks:
 
-- **Only Horizon's hook points** (`native_tick`, `native_hud` and the others in [hook points and helpers](/docs/mod-code)). These keep their names and parameters from release to release, and new ones are only ever added. Each addition raises the hook points' version. Your mod names the version it needs, and the launcher builds it on the game the player plays, as long as that game has at least that version. **This is the way to make a mod**: it keeps working on new Nightlies without a new release.
+- **Only Horizon's hook points** (`native_tick`, `native_hud` and the others in [hook points and helpers](/docs/mod-code)). These keep their names and parameters from release to release, and new ones are only ever added. Each addition raises the hook points' version. Your mod names the version it needs, and the launcher builds it on the game the player plays, as long as that game has at least that version. **This is the way to make a mod**: it keeps working on new Nightlies without a new release. A [typed mod](/docs/mod-code#the-typed-api) counts as one when it uses only the catalog's hooks and `Host`: later Horizons only add event fields, trait methods and `Host` methods.
 - **The game's own functions**, such as `Game::break_block`. Those can change in any Nightly, so the mod builds only on the commit it pins in `horizon_revision`, a Nightly's. Every Nightly's commit is kept, so a pinned mod still builds after its Nightly is replaced, but the player plays that Nightly's game with it, and all the pinned mods of one build must pin the same commit. The launcher says which mod pins which when they don't.
 
 ## compatibility.json
@@ -95,7 +100,7 @@ Horizon changes every day, and a hook names a function of its source. What a mod
 | Key | What it is |
 | --- | --- |
 | `game` | The Minecraft version: `26.3`. |
-| `hooks` | The hook points' version the mod needs. The current Nightly has versions 1 and [2](/docs/mod-code#the-item-panel-and-recipes-version-2). |
+| `hooks` | The [API version](/docs/mod-code#api-versions) the mod needs: the newest hook point or helper it uses. [API versions](/docs/mod-code#api-versions) says where to find the current Nightly's. |
 | `horizon_revision` | The commit the mod was tested on: the same as in `horizon-mixin.toml`. Take a Nightly's ([Releases](/releases)). |
 | `horizon_mixins_revision` | The horizon-mixins the mod was made with. Use the one Horizon's own mods use, in [horizon-mods' `native/`](https://github.com/horizon-rust/horizon-mods/tree/main/native). |
 
@@ -105,6 +110,6 @@ What players install, and what you submit to the registry, is one `.hnmod` file:
 
 ## What a native mod can do
 
-Anything Rust can. A native mod is compiled into the game, so it isn't held to a list of permissions and nothing stops it from reading files or using the network. That is why players build native mods only after a warning, why the registry reviews every line, and why the launcher runs them in an instance of their own, with its own worlds and options. Keep your mod to what its page says it does.
+Anything Rust can. A native mod is compiled into the game, so it isn't held to a list of permissions and nothing stops it from reading files or using the network. That is why players build native mods only after a warning, why the registry reviews every line, and why the launcher builds them only into the instance the player installed them in. Keep your mod to what its page says it does.
 
 Next: [hook points and helpers](/docs/mod-code).

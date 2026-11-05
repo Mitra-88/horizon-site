@@ -9,7 +9,7 @@ This guide takes you from nothing to a mod that other players can install from [
 | **What it is** | Data and assets: blocks, items, recipes, loot tables, tags, models, textures, names, structures | Rust code that hooks into the game: a HUD, keys, commands, settings, new behaviour |
 | **File** | `.hmod` | `.hnmod` |
 | **Code** | None | Rust, compiled into the game |
-| **How players get it** | The game reads it when it starts | The launcher compiles a game with it, in an instance of its own |
+| **How players get it** | The game reads it when it starts | The launcher compiles a game with it, for the instance it is installed in |
 | **Safety** | Data only: it can't run anything | Not sandboxed: it can do anything the player can on their computer |
 
 **Pick a content mod** when what you add is a block, an item, a recipe or a structure: no compiler, and it works on every computer as it is. [Content mods](/docs/content-mods) has the whole guide.
@@ -23,6 +23,8 @@ A Horizon mod is not a Java mod. Fabric, NeoForge and Forge jars don't run in Ho
 A native mod is a **bundle** for [horizon-mixins](https://github.com/horizon-rust/horizon-mixins), a tool made for Horizon: a manifest, `horizon-mixin.toml`, and a few `.rs` files. Before the game is compiled, horizon-mixins adds your code to Horizon's own source and calls it from the places the manifest names. The result is an ordinary Horizon game with your mod built in.
 
 Horizon keeps a set of **hook points** for this: empty functions the game calls at fixed places (every tick, every frame, when it draws the HUD, when a key goes down, when the player types a command, when Options > Mods lists the mods), and helpers to read the player, draw text and keep settings. A mod that hooks only these builds on every later version of Horizon too, so it doesn't need a new release for each Nightly. Horizon's own Zoom, FPS Counter, Keystrokes and Minimap are made this way.
+
+There is a second way to write the code, the [typed API](/docs/mod-code#the-typed-api): one Rust crate that implements a trait, with a method for each hook point and a typed event for each. Nightlies since 2026-11-03 have it. This guide's example uses helpers, which work on every release.
 
 Players never compile anything by hand. They install the mod from the launcher's Mods page, and the launcher compiles the game with it, with its own copy of Rust ([below](#what-players-see)).
 
@@ -42,7 +44,7 @@ For a native mod you need:
 - **[Rust](https://rustup.rs)**, the stable toolchain, and **Git**.
 - **Python 3.11** or later, and `rsync` (on Windows, use WSL for the checks below).
 - **[horizon-rust/horizon-mods](https://github.com/horizon-rust/horizon-mods)**, the registry's repository. Its `native/tools/native.py` applies your bundle to Horizon's source, checks and builds the game with it, and packages the `.hnmod`. It is what Horizon's own native mods use.
-- **The launcher**, 0.2.23 or later ([Install](/docs/install)), with the game prepared at least once, to play with your mod.
+- **The launcher**, a current one ([Install](/docs/install)): 0.2.37 or later builds [typed mods](/docs/mod-code#the-typed-api) too. Prepare the game at least once, to play with your mod.
 
 ```sh
 git clone https://github.com/horizon-rust/horizon-mods
@@ -85,13 +87,15 @@ The launcher builds a game with your mod from its folder:
 horizon-launcher native-build /path/to/playtime/mixins/playtime --trust-native-code
 ```
 
-It compiles the game with the launcher's own Rust and installs it in an instance named **Native mods**. Pick that instance in the launcher and press **Play**. The first build downloads Rust and takes 20 to 30 minutes; after a change to your mod, the next build compiles only what changed, a few minutes.
+It compiles the game with the launcher's own Rust, for the instance picked in the launcher (`--instance NAME` picks another), and that instance then plays the built game: press **Play**. The first build downloads Rust and takes 20 to 30 minutes; after a change to your mod, the next build compiles only what changed, a few minutes.
+
+**While you work on a mod**, run `horizon-launcher settings native-profile dev` once, or pick **Dev build** in the Mods page's native build row. It compiles the game unoptimized: a change to your mod rebuilds about six times faster, and the game runs up to about twice as slow. Switch back to `performance` to play.
 
 `--trust-native-code` is the same decision the launcher asks players for in red: the mods run with full access to the computer. Build only code you trust.
 
 ## What players see
 
-When a player installs a native mod from the launcher's Mods page, the launcher says once that native mods compile into a game of their own (the first build downloads Rust and can take 20 to 30 minutes) and turns on **Settings > Native mods (experimental)**. There the player presses **Build**, reads the red warning that names the mods, and builds with **I trust these mods: build**. The **Native mods** instance then plays the built game, with its own worlds and options.
+A player installs a native mod from the launcher's Mods page into the instance picked on the left. The first time, the launcher says once that native mods aren't sandboxed and compile into a game of their own (the first build downloads Rust and can take 20 to 30 minutes). The Mods page then has a **Native build of {instance}** row: the player presses **Build**, reads the red warning that names the mods, and builds with **I trust these mods: build**. That instance then plays the built game. Native mods are always on in the launcher: there is no setting to turn them on.
 
 In the game, **Options > Mods** lists the mod with a switch and, when the mod has some, a **Settings** page and keys to rebind. A mod's settings live in `horizon-mods/.horizon-mod-data/<id>/` in the game folder, one file per setting.
 

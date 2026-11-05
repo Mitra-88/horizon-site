@@ -6,7 +6,7 @@ Horizon is built to be built on. Mods, shaders, agents, server panels, launchers
 
 | Surface | For | Today | Stability |
 | --- | --- | --- | --- |
-| **Mods** | mod authors | Native mods: Rust on the game's hook points (tick, frame, HUD, keys, the wheel, commands, zoom, minimap, settings pages), compiled into the game by the launcher. Content mods: data-driven blocks, items, recipes and structures | experimental |
+| **Mods** | mod authors | Native mods: Rust on the game's hook points, more than 350 of them (tick, HUD, keys, commands, blocks, mobs, damage, loot, menus, rendering and more), through mixin helpers or the typed `Hooks` trait, compiled into the game by the launcher. Content mods: data-driven blocks, items, recipes and structures | experimental |
 | **Shaders** | shader authors | a new shader API in WGSL is being designed: stages with typed inputs, options, reload on save, a debug overlay | planned |
 | **Agent control** | AI agents, scripts, tests | `horizon-ctl` and its MCP server: 96 commands to watch and play the game | preview |
 | **Servers** | hosts, panels, bots | `horizon-server`'s commands, `server.toml` and a local HTTP control API | stable |

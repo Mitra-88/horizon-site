@@ -19,11 +19,11 @@ Horizon has two kinds of mod:
 
 **Native mods**
 
-A native mod is code, not sandboxed: it can do anything you can on your computer. So the launcher builds it into a game of its own, and only when you say so:
+A native mod is code, not sandboxed: it can do anything you can on your computer. So the launcher builds it into a game of its own, for one instance, and only when you say so:
 
-1. Install it from the launcher's **Mods** page. The first time, the launcher says what native mods are and turns on **Settings > Native mods (experimental)**.
-2. There, press **Build**. The launcher names the mods and warns you in red; **I trust these mods: build** starts it. The first build downloads Rust and takes 20 to 30 minutes and a few GB of disk; later builds take a few minutes.
-3. Play the **Native mods** instance. It has its own worlds and options, so your other worlds never run the mods.
+1. Pick an instance on the left of the launcher, and install the mod from its **Mods** page. The first time, the launcher says what native mods are.
+2. In the **Native build of {instance}** row, press **Build**. The launcher names the mods and warns you in red; **I trust these mods: build** starts it. The first build downloads Rust and takes 20 to 30 minutes and a few GB of disk; later builds take a few minutes.
+3. Play that instance. Your other instances never run the mods.
 4. In the game, **Options > Mods** lists each native mod with a switch and, when it has some, a **Settings** page and keys to rebind. Turn one off there and the next build leaves it out.
 
 Install only mods whose authors you trust. The registry lists a native mod only after a maintainer has read its source, and each one's page links it. Horizon's own mods say "Made by Horizon"; every other mod's page says who made it.
