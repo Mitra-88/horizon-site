@@ -15,7 +15,6 @@ Horizon is Minecraft: Java Edition 26.3 rewritten in Rust. You install it with a
 - **Not a place where Java mods run.** Forge, NeoForge, Fabric and Quilt mod jars do **not** work in Horizon, and neither do Mixins. Horizon has its own mod system, and the launcher can port some Java mods' content. See [Mods and data packs](/docs/mods) and [Modpacks](/docs/modpacks).
 - **Not for other versions.** Horizon plays Java Edition 26.3. Worlds from older versions (1.8 to 26.2) are upgraded the way vanilla upgrades them.
 - **Not an official Minecraft product.** It is not approved by or associated with Mojang or Microsoft.
-- **Not able to sign in to a Microsoft account yet.** Until it can, Horizon cannot join servers that check accounts. See [Multiplayer](/docs/multiplayer).
 
 ## Supported systems
 

@@ -24,7 +24,7 @@ export async function GET() {
     "- It contains no Minecraft code, assets or data. It builds its game files from the player's own legally obtained copy of Minecraft: Java Edition 26.3, on their computer.",
     "- It reads the same worlds, plays by the same rules and generates the same terrain as the Java game. Differential harnesses feed the same inputs to Horizon and to vanilla and compare the results.",
     "- Forge, NeoForge, Fabric and Quilt mods do not run in it. It has its own mod system, and the launcher can carry over the content of some Java mods.",
-    "- It cannot sign in to a Microsoft account yet, so it cannot join servers that check accounts. It can join offline-mode servers, and vanilla 26.3 clients can join a Horizon server.",
+    "- Players sign in with a Microsoft account that owns Java Edition, and it joins servers that check accounts (online mode) as vanilla does. Vanilla 26.3 clients can join a Horizon server.",
     `- It is made by Ludovic Marie. Source code: ${GITHUB_URL}. Community: ${DISCORD_URL}.`,
     "",
     "## Pages",

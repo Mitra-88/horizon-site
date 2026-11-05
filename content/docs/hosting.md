@@ -9,8 +9,7 @@ There are two ways to run one. The launcher's **Servers** page does everything w
 ## Before you start
 
 - **You need your own copy of Minecraft 26.3**, like for playing: the server reads its game files from the ones you prepared. See [Install](/docs/install#what-you-need).
-- **Horizon players cannot join servers that check accounts yet.** That needs a Microsoft sign-in, which Horizon does not have. So a server for Horizon players runs in offline mode, which means anyone who can reach it can join under any name. Keep it on your network or a VPN such as Tailscale, and use a whitelist ("Friends only" in the launcher). Vanilla players can join an offline server too.
-- **A server that checks accounts is fine for vanilla players.** It works as on a vanilla server, and Horizon players cannot join it yet.
+- **Servers check Minecraft accounts by default**, as vanilla's do: every player signs in with a Microsoft account, Horizon and vanilla players alike. A server that doesn't (offline mode) lets anyone who can reach it join under any name. Keep such a server on your network or a VPN such as Tailscale, and use a whitelist ("Friends only" in the launcher).
 - Nothing of Mojang's is downloaded or shipped with the server.
 
 ## From the launcher: the Servers page
@@ -27,10 +26,9 @@ Choose **Create a server**. To use a server folder you already have, choose **Ad
 - **Difficulty:** **Peaceful**, **Easy**, **Normal** or **Hard**.
 - **Most players at once:** use **–** and **+**.
 - **Who can join:** **Friends only** or **Anyone with the address**. With Friends only, type your friends' names; the first one becomes an operator.
-- **Check Minecraft accounts**, off by default. Leave it off for Horizon players. Turn it on only if every player signs in with Microsoft.
 - **I agree to the Minecraft EULA**, with a **Read it** link. You must tick it.
 
-Everything has a default, so ticking the EULA and choosing **Create** makes a friends-only survival world. You can change all of it later.
+Everything has a default, so ticking the EULA and choosing **Create** makes a friends-only survival world that checks Minecraft accounts. You can change all of it later, **Check Minecraft accounts** included, on the server's **Settings** tab.
 
 ![The Create a server dialog](/media/docs/servers-create.webp)
 
@@ -150,7 +148,6 @@ The server restarts the game by itself if it crashes. **Updates** never happen o
 
 ### What does not work yet
 
-- Horizon players cannot join a server that checks accounts (see above).
 - No Docker image is published. You can build one from the repository.
 - Settings in `server.toml` apply at the next restart, not live.
 - `console` (attach to a server running in the background) and `ban` and `pardon` as their own commands are coming. In the meantime, `horizon-server cmd ban NAME` works.

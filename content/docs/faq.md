@@ -20,11 +20,11 @@ No. Java mod jars do not run in Horizon. Horizon has its own mod system, and the
 
 ## Can I join public servers?
 
-Not yet. Most public servers check that you own Minecraft, which needs a Microsoft account sign-in, and Horizon cannot do that yet. It can join servers in offline mode, such as your own or a friend's. See [Multiplayer](/docs/multiplayer).
+Yes. Signed in with a Microsoft account that owns Minecraft: Java Edition, Horizon joins servers that check accounts as vanilla does, secure chat included. Realms does not work yet. See [Multiplayer](/docs/multiplayer).
 
-## When will Microsoft sign-in work?
+## Do I need a Microsoft account?
 
-We cannot give a date. It needs an app registration with Microsoft and an approval from Mojang that the project does not have yet. Until then, this site only describes what works today.
+Yes, one that owns Minecraft: Java Edition. Like other launchers, Horizon's launcher starts the game only while such an account is signed in. You can then also play under an offline name. If you played without an account before, your worlds, offline names and settings stay where they are.
 
 ## Can vanilla players join my Horizon world or server?
 

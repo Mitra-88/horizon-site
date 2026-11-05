@@ -4,6 +4,7 @@ Download the launcher, let it install Horizon, then prepare the game from your o
 
 ## What you need
 
+- **A Microsoft account that owns Minecraft: Java Edition.** Like other launchers, Horizon's launcher plays only while such an account is signed in.
 - **Minecraft: Java Edition 26.3, played once.** Install it with the official Minecraft launcher (or Prism Launcher, MultiMC, the Modrinth App, ATLauncher or GDLauncher) and start 26.3 once, so it downloads its files. Horizon reads them from there and never copies them anywhere else.
 - **Java 25, a JDK**, for the one-time preparation only (the game itself needs no Java). Nothing to install: the launcher uses the Java the Minecraft launcher downloaded for 26.3, or downloads that same Java from Mojang. A JDK you installed yourself (for example [Eclipse Temurin 25](https://adoptium.net/temurin/releases/?version=25)) works too.
 - **A computer on the [supported list](/docs/#supported-systems).** On Linux and Windows that means a graphics card with Vulkan (or DirectX 12 on Windows).
@@ -30,7 +31,7 @@ The game opens on vanilla's title screen. Your worlds, options and logs live in 
 - macOS: `~/Library/Application Support/horizon`
 - Windows: `%APPDATA%\horizon`
 
-> **No Microsoft sign-in yet.** The launcher's Settings page has an Accounts section, but signing in with a Microsoft account does not work for players today. It needs an app registration and an approval from Mojang that the project does not have yet. You do not need an account to play single player.
+> **Sign in to play.** Without a signed-in account, the launcher shows **Sign in to play**. Choose **Open link**, enter the code it shows on Microsoft's page in your browser, and the launcher goes on by itself. Until an account that owns Java Edition is signed in, **Play** asks you to sign in instead of starting the game. Once one is, you can also play under an offline name.
 
 ## Updating
 
