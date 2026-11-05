@@ -41,6 +41,7 @@ const nextConfig: NextConfig = {
       { source: "/apply", headers: privateHeaders },
       { source: "/launcher", headers: privateHeaders },
       { source: "/mods/submit", headers: [{ key: "X-Frame-Options", value: "DENY" }, { key: "Content-Security-Policy", value: "frame-ancestors 'none'" }] },
+      { source: "/mods/:id/edit", headers: [{ key: "X-Frame-Options", value: "DENY" }, { key: "Content-Security-Policy", value: "frame-ancestors 'none'" }] },
     ];
   },
   cacheComponents: true,

@@ -8,6 +8,7 @@ import { DocsProse } from "@/components/docs-page-tools";
 import { ShieldIcon } from "@/components/icons";
 import { JsonLd } from "@/components/json-ld";
 import { ModDownload } from "@/components/mod-download";
+import { ModEditLink } from "@/components/mod-edit-link";
 import { ModGallery } from "@/components/mod-gallery";
 import { ModRating } from "@/components/mod-rating";
 import { getMod, getModRatings, getMods } from "@/components/mods-data";
@@ -249,6 +250,9 @@ function Publisher({ p }: { p: ModProject }) {
           </dd>
         </div>
       </dl>
+      <div className="mt-4 empty:hidden">
+        <ModEditLink id={p.id} owners={people} />
+      </div>
     </div>
   );
 }
