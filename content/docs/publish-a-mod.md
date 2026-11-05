@@ -1,11 +1,11 @@
 # Publish a mod
 
-Horizon's registry lists content mods, native mods, modpacks and resource packs made for Horizon. Players find them at [playhorizon.dev/mods](/mods) and on the launcher's Mods page, which checks every file before it installs it. Each project is reviewed by a person before it is published. This page takes your mod from a file on your computer to the registry.
+Horizon's registry lists content mods, native mods, modpacks, resource packs and shader packs made for Horizon. Players find them at [playhorizon.dev/mods](/mods) and on the launcher's Mods page, which checks every file before it installs it. Each project is reviewed by a person before it is published. This page takes your mod from a file on your computer to the registry.
 
 ## Before you submit
 
 1. **Choose a version.** Set `version` in the manifest (`horizon-mod.toml` for a content mod, `horizon-mixin.toml` for a native mod), such as `1.0.0`. Every version you publish needs a new one, and a published file never changes.
-2. **Make the file.** A content mod: `cargo horizon-mod build` writes `target/horizon-mod/<id>.hmod`. A native mod: [package it](#package-a-native-mod). That file is what you submit.
+2. **Make the file.** A content mod: `cargo horizon-mod build` writes `target/horizon-mod/<id>.hmod`. A native mod: [package it](#package-a-native-mod). A shader pack in Horizon's own format: `horizon-shader pack <folder>` writes `<id>-<version>.hshader` ([the format](/docs/api/shaders); Iris and OptiFine packs aren't listed). That file is what you submit.
 3. **Check it.** `cargo horizon-mod check <file>` must pass ([Test a mod](/docs/test-a-mod#check-it-as-the-registry-does)).
 4. **Publish the source.** Put the mod's source in a public repository, under a licence that lets players use it (MIT, Apache-2.0, GPL and so on, as an [SPDX](https://spdx.org/licenses/) name). Reviewers read it, and the file must be made from it.
 
@@ -47,7 +47,7 @@ The report then says "signature verified".
 
 Open [playhorizon.dev/mods/submit](/mods/submit) and sign in with GitHub. The page reads only your public profile. Then fill in:
 
-- **The file**: the kind (mod or native mod), the `.hmod` or `.hnmod`, its id (the manifest's `id`), its version, the Minecraft version (26.3) and what changed.
+- **The file**: the kind (mod, native mod or shader pack), the `.hmod`, `.hnmod` or `.hshader`, its id (the manifest's `id`), its version, the Minecraft version (26.3) and what changed.
 - **Its page**: the name, a one-line summary for the list, a description (Markdown), the authors, the licence, the source address and, optionally, a square PNG icon (at most 256 KiB).
 - **Signature**: your public key (for a new project) and the file's `.minisig`.
 

@@ -135,7 +135,12 @@ function byHand(kind: string): ReactNode {
       </>
     );
   if (kind === "modpack") return "a modpack lists registry mods: install them one by one, or wait for the launcher to install modpacks";
-  return "Horizon's own shader packs can't be installed yet";
+  return (
+    <>
+      put it in <code className={CODE}>shaderpacks/</code> beside <code className={CODE}>options.txt</code>, then pick it in Options, then Horizon
+      Settings, then Shader Packs
+    </>
+  );
 }
 
 function FileFacts({ p }: { p: ModProject }) {

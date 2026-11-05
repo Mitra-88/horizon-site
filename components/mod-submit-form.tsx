@@ -8,7 +8,7 @@ import { AREA, CARD, Field, GHOST_SM, INPUT, LINK, PRIMARY } from "@/components/
 const API = "/api/mods";
 const REGISTRY = "https://github.com/horizon-rust/horizon-mods";
 const MAX_FILE = 64 << 20;
-const EXTENSIONS: Record<string, string> = { hmod: "mod", hnmod: "native-mod", hpack: "modpack", zip: "resourcepack" };
+const EXTENSIONS: Record<string, string> = { hmod: "mod", hnmod: "native-mod", hpack: "modpack", zip: "resourcepack", hshader: "shader" };
 
 type Me = { login: string; csrf: string };
 type Result = { ok: true; url: string } | { ok: false; message: string } | { pending: true };
@@ -50,7 +50,7 @@ export function ModSubmitForm() {
     const kind = EXTENSIONS[name.split(".").pop() ?? ""];
     const kindField = control("kind");
     if (kind && kindField) kindField.value = kind;
-    const m = name.match(/^([a-z0-9_]{1,64})-([A-Za-z0-9][A-Za-z0-9._-]*)\.(hmod|hnmod|hpack|zip)$/);
+    const m = name.match(/^([a-z0-9_]{1,64})-([A-Za-z0-9][A-Za-z0-9._-]*)\.(hmod|hnmod|hpack|zip|hshader)$/);
     if (m) {
       const id = control("id");
       const version = control("version");
@@ -68,7 +68,9 @@ export function ModSubmitForm() {
     const sig = (f.elements.namedItem("signature") as HTMLInputElement).files?.[0];
     if (!picked) return setResult({ ok: false, message: "Pick the file to submit." });
     if (!Object.hasOwn(EXTENSIONS, picked.name.split(".").pop()?.toLowerCase() ?? ""))
-      return setResult({ ok: false, message: `${picked.name} isn't a .hmod, .hnmod, .hpack or .zip.` });
+      return setResult({ ok: false, message: `${picked.name} isn't a .hmod, .hnmod, .hpack, .zip or .hshader.` });
+    if ((v("kind") === "shader") !== picked.name.toLowerCase().endsWith(".hshader"))
+      return setResult({ ok: false, message: "A shader pack is a .hshader file, and a .hshader is a shader pack: pick that kind and that file together." });
     if (sig && !sig.name.toLowerCase().endsWith(".minisig"))
       return setResult({ ok: false, message: `${sig.name} isn't a .minisig signature.` });
     if (picked.size > MAX_FILE) return setResult({ ok: false, message: `${picked.name} is over 64 MB, the registry's limit.` });
@@ -174,9 +176,9 @@ export function ModSubmitForm() {
             <Field label="Kind">
               <select name="kind" defaultValue="mod" className={INPUT}>
                 {KINDS.map(([k, label]) => (
-                  <option key={k} value={k} disabled={k === "shader"}>
+                  <option key={k} value={k}>
                     {label.replace(/s$/, "")}
-                    {k === "shader" ? " (opens with Horizon's own shader format)" : ""}
+                    {k === "shader" ? " (.hshader, Horizon's own format)" : ""}
                   </option>
                 ))}
               </select>
@@ -187,13 +189,15 @@ export function ModSubmitForm() {
                 type="file"
                 // iOS greys out files whose extension it has no type for (.hmod…): application/octet-stream lets
                 // any file through there, and submit checks the extension.
-                accept=".hmod,.hnmod,.hpack,.zip,application/zip,application/octet-stream"
+                accept=".hmod,.hnmod,.hpack,.zip,.hshader,application/zip,application/octet-stream"
                 required
                 onChange={onFile}
                 className="block w-full text-sm text-white/70 file:mr-3 file:h-9 file:rounded-lg file:border-0 file:bg-white/10 file:px-3 file:text-sm file:font-medium file:text-white hover:file:bg-white/15"
               />
               <Hint>
-                A .hmod, a native mod&apos;s .hnmod, a .hpack or a resource pack .zip, at most 64 MB. Run <code className={code}>cargo horizon-mod check</code> on it first.
+                A .hmod, a native mod&apos;s .hnmod, a .hpack, a resource pack .zip or a shader pack&apos;s .hshader, at most 64 MB. Run <code className={code}>cargo horizon-mod check</code> on it first.
+                A shader pack is the .hshader that <code className={code}>horizon-shader pack</code> makes from a folder with <code className={code}>horizon-shaders.toml</code>{" "}
+                (<Link href="/docs/api/shaders" className={LINK}>Horizon&apos;s own format</Link>). Iris and OptiFine packs, with a <code className={code}>shaders/</code> folder, aren&apos;t listed here.
               </Hint>
             </Field>
             <div className="grid gap-4 sm:grid-cols-3">
