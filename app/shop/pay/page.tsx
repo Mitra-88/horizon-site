@@ -34,6 +34,11 @@ export default function PayPage() {
         <Suspense fallback={<p className="mt-8 text-[15px] text-white/70">Opening Paddle&apos;s checkout…</p>}>
           <Checkout />
         </Suspense>
+        <p className="mt-6 text-[15px]">
+          <Link href="/shop" className={LINK}>
+            Back to the shop
+          </Link>
+        </p>
         <p className="mt-8 text-[15px] text-white/60">
           Paddle.com is the merchant of record and takes the payment; {SELLER} makes the items. Read the{" "}
           <Link href="/terms" className={LINK}>
