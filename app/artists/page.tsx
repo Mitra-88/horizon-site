@@ -40,7 +40,7 @@ export default function ArtistsPage() {
           <ul className="list-disc space-y-2 pl-5 marker:text-white/30">
             <li>Hats and other head pieces.</li>
             <li>Back items, such as backpacks or rigid wings.</li>
-            <li>Small pets that ride on a player&apos;s shoulder.</li>
+            <li>Small pets that ride on a player&apos;s shoulder, or companions that float beside them.</li>
             <li>Auras and trails made of a few particles.</li>
             <li>Emotes: short animations for the player&apos;s own model.</li>
           </ul>

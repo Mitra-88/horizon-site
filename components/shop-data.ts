@@ -21,8 +21,8 @@ const PREVIEW_DAYS = 7;
 const PREVIEW_KEY = !PRODUCTION && /^[A-Za-z0-9_-]{8,128}$/.test(process.env.SHOP_PREVIEW_KEY ?? "") ? process.env.SHOP_PREVIEW_KEY! : null;
 
 // What the shop holds, as the launcher's Wardrobe sorts it. Launcher themes are free in the launcher's Settings and
-// never part of the shop, so an item of any other slot is left out.
-export type ShopSlot = "head" | "torso" | "back" | "shoulder" | "name_tag";
+// never part of the shop, so an item of any other slot is left out. A companion, a trail and an aura ride no bone.
+export type ShopSlot = "head" | "torso" | "back" | "shoulder" | "name_tag" | "companion" | "trail" | "aura";
 export const CURRENCIES = ["USD", "EUR", "CHF", "GBP"] as const;
 export type Currency = (typeof CURRENCIES)[number];
 /** Minor units (cents), the amount the buyer sees, per currency. */
@@ -59,17 +59,37 @@ export type ArtCube = { origin: Vec3; size: Vec3; uv: [number, number]; inflate:
 // `bone`: a top-level part may ride another bone than the item's (a shirt's sleeves on the arms), under the same attachment.
 export type ArtPart = { name: string; pivot: Vec3; rotation: Vec3; cubes: ArtCube[]; children: ArtPart[]; bone?: string };
 export type ArtAnimation = { part: string; motion: "swing" | "bob" | "spin"; axis: 0 | 1 | 2; amplitude: number; period: number; phase: number };
+// The kinds on no bone (fx.rs): a companion floats at `anchor` (pixels from the neck, model space); a trail is
+// particles from a row of `sprites` square sprites, no parts; an aura is see-through at the feet. `glow`: full light.
+export type ArtCompanion = { anchor: Vec3; glow: boolean };
+export type ArtTrail = {
+  sprites: number;
+  rate: number;
+  lifetime: number;
+  size: [number, number];
+  gravity: number;
+  drift: number;
+  spin: number;
+  from: "feet" | "body";
+  fade: boolean;
+  glow: boolean;
+};
+export type ArtAura = { alpha: number; glow: boolean };
 export type ItemArt = {
   id: string;
+  /** The bone the item rides; unused by a companion, a trail or an aura. */
   bone: string;
   attach: { offset: Vec3; rotation: Vec3; scale: number };
   texture: string; // base64 PNG
   parts: ArtPart[];
   animations: ArtAnimation[];
   tagLine?: string;
+  companion?: ArtCompanion;
+  trail?: ArtTrail;
+  aura?: ArtAura;
 };
 
-const SLOTS = new Set<ShopSlot>(["head", "torso", "back", "shoulder", "name_tag"]);
+const SLOTS = new Set<ShopSlot>(["head", "torso", "back", "shoulder", "name_tag", "companion", "trail", "aura"]);
 const ID = /^[a-z0-9_]{1,64}$/;
 const HASH = /^[0-9a-f]{1,64}$/;
 const COLOUR = /^#[0-9a-f]{6}$/i;
@@ -207,7 +227,7 @@ export async function getCatalogue(): Promise<Catalogue> {
   return (await loadCatalogue())?.catalogue ?? EMPTY;
 }
 
-function readPart(raw: unknown, depth: number, count: { parts: number; cubes: number }): ArtPart | null {
+function readPart(raw: unknown, depth: number, count: { parts: number; cubes: number }, boned = true): ArtPart | null {
   if (!obj(raw) || depth > 6 || ++count.parts > 17) return null;
   const cubes: ArtCube[] = [];
   for (const c of Array.isArray(raw.cubes) ? raw.cubes : []) {
@@ -216,16 +236,68 @@ function readPart(raw: unknown, depth: number, count: { parts: number; cubes: nu
     cubes.push({ origin: vec3(c.origin), size: vec3(c.size).map((s) => Math.abs(s)) as Vec3, uv, inflate: clamp(num(c.inflate), -4, 4), mirror: c.mirror === true });
   }
   const children = (Array.isArray(raw.children) ? raw.children : []).map((p) => readPart(p, depth + 1, count)).filter((p): p is ArtPart => p !== null);
-  const bone = depth === 0 && typeof raw.bone === "string" && BONES.has(raw.bone) ? { bone: raw.bone } : {};
+  const bone = boned && depth === 0 && typeof raw.bone === "string" && BONES.has(raw.bone) ? { bone: raw.bone } : {};
   return { name: typeof raw.name === "string" ? raw.name.slice(0, 48) : "", pivot: vec3(raw.pivot), rotation: vec3(raw.rotation, 360), cubes, children, ...bone };
 }
 
-function readArt(json: unknown, id: string): ItemArt | null {
+/** A PNG's width and height, from its header. */
+function pngSize(base64: string): [number, number] | null {
+  try {
+    const b = atob(base64.slice(0, 32));
+    if (b.length < 24 || b.slice(1, 4) !== "PNG" || b.slice(12, 16) !== "IHDR") return null;
+    const u32 = (at: number) => ((b.charCodeAt(at) << 24) | (b.charCodeAt(at + 1) << 16) | (b.charCodeAt(at + 2) << 8) | b.charCodeAt(at + 3)) >>> 0;
+    return [u32(16), u32(20)];
+  } catch {
+    return null;
+  }
+}
+
+/** The block of a companion, a trail or an aura, held to fx.rs's limits; null when the item's slot needs one and it's
+ * missing or out of bounds (the item is then left out, as the game would refuse it). */
+function readFx(json: Json, slot: ShopSlot, png: string): Pick<ItemArt, "companion" | "trail" | "aura"> | null {
+  const block = json[slot];
+  if (slot === "companion") {
+    if (!obj(block) || !Array.isArray(block.anchor) || block.anchor.length !== 3) return null;
+    const anchor = vec3(block.anchor);
+    return Math.hypot(...anchor) <= 28 ? { companion: { anchor, glow: block.glow === true } } : null;
+  }
+  if (slot === "aura") {
+    if (!obj(block) || typeof block.alpha !== "number") return null;
+    const max = block.at === "body" ? 0.35 : 0.6;
+    return block.alpha > 0 && block.alpha <= max ? { aura: { alpha: block.alpha, glow: block.glow === true } } : null;
+  }
+  if (slot === "trail") {
+    if (!obj(block)) return null;
+    const sprites = block.sprites === undefined ? 1 : block.sprites;
+    const size = Array.isArray(block.size) && block.size.length === 2 ? block.size.map((x) => num(x, -1)) : [-1, -1];
+    const [rate, lifetime] = [num(block.rate), num(block.lifetime)];
+    const [w, h] = pngSize(png) ?? [0, 0];
+    // A row of square sprites of at most 16 texels; the particle's rules as trail.rs reads them.
+    if (typeof sprites !== "number" || !Number.isInteger(sprites) || sprites < 1 || sprites > 8 || h < 1 || h > 16 || w !== sprites * h) return null;
+    if (!(rate > 0 && rate <= 4) || !Number.isInteger(lifetime) || lifetime < 1 || lifetime > 40) return null;
+    if (!(size[0] > 0 && size[0] <= size[1] && size[1] <= 4)) return null;
+    const [gravity, drift, spin] = [num(block.gravity), num(block.drift), num(block.spin)];
+    if (Math.abs(gravity) > 0.04 || drift < 0 || drift > 4 || spin < 0 || spin > 20) return null;
+    return {
+      trail: { sprites, rate, lifetime, size: [size[0], size[1]], gravity, drift, spin, from: block.from === "body" ? "body" : "feet", fade: block.fade === true, glow: block.glow === true },
+    };
+  }
+  return {};
+}
+
+function readArt(json: unknown, id: string, slot: ShopSlot): ItemArt | null {
   if (!obj(json) || json.id !== id || !obj(json.texture) || typeof json.texture.png !== "string") return null;
   const png = json.texture.png;
   if (png.length > 65_536 || !BASE64.test(png)) return null;
+  // A companion, a trail or an aura: the file says so too, carries its block, and rides no bone (a trail has no parts).
+  const loose = slot === "companion" || slot === "trail" || slot === "aura";
+  if (loose && json.slot !== slot) return null;
+  const fx = readFx(json, slot, png);
+  if (!fx) return null;
+  if (slot === "trail" && Array.isArray(json.parts) && json.parts.length) return null;
   const count = { parts: 0, cubes: 0 };
-  const parts = (Array.isArray(json.parts) ? json.parts : []).map((p) => readPart(p, 0, count)).filter((p): p is ArtPart => p !== null);
+  const parts = (Array.isArray(json.parts) ? json.parts : []).map((p) => readPart(p, 0, count, !loose)).filter((p): p is ArtPart => p !== null);
+  if ((slot === "companion" || slot === "aura") && !parts.length) return null;
   const attach = obj(json.attach) ? json.attach : {};
   const animations: ArtAnimation[] = [];
   for (const a of Array.isArray(json.animations) ? json.animations : []) {
@@ -250,6 +322,7 @@ function readArt(json: unknown, id: string): ItemArt | null {
     parts,
     animations,
     ...(line ? { tagLine: line } : {}),
+    ...fx,
   };
 }
 
@@ -259,7 +332,7 @@ export async function getShopArt(items: ShopItem[]): Promise<ItemArt[]> {
   const art = await Promise.all(
     items.map(async (item) => {
       try {
-        return readArt(await upstream(`/v1/items/${item.id}?hash=${item.hash}`), item.id);
+        return readArt(await upstream(`/v1/items/${item.id}?hash=${item.hash}`), item.id, item.slot);
       } catch (error) {
         console.error(`Couldn't load the item ${item.id}:`, error);
         return null;

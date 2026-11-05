@@ -1,9 +1,29 @@
 import type { ItemArt, Vec3 } from "@/components/shop-data";
-import { animatePoses, apply, bobArms, itemRoots, mul, playerModel, poseMatrix, prepareSkin, rotX, rotY, standInSkin, translation, type Mat4, type Part, type Pose } from "@/components/shop/model";
+import {
+  animatePoses,
+  apply,
+  bobArms,
+  fxBase,
+  itemRoots,
+  mul,
+  playerModel,
+  poseMatrix,
+  prepareSkin,
+  rotX,
+  rotY,
+  standInSkin,
+  STRIDE,
+  trailQuads,
+  translation,
+  type Mat4,
+  type Part,
+  type Pose,
+} from "@/components/shop/model";
 
 // The shop's one WebGL context. The big viewer shows its canvas; every card's picture is drawn by the same context into
 // a framebuffer, read back once and put on the card's own 2D canvas, so a page of cards never holds more than one GL
-// context (phones allow few). Plain WebGL 1 (or 2), no library: textured quads, cutout alpha, the Wardrobe's light.
+// context (phones allow few). Plain WebGL 1 (or 2), no library: textured quads, cutout alpha, the Wardrobe's light; an
+// aura and a trail's particles see-through, after the solids and without writing depth (preview.rs `render_zoomed`).
 
 export type Scene = {
   skin: string; // a texture key from `skinTexture`
@@ -23,14 +43,22 @@ export type Scene = {
 
 const FOV = 30 * (Math.PI / 180);
 
+// `a_shade`: the light and, for what is see-through, the opacity the texel's alpha is multiplied by. The canvas is
+// premultiplied, so the see-through pass writes premultiplied colour.
 const VERTEX = `
-attribute vec3 a_pos; attribute vec2 a_uv; attribute float a_light;
-uniform mat4 u_vp; varying vec2 v_uv; varying float v_light;
-void main() { gl_Position = u_vp * vec4(a_pos, 1.0); v_uv = a_uv; v_light = a_light; }`;
+attribute vec3 a_pos; attribute vec2 a_uv; attribute vec2 a_shade;
+uniform mat4 u_vp; varying vec2 v_uv; varying vec2 v_shade;
+void main() { gl_Position = u_vp * vec4(a_pos, 1.0); v_uv = a_uv; v_shade = a_shade; }`;
 const FRAGMENT = `
 precision mediump float;
-uniform sampler2D u_tex; varying vec2 v_uv; varying float v_light;
-void main() { vec4 c = texture2D(u_tex, v_uv); if (c.a < 0.5) discard; gl_FragColor = vec4(c.rgb * v_light, 1.0); }`;
+uniform sampler2D u_tex; uniform float u_blend; varying vec2 v_uv; varying vec2 v_shade;
+void main() {
+  vec4 c = texture2D(u_tex, v_uv);
+  if (u_blend < 0.5) { if (c.a < 0.5) discard; gl_FragColor = vec4(c.rgb * v_shade.x, 1.0); return; }
+  float a = c.a * v_shade.y;
+  if (a < 0.004) discard;
+  gl_FragColor = vec4(c.rgb * v_shade.x * a, a);
+}`;
 
 type Tex = { tex: WebGLTexture; w: number; h: number; source: TexImageSource | ImageData };
 
@@ -65,10 +93,15 @@ export function fitDistance(radius: number, aspect: number) {
   return radius / Math.sin(half);
 }
 
-type Quads = { key: string; data: number[] };
+/** `blend`: drawn see-through, after the solids. */
+type Quads = { key: string; data: number[]; blend: boolean };
 
-/** Every face of `part`'s tree under `parent`, posed by `poses`, as triangles (x, y, z, u, v, light) into `out`. */
-function emit(part: Part, parent: Mat4, poses: Map<string, Pose>, view: Mat4, out: number[], bones?: Map<string, Mat4>) {
+/** How an item's faces are lit: `glow` at full light, `alpha` its opacity (an aura's). */
+type Shade = { glow: boolean; alpha: number };
+const PLAIN: Shade = { glow: false, alpha: 1 };
+
+/** Every face of `part`'s tree under `parent`, posed by `poses`, as triangles (x, y, z, u, v, light, alpha) into `out`. */
+function emit(part: Part, parent: Mat4, poses: Map<string, Pose>, view: Mat4, out: number[], bones?: Map<string, Mat4>, shade = PLAIN) {
   const m = mul(parent, poseMatrix(poses.get(part.name) ?? part.pose));
   bones?.set(part.name, m);
   if (part.faces.length) {
@@ -81,12 +114,12 @@ function emit(part: Part, parent: Mat4, poses: Map<string, Pose>, view: Mat4, ou
       const len = Math.hypot(x, y, z) || 1;
       [x, y, z] = [x / len, y / len, z / len];
       // The Wardrobe's light (preview.rs): brighter facing up and toward the viewer.
-      const light = Math.min(1, 0.55 + 0.25 * Math.max(-y, 0) + 0.2 * Math.max(-z, 0));
+      const light = shade.glow ? 1 : Math.min(1, 0.55 + 0.25 * Math.max(-y, 0) + 0.2 * Math.max(-z, 0));
       const c = face.v.map((v) => [...apply(m, v[0] / 16, v[1] / 16, v[2] / 16), v[3], v[4]]);
-      for (const i of [0, 1, 2, 0, 2, 3]) out.push(c[i][0], c[i][1], c[i][2], c[i][3], c[i][4], light);
+      for (const i of [0, 1, 2, 0, 2, 3]) out.push(c[i][0], c[i][1], c[i][2], c[i][3], c[i][4], light, shade.alpha);
     }
   }
-  for (const child of part.children) emit(child, m, poses, view, out, bones);
+  for (const child of part.children) emit(child, m, poses, view, out, bones, shade);
 }
 
 const MODELS = new Map<string, { roots: { bone: string; root: Part }[]; all: Part[] }>();
@@ -103,11 +136,18 @@ function buildScene(scene: Scene, textures: Map<string, Tex>, view: Mat4) {
   const bones = new Map<string, Mat4>();
   const skin: number[] = [];
   emit(body, translation(0, 0, 0), scene.idle ? bobArms(body, scene.ticks) : new Map(), view, skin, bones);
-  const batches: Quads[] = [{ key: scene.skin, data: skin }];
+  const batches: Quads[] = [{ key: scene.skin, data: skin, blend: false }];
   for (const art of scene.items) {
     const key = itemKey(art);
     const tex = textures.get(key);
     if (!tex) continue;
+    if (art.trail) {
+      // The particles face the camera: its right and up (model space, y down) are the view's first rows.
+      const data: number[] = [];
+      trailQuads(art.trail, scene.ticks, [view[0], view[4], view[8]], [-view[1], -view[5], -view[9]], data);
+      batches.push({ key, data, blend: true });
+      continue;
+    }
     let model = MODELS.get(key);
     if (!model) {
       const roots = itemRoots(art, tex.w, tex.h);
@@ -115,16 +155,19 @@ function buildScene(scene: Scene, textures: Map<string, Tex>, view: Mat4) {
     }
     const poses = animatePoses(art.animations, model.all, scene.ticks);
     const data: number[] = [];
+    const loose = fxBase(art);
+    const shade = art.companion ? { glow: art.companion.glow, alpha: 1 } : art.aura ? art.aura : PLAIN;
     for (const { bone, root } of model.roots) {
-      const base = bones.get(bone);
-      if (base) emit(root, base, poses, view, data);
+      const base = loose ?? bones.get(bone);
+      if (base) emit(root, base, poses, view, data, undefined, shade);
     }
-    batches.push({ key, data });
+    batches.push({ key, data, blend: !!art.aura });
   }
   return { batches, bones };
 }
 
-/** The bounds (blocks) of what `items` add to the player at rest, with the body parts they ride. */
+/** The bounds (blocks) of what `items` add to the player at rest, with the body parts they ride: a companion with the
+ * head it floats beside, an aura and a trail with the legs. */
 export function itemBounds(items: ItemArt[], slim: boolean, textures: { w: number; h: number }[]): { centre: Vec3; radius: number; top: number } {
   const body = playerModel(slim);
   const bones = new Map<string, Mat4>();
@@ -132,28 +175,48 @@ export function itemBounds(items: ItemArt[], slim: boolean, textures: { w: numbe
   const none = translation(0, 0, 0);
   emit(body, none, new Map(), none, sink, bones);
   const pts: number[] = [];
+  const near = (names: string[]) => {
+    for (const name of names) {
+      const part = body.children.find((c) => c.name === name);
+      if (part) emit({ ...part, children: [] }, none, new Map(), none, pts);
+    }
+  };
+  // `top`: the highest point (y is down) of what rides a bone, for the name tag's lift. What floats free doesn't
+  // lift it, as in the game.
+  let top = -0.5;
   items.forEach((art, i) => {
     const t = textures[i];
     if (!t) return;
+    if (art.trail) {
+      // Its first stretch, from the feet back: the stream goes on out of the picture.
+      trailQuads(art.trail, 0, [1, 0, 0], [0, -1, 0], pts, (z) => z <= 2.5);
+      pts.push(0, 1.5, 0, 0, 0, 1, 1);
+      return;
+    }
+    const loose = fxBase(art);
+    if (loose) {
+      for (const { root } of itemRoots(art, t.w, t.h)) emit(root, loose, new Map(), none, pts);
+      return near(art.companion ? ["head"] : ["left_leg", "right_leg"]);
+    }
     for (const { bone, root } of itemRoots(art, t.w, t.h)) {
       const base = bones.get(bone);
       if (!base) continue;
+      const from = pts.length;
       emit(root, base, new Map(), none, pts);
-      const part = body.children.find((c) => c.name === bone);
-      if (part) emit({ ...part, children: [] }, none, new Map(), none, pts);
+      near([bone]);
+      for (let k = from + 1; k < pts.length; k += STRIDE) top = Math.min(top, pts[k]);
     }
   });
   if (!pts.length) return { centre: [0, 0.5, 0], radius: 1.2, top: -0.5 };
   const lo = [Infinity, Infinity, Infinity];
   const hi = [-Infinity, -Infinity, -Infinity];
-  for (let i = 0; i < pts.length; i += 6)
+  for (let i = 0; i < pts.length; i += STRIDE)
     for (let k = 0; k < 3; k++) {
       lo[k] = Math.min(lo[k], pts[i + k]);
       hi[k] = Math.max(hi[k], pts[i + k]);
     }
   const centre: Vec3 = [(lo[0] + hi[0]) / 2, (lo[1] + hi[1]) / 2, (lo[2] + hi[2]) / 2];
-  // `top`: the highest point (y is down), for the name tag's lift.
-  return { centre, radius: Math.max(0.2, Math.hypot(hi[0] - lo[0], hi[1] - lo[1], hi[2] - lo[2]) / 2), top: Math.min(-0.5, lo[1]) };
+  return { centre, radius: Math.max(0.2, Math.hypot(hi[0] - lo[0], hi[1] - lo[1], hi[2] - lo[2]) / 2), top };
 }
 
 export class ShopGL {
@@ -161,7 +224,7 @@ export class ShopGL {
   private gl: WebGLRenderingContext;
   private program!: WebGLProgram;
   private buffer!: WebGLBuffer;
-  private loc!: { pos: number; uv: number; light: number; vp: WebGLUniformLocation | null; tex: WebGLUniformLocation | null };
+  private loc!: { pos: number; uv: number; shade: number; vp: WebGLUniformLocation | null; tex: WebGLUniformLocation | null; blend: WebGLUniformLocation | null };
   private textures = new Map<string, Tex>();
   private fbo: { fb: WebGLFramebuffer; color: WebGLTexture; depth: WebGLRenderbuffer; w: number; h: number } | null = null;
   lost = false;
@@ -222,9 +285,10 @@ export class ShopGL {
     this.loc = {
       pos: gl.getAttribLocation(p, "a_pos"),
       uv: gl.getAttribLocation(p, "a_uv"),
-      light: gl.getAttribLocation(p, "a_light"),
+      shade: gl.getAttribLocation(p, "a_shade"),
       vp: gl.getUniformLocation(p, "u_vp"),
       tex: gl.getUniformLocation(p, "u_tex"),
+      blend: gl.getUniformLocation(p, "u_blend"),
     };
   }
 
@@ -265,13 +329,13 @@ export class ShopGL {
     this.textures.set(key, { tex, w, h, source });
   }
 
-  /** Draws `scene` into the current framebuffer, `w`×`h` device pixels. */
+  /** Draws `scene` into the current framebuffer, `w`×`h` device pixels; true when something see-through was drawn. */
   private drawScene(scene: Scene, w: number, h: number) {
     const gl = this.gl;
     gl.viewport(0, 0, w, h);
     gl.clearColor(0, 0, 0, 0);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-    if (!this.textures.has(scene.skin)) return;
+    if (!this.textures.has(scene.skin)) return false;
     gl.enable(gl.DEPTH_TEST);
     gl.disable(gl.CULL_FACE);
     gl.useProgram(this.program);
@@ -282,17 +346,34 @@ export class ShopGL {
     gl.bindBuffer(gl.ARRAY_BUFFER, this.buffer);
     gl.enableVertexAttribArray(this.loc.pos);
     gl.enableVertexAttribArray(this.loc.uv);
-    gl.enableVertexAttribArray(this.loc.light);
-    for (const batch of buildScene(scene, this.textures, view).batches) {
-      const tex = this.textures.get(batch.key);
-      if (!tex || !batch.data.length) continue;
-      gl.bindTexture(gl.TEXTURE_2D, tex.tex);
-      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(batch.data), gl.STREAM_DRAW);
-      gl.vertexAttribPointer(this.loc.pos, 3, gl.FLOAT, false, 24, 0);
-      gl.vertexAttribPointer(this.loc.uv, 2, gl.FLOAT, false, 24, 12);
-      gl.vertexAttribPointer(this.loc.light, 1, gl.FLOAT, false, 24, 20);
-      gl.drawArrays(gl.TRIANGLES, 0, batch.data.length / 6);
+    gl.enableVertexAttribArray(this.loc.shade);
+    gl.uniform1f(this.loc.blend, 0);
+    const batches = buildScene(scene, this.textures, view).batches;
+    let blending = false;
+    // Solids first, then what is see-through over them, unsorted (an aura is one thin layer, particles are small).
+    for (const blend of [false, true])
+      for (const batch of batches) {
+        const tex = this.textures.get(batch.key);
+        if (batch.blend !== blend || !tex || !batch.data.length) continue;
+        if (blend && !blending) {
+          blending = true;
+          gl.enable(gl.BLEND);
+          gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
+          gl.depthMask(false);
+          gl.uniform1f(this.loc.blend, 1);
+        }
+        gl.bindTexture(gl.TEXTURE_2D, tex.tex);
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(batch.data), gl.STREAM_DRAW);
+        gl.vertexAttribPointer(this.loc.pos, 3, gl.FLOAT, false, STRIDE * 4, 0);
+        gl.vertexAttribPointer(this.loc.uv, 2, gl.FLOAT, false, STRIDE * 4, 12);
+        gl.vertexAttribPointer(this.loc.shade, 2, gl.FLOAT, false, STRIDE * 4, 20);
+        gl.drawArrays(gl.TRIANGLES, 0, batch.data.length / STRIDE);
+      }
+    if (blending) {
+      gl.disable(gl.BLEND);
+      gl.depthMask(true);
     }
+    return blending;
   }
 
   /** Draws `scene` on the shared canvas at `w`×`h` device pixels (the viewer shows it). */
@@ -338,10 +419,16 @@ export class ShopGL {
       this.fbo = { fb, color, depth, w: fw, h: fh };
     }
     gl.bindFramebuffer(gl.FRAMEBUFFER, this.fbo.fb);
-    this.drawScene(scene, W, H);
+    const blended = this.drawScene(scene, W, H);
     const pixels = new Uint8ClampedArray(W * H * 4);
     gl.readPixels(0, 0, W, H, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+    // GL's pixels are premultiplied, ImageData's aren't: only see-through ones differ.
+    if (blended)
+      for (let i = 0; i < pixels.length; i += 4) {
+        const a = pixels[i + 3];
+        if (a > 0 && a < 255) for (let k = 0; k < 3; k++) pixels[i + k] = (pixels[i + k] * 255) / a;
+      }
     // GL's rows run bottom up.
     const flipped = new ImageData(W, H);
     const row = W * 4;
