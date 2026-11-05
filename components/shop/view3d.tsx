@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useSyncExternalStore, type ReactNode } from "react";
+import { useEffect, useMemo, useRef, useSyncExternalStore, type ReactNode } from "react";
 import type { ItemArt, ShopSlot, Vec3 } from "@/components/shop-data";
 import { fitDistance, itemBounds, project, ShopGL, textureSizes, type Scene } from "@/components/shop/renderer";
 
@@ -36,10 +36,10 @@ type Camera = { yaw: number; pitch: number; target: Vec3; radius: number };
 const WHOLE: Camera = { yaw: -28, pitch: 8, target: [0, 0.42, 0], radius: 1.32 };
 const FOCUS: Record<Focus, Camera> = {
   all: WHOLE,
-  head: { yaw: -32, pitch: 10, target: [0, -0.32, 0], radius: 0.62 },
-  torso: { yaw: -26, pitch: 6, target: [0, 0.3, 0], radius: 0.9 },
-  back: { yaw: 155, pitch: 10, target: [0, 0.2, 0], radius: 1.0 },
-  shoulder: { yaw: -48, pitch: 10, target: [0, -0.12, 0], radius: 0.82 },
+  head: { yaw: -32, pitch: 10, target: [0, -0.4, 0], radius: 0.8 },
+  torso: { yaw: -26, pitch: 6, target: [0, 0.25, 0], radius: 1.0 },
+  back: { yaw: 155, pitch: 10, target: [0, 0.05, 0], radius: 1.2 },
+  shoulder: { yaw: -48, pitch: 10, target: [0, -0.2, 0], radius: 1.0 },
   name_tag: { yaw: -20, pitch: 4, target: [0, -0.2, 0], radius: 1.0 },
 };
 
@@ -87,7 +87,7 @@ export function Thumb({ items, slot, skin, slim, whole = false, className = "", 
         canvas,
         scene: () => {
           const aspect = w / h;
-          const framed = whole ? { centre: WHOLE.target, radius: 1.2 } : itemBounds(items, slim, textureSizes(gl, items));
+          const framed = whole ? { centre: WHOLE.target, radius: 1.2, top: -0.5 } : itemBounds(items, slim, textureSizes(gl, items));
           return {
             skin,
             slim,
@@ -149,14 +149,16 @@ export function Viewer({ skin, slim, worn, focus, focusKey, tag, label }: Viewer
   const tagRef = useRef<HTMLDivElement>(null);
   const gl = useShopGL();
   const still = usePrefersStill();
-  const props = useRef({ skin, slim, worn, focus });
+  // The name tag rides above the highest worn item, as the game lifts it (vanilla's height when nothing is taller).
+  const tagY = useMemo(() => (gl ? Math.min(-0.86, itemBounds(worn, slim, textureSizes(gl, worn)).top - 0.16) : -0.86), [gl, worn, slim]);
+  const props = useRef({ skin, slim, worn, focus, tagY });
   const goal = useRef<Camera>({ ...FOCUS[focus] });
   const wake = useRef<() => void>(() => {});
 
   useEffect(() => {
-    props.current = { skin, slim, worn, focus };
+    props.current = { skin, slim, worn, focus, tagY };
     wake.current();
-  }, [skin, slim, worn, focus]);
+  }, [skin, slim, worn, focus, tagY]);
 
   useEffect(() => {
     goal.current = { ...FOCUS[focus] };
@@ -193,7 +195,7 @@ export function Viewer({ skin, slim, worn, focus, focusKey, tag, label }: Viewer
       gl.render(scene, w, h);
       const t = tagRef.current;
       if (t) {
-        const at = project(scene, w, h, [0, -0.86, 0]);
+        const at = project(scene, w, h, [0, p.tagY, 0]);
         t.style.transform = at ? `translate3d(${at[0] / dpr}px, ${at[1] / dpr}px, 0) translate(-50%, -100%)` : "";
         t.style.visibility = at ? "" : "hidden";
       }
