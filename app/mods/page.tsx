@@ -4,9 +4,9 @@ import { OFFICIAL_MODS, summarize } from "@/components/mods-logic";
 import { pageMetadata } from "@/components/site";
 
 export const metadata = pageMetadata({
-  title: "Horizon mods, modpacks and resource packs",
+  title: "Horizon mods, modpacks, resource packs, shader packs and data packs",
   description:
-    "Mods, modpacks and resource packs made for Horizon. Each one was reviewed before it was listed, and the launcher checks every file before it installs it.",
+    "Mods, modpacks, resource packs, shader packs and data packs made for Horizon. Each one was reviewed before it was listed, and the launcher checks every file before it installs it.",
   path: "/mods",
 });
 

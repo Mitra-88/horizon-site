@@ -8,6 +8,7 @@ import { DocsProse } from "@/components/docs-page-tools";
 import { ShieldIcon } from "@/components/icons";
 import { JsonLd } from "@/components/json-ld";
 import { ModDownload } from "@/components/mod-download";
+import { ModGallery } from "@/components/mod-gallery";
 import { ModRating } from "@/components/mod-rating";
 import { getMod, getModRatings, getMods } from "@/components/mods-data";
 import {
@@ -16,6 +17,8 @@ import {
   POLICY_URL,
   REGISTRY,
   apiLabel,
+  categoriesOf,
+  categoryLabel,
   downloadsText,
   fileSize,
   https,
@@ -24,6 +27,8 @@ import {
   owners,
   ratingOf,
   safeDownloads,
+  screenshotsOf,
+  tagsOf,
   type ModProject,
 } from "@/components/mods-logic";
 import { ModIcon, Stars } from "@/components/mods-ui";
@@ -135,11 +140,47 @@ function byHand(kind: string): ReactNode {
       </>
     );
   if (kind === "modpack") return "a modpack lists registry mods: install them one by one, or wait for the launcher to install modpacks";
+  if (kind === "datapack")
+    return (
+      <>
+        put it in <code className={CODE}>datapacks/</code> inside a world&apos;s folder (<code className={CODE}>saves/WORLD/datapacks/</code>), then open the
+        world, or run <code className={CODE}>/reload</code> in it
+      </>
+    );
   return (
     <>
       put it in <code className={CODE}>shaderpacks/</code> beside <code className={CODE}>options.txt</code>, then pick it in Options, then Horizon
       Settings, then Shader Packs
     </>
+  );
+}
+
+const CHIP = "inline-flex h-7 items-center rounded-md px-2.5 text-[13px] font-medium transition-colors outline-none focus-visible:ring-2 focus-visible:ring-[#a98fff]";
+
+function Chips({ p }: { p: ModProject }) {
+  const categories = categoriesOf(p);
+  const tags = tagsOf(p);
+  if (!categories.length && !tags.length) return null;
+  return (
+    <ul aria-label="Categories and tags" className="mt-4 flex flex-wrap gap-1.5">
+      {categories.map((c) => (
+        <li key={`c-${c}`}>
+          <Link
+            href={`/mods?kind=${encodeURIComponent(p.kind)}&category=${encodeURIComponent(c)}`}
+            className={`${CHIP} bg-[#a98fff]/15 text-[#d9ceff] hover:bg-[#a98fff]/25`}
+          >
+            {categoryLabel(c)}
+          </Link>
+        </li>
+      ))}
+      {tags.map((t) => (
+        <li key={`t-${t}`}>
+          <Link href={`/mods?q=${encodeURIComponent(t)}`} className={`${CHIP} bg-white/[0.06] text-white/65 hover:bg-white/[0.1] hover:text-white`}>
+            #{t}
+          </Link>
+        </li>
+      ))}
+    </ul>
   );
 }
 
@@ -242,6 +283,7 @@ async function ModContent({ params }: Pick<PageProps<"/mods/[id]">, "params">) {
   const rating = ratingOf(ratings, p.id);
   const authors = (p.authors ?? []).join(", ");
   const caps = v.capabilities ?? [];
+  const shots = screenshotsOf(p);
 
   return (
     <main>
@@ -279,6 +321,7 @@ async function ModContent({ params }: Pick<PageProps<"/mods/[id]">, "params">) {
                   </>
                 )}
               </p>
+              <Chips p={p} />
             </div>
           </div>
         </div>
@@ -299,6 +342,12 @@ async function ModContent({ params }: Pick<PageProps<"/mods/[id]">, "params">) {
               <div className="mt-6">
                 <DocsProse html={markdown(p.description)} />
               </div>
+            )}
+
+            {shots.length > 0 && (
+              <Part title="Screenshots">
+                <ModGallery name={p.name} shots={shots} />
+              </Part>
             )}
 
             {p.kind === "mod" && (
