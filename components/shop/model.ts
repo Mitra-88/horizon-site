@@ -1,10 +1,11 @@
-import type { ArtAnimation, ArtCube, ArtPart, ItemArt, Vec3 } from "@/components/shop-data";
+import type { ArtAnimation, ArtCube, ArtPart, ArtTrail, ItemArt, Vec3 } from "@/components/shop-data";
 
 // The cosmetics model math, ported from the game's `horizon_cosmetics` (item.rs, pose.rs, preview.rs) so the site
 // draws exactly what the launcher's Wardrobe and the game draw: vanilla's player model (`PlayerModel`, both skin
 // layers, wide or slim arms), each item on its bone under its attachment, `ModelPart.Cube`'s box UV, grown by
-// `inflate`, mirrored in x on request, and the items' swing, bob and spin loops. Model space is the game's:
-// pixels (1/16 block), y down, the player's front toward -z.
+// `inflate`, mirrored in x on request, and the items' swing, bob and spin loops; a companion at its anchor, an aura at
+// the feet and a trail's particles (fx.rs, trail.rs). Model space is the game's: pixels (1/16 block), y down, the
+// player's front toward -z.
 
 export type Mat4 = Float32Array;
 
@@ -129,14 +130,16 @@ function bake(file: ArtPart, tw: number, th: number): Part {
   };
 }
 
-/** An item's roots, one per bone it rides (item.rs `roots`): `cosmetic` on the item's bone, then `cosmetic_<bone>`. */
+/** An item's roots, one per bone it rides (item.rs `roots`): `cosmetic` on the item's bone, then `cosmetic_<bone>`.
+ * A companion or an aura rides no bone: one root, under `fxBase`. */
 export function itemRoots(art: ItemArt, tw: number, th: number): { bone: string; root: Part }[] {
   const a = art.attach;
   const pose: Pose = { p: [...a.offset], r: a.rotation.map((x) => x * RAD) as Vec3, s: a.scale };
+  const loose = !!(art.companion || art.aura || art.trail);
   const roots = new Map<string, Part>();
-  roots.set(art.bone, { name: "cosmetic", pose, faces: [], children: [] });
+  roots.set(loose ? "" : art.bone, { name: "cosmetic", pose, faces: [], children: [] });
   for (const p of art.parts) {
-    const bone = p.bone ?? art.bone;
+    const bone = loose ? "" : (p.bone ?? art.bone);
     let root = roots.get(bone);
     if (!root) {
       root = { name: `cosmetic_${bone}`, pose, faces: [], children: [] };
@@ -145,6 +148,84 @@ export function itemRoots(art: ItemArt, tw: number, th: number): { bone: string;
     root.children.push(bake(p, tw, th));
   }
   return [...roots].filter(([, r]) => r.children.length > 0).map(([bone, root]) => ({ bone, root }));
+}
+
+/** Where an item on no bone sits (preview.rs `Draw::item`): a companion at its anchor, an aura at the middle of the
+ * feet (24 pixels under the neck); null for the rest. */
+export function fxBase(art: ItemArt): Mat4 | null {
+  if (art.companion) return translation(art.companion.anchor[0] / 16, art.companion.anchor[1] / 16, art.companion.anchor[2] / 16);
+  if (art.aura) return translation(0, 1.5, 0);
+  return null;
+}
+
+// ── a trail: its particles left behind a player walking forward (trail.rs) ──
+
+/** Walking speed, blocks a tick (4.3 a second): the viewer's player stands still, so the ground goes back under it. */
+const WALK = 4.3 / 20;
+/** Particles one wearer has alive at once (trail.rs `PER_PLAYER`). */
+export const TRAIL_CAP = 24;
+/** Values per vertex: x, y, z, u, v, light, alpha. */
+export const STRIDE = 7;
+
+const CORNERS = [
+  [-1, -1],
+  [1, -1],
+  [1, 1],
+  [-1, -1],
+  [1, 1],
+  [-1, 1],
+] as const;
+
+/** A hash of `n` to 0..1 (trail.rs `unit`, lowbias32): the same particle looks the same on every frame. */
+function unit(n: number) {
+  let x = n >>> 0;
+  x ^= x >>> 16;
+  x = Math.imul(x, 0x7feb352d);
+  x ^= x >>> 15;
+  x = Math.imul(x, 0x846ca68b);
+  x ^= x >>> 16;
+  return (x >>> 8) / (1 << 24);
+}
+
+/** The particles of `trail` alive at `ticks` (blocks, model space), as camera-facing quads (`right` and `up`: the
+ * camera's, unit, in model space) pushed into `out` as triangles. They are born at a steady rate by distance walked,
+ * so the stream never ends and a still frame (`ticks` 0) is full; each is placed from its age alone, as the game's
+ * `Emitter::quads`: fall by gravity, sway, spin, fade over its last third. Past `TRAIL_CAP` alive the trail thins. */
+export function trailQuads(trail: ArtTrail, ticks: number, right: Vec3, up: Vec3, out: number[], keep?: (z: number) => boolean) {
+  const life = trail.lifetime;
+  const perTick = Math.min(trail.rate * WALK, TRAIL_CAP / life);
+  const lift = trail.from === "body" ? 0.9 : 0.1;
+  const light = trail.glow ? 1 : 0.75;
+  const w = 1 / trail.sprites;
+  let alive = 0;
+  for (let n = Math.floor(ticks * perTick); alive < TRAIL_CAP; n--) {
+    const age = ticks - n / perTick;
+    if (age >= life) break;
+    if (age < 0) continue;
+    alive++;
+    // The hash wraps so `n` stays small however long the page is open.
+    const seed = (((n % 4096) + 4096) % 4096) * 4;
+    const phase = unit(seed + 2) * Math.PI * 2;
+    const sway = (trail.drift / 16) * Math.sin(age * 0.2 + phase);
+    const fall = 0.5 * trail.gravity * age * age;
+    // Left at the feet (y down: 1.5 blocks under the neck), a little around them, as far behind as walked since.
+    const x = (unit(seed + 1) - 0.5) * 0.4 + sway * Math.cos(phase);
+    const y = 1.5 - lift + fall;
+    const z = (unit(seed + 2) - 0.5) * 0.4 + age * WALK + sway * Math.sin(phase);
+    if (keep && !keep(z)) continue;
+    const spin = trail.spin * age * RAD + phase;
+    const [s, c] = [Math.sin(spin), Math.cos(spin)];
+    const half = (trail.size[0] + (trail.size[1] - trail.size[0]) * unit(seed + 1)) / 32;
+    // The quad's half sides, turned by its spin in the camera's plane.
+    const [rx, ry, rz] = [(right[0] * c + up[0] * s) * half, (right[1] * c + up[1] * s) * half, (right[2] * c + up[2] * s) * half];
+    const [ux, uy, uz] = [(up[0] * c - right[0] * s) * half, (up[1] * c - right[1] * s) * half, (up[2] * c - right[2] * s) * half];
+    const sprite = Math.floor(unit(seed + 3) * trail.sprites) % trail.sprites;
+    const [u0, u1] = [sprite * w, (sprite + 1) * w];
+    const alpha = trail.fade ? Math.min(1, 3 * (1 - age / life)) : 1;
+    // Corners at -r-u, +r-u, +r+u, -r+u (the sprite's top toward `up`), as two triangles.
+    for (const [sr, su] of CORNERS)
+      out.push(x + sr * rx + su * ux, y + sr * ry + su * uy, z + sr * rz + su * uz, sr < 0 ? u0 : u1, su < 0 ? 1 : 0, light, alpha);
+  }
 }
 
 function find(part: Part, name: string): Part | null {

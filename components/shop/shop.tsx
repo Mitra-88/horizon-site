@@ -13,7 +13,16 @@ import { Thumb, useShopGL, Viewer, type Focus } from "@/components/shop/view3d";
 // catalogue's, shown before anything is typed. The basket checks out in one Paddle transaction on /shop/pay, where
 // Paddle.js lives. Calm on purpose: no timers, counts of buyers, scarcity or pop-ups.
 
-export const SLOT_LABEL: Record<ShopSlot, string> = { head: "Head", torso: "Shirt", back: "Back", shoulder: "Shoulder pet", name_tag: "Name tag" };
+export const SLOT_LABEL: Record<ShopSlot, string> = {
+  head: "Head",
+  torso: "Shirt",
+  back: "Back",
+  shoulder: "Shoulder pet",
+  name_tag: "Name tag",
+  companion: "Companion",
+  trail: "Trail",
+  aura: "Aura",
+};
 
 type Player = { uuid: string; name: string; skin: string | null; slim: boolean; owned: Set<string> };
 

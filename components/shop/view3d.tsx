@@ -41,9 +41,32 @@ const FOCUS: Record<Focus, Camera> = {
   back: { yaw: 155, pitch: 10, target: [0, 0.05, 0], radius: 1.2 },
   shoulder: { yaw: -48, pitch: 10, target: [0, -0.2, 0], radius: 1.0 },
   name_tag: { yaw: -20, pitch: 4, target: [0, -0.2, 0], radius: 1.0 },
+  // A companion beside the head (`cameraFor` turns to its side), an aura round the feet and a trail from the side,
+  // behind, both from above (a negative pitch looks down).
+  companion: { yaw: -30, pitch: 8, target: [0, -0.3, 0.3], radius: 1.35 },
+  aura: { yaw: -28, pitch: -22, target: [0, 1.2, 0], radius: 1.1 },
+  trail: { yaw: -115, pitch: -12, target: [0, 1.0, 1.1], radius: 1.7 },
 };
 
-const THUMB_YAW: Partial<Record<ShopSlot, number>> = { head: -34, torso: -28, back: 150, shoulder: -44 };
+/** `focus`'s camera for what is worn: a companion floats on one side or the other, so the view follows it. */
+function cameraFor(focus: Focus, worn: ItemArt[]): Camera {
+  const base: Camera = { ...FOCUS[focus], target: [...FOCUS[focus].target] };
+  const pet = focus === "companion" || focus === "all" ? worn.find((a) => a.companion)?.companion : undefined;
+  if (!pet) return base;
+  const [x, y, z] = pet.anchor.map((v) => v / 16);
+  if (focus === "all") return { ...base, target: [x / 2, base.target[1], 0], radius: base.radius + Math.abs(x) / 2 };
+  // Between the head's middle and the companion, seen from its side.
+  return { ...base, yaw: x > 0 ? -base.yaw : base.yaw, target: [x / 2, (y - 0.25) / 2, z / 2], radius: 0.75 + Math.hypot(x, y + 0.25, z) / 2 };
+}
+
+const THUMB_YAW: Partial<Record<ShopSlot, number>> = { head: -34, torso: -28, back: 150, shoulder: -44, companion: -30, aura: -28, trail: -115 };
+const THUMB_PITCH: Partial<Record<ShopSlot, number>> = { aura: -22, trail: -12 };
+
+/** A card's yaw: a companion on the wearer's left (+x) is seen from that side, so the head doesn't hide it. */
+function thumbYaw(slot: ShopSlot, items: ItemArt[]) {
+  const yaw = THUMB_YAW[slot] ?? -30;
+  return slot === "companion" && (items[0]?.companion?.anchor[0] ?? 0) > 0 ? -yaw : yaw;
+}
 
 // ── the cards' pictures: one queue, one snapshot a frame ──
 
@@ -93,8 +116,8 @@ export function Thumb({ items, slot, skin, slim, whole = false, className = "", 
             slim,
             items,
             ticks: 0,
-            yaw: whole ? -26 : (THUMB_YAW[slot ?? "head"] ?? -30),
-            pitch: 10,
+            yaw: whole ? -26 : thumbYaw(slot ?? "head", items),
+            pitch: whole ? 10 : (THUMB_PITCH[slot ?? "head"] ?? 10),
             target: framed.centre,
             distance: fitDistance(framed.radius * 1.12, aspect),
             idle: false,
@@ -152,7 +175,7 @@ export function Viewer({ skin, slim, worn, focus, focusKey, tag, label }: Viewer
   // The name tag rides above the highest worn item, as the game lifts it (vanilla's height when nothing is taller).
   const tagY = useMemo(() => (gl ? Math.min(-0.86, itemBounds(worn, slim, textureSizes(gl, worn)).top - 0.16) : -0.86), [gl, worn, slim]);
   const props = useRef({ skin, slim, worn, focus, tagY });
-  const goal = useRef<Camera>({ ...FOCUS[focus] });
+  const goal = useRef<Camera>(cameraFor(focus, worn));
   const wake = useRef<() => void>(() => {});
 
   useEffect(() => {
@@ -161,8 +184,10 @@ export function Viewer({ skin, slim, worn, focus, focusKey, tag, label }: Viewer
   }, [skin, slim, worn, focus, tagY]);
 
   useEffect(() => {
-    goal.current = { ...FOCUS[focus] };
+    goal.current = cameraFor(focus, worn);
     wake.current();
+    // Framed again when a card is tried (the worn items change with it), not when one is taken off.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [focus, focusKey]);
 
   useEffect(() => {
