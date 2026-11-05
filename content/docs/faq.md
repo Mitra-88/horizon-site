@@ -56,7 +56,7 @@ Linux x86-64, macOS on Apple Silicon and Windows x64. See [supported systems](/d
 
 ## Are shader packs supported?
 
-Not right now. They have been removed, and will come back later, written again from scratch. See [Settings](/docs/settings#shader-packs).
+Yes. Horizon's own `.hshader` packs and Iris/OptiFine packs both load from the `shaderpacks` folder; pick one in Options > Horizon Settings > Shader Packs. See [Settings](/docs/settings#shader-packs).
 
 ## Does Horizon collect data?
 

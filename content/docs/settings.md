@@ -42,7 +42,10 @@ The change applies at the next start. If Vulkan gives you trouble, try DirectX 1
 
 ## Shader packs
 
-Shader packs have been removed for now. They will come back later, written again from scratch. Packs in your `shaderpacks` folder are left where they are.
+Put a shader pack in the `shaderpacks` folder of the game folder (beside `options.txt`) and pick it in **Options > Horizon Settings > Shader Packs**.
+
+- **Horizon's own packs** (`.hshader`, WGSL written for Horizon's renderer) are on the launcher's **Mods** page, in the Shader packs tab, and the launcher installs them into `shaderpacks/`. Pack authors: see [Publish a mod](/docs/publish-a-mod).
+- **Iris/OptiFine packs** (a `shaders/` folder inside the `.zip`) load from the same folder, through a separate loader written from a spec of the format. Not every pack looks exactly as it does on Iris yet.
 
 ## Resource packs
 
