@@ -125,7 +125,7 @@ function buildScene(scene: Scene, textures: Map<string, Tex>, view: Mat4) {
 }
 
 /** The bounds (blocks) of what `items` add to the player at rest, with the body parts they ride. */
-export function itemBounds(items: ItemArt[], slim: boolean, textures: { w: number; h: number }[]): { centre: Vec3; radius: number } {
+export function itemBounds(items: ItemArt[], slim: boolean, textures: { w: number; h: number }[]): { centre: Vec3; radius: number; top: number } {
   const body = playerModel(slim);
   const bones = new Map<string, Mat4>();
   const sink: number[] = [];
@@ -143,7 +143,7 @@ export function itemBounds(items: ItemArt[], slim: boolean, textures: { w: numbe
       if (part) emit({ ...part, children: [] }, none, new Map(), none, pts);
     }
   });
-  if (!pts.length) return { centre: [0, 0.5, 0], radius: 1.2 };
+  if (!pts.length) return { centre: [0, 0.5, 0], radius: 1.2, top: -0.5 };
   const lo = [Infinity, Infinity, Infinity];
   const hi = [-Infinity, -Infinity, -Infinity];
   for (let i = 0; i < pts.length; i += 6)
@@ -152,7 +152,8 @@ export function itemBounds(items: ItemArt[], slim: boolean, textures: { w: numbe
       hi[k] = Math.max(hi[k], pts[i + k]);
     }
   const centre: Vec3 = [(lo[0] + hi[0]) / 2, (lo[1] + hi[1]) / 2, (lo[2] + hi[2]) / 2];
-  return { centre, radius: Math.max(0.2, Math.hypot(hi[0] - lo[0], hi[1] - lo[1], hi[2] - lo[2]) / 2) };
+  // `top`: the highest point (y is down), for the name tag's lift.
+  return { centre, radius: Math.max(0.2, Math.hypot(hi[0] - lo[0], hi[1] - lo[1], hi[2] - lo[2]) / 2), top: Math.min(-0.5, lo[1]) };
 }
 
 export class ShopGL {
