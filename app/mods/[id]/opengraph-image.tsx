@@ -1,5 +1,5 @@
 import { getMod } from "@/components/mods-data";
-import { KIND_NAMES } from "@/components/mods-logic";
+import { KIND_NAMES, https } from "@/components/mods-logic";
 import { ogCard } from "@/components/og-card";
 
 export const alt = "A project in the Horizon mod registry";
@@ -14,6 +14,7 @@ export default async function Image({ params }: { params: Promise<{ id: string }
   return ogCard({
     kicker: `${KIND_NAMES[p.kind] ?? "Mod"} for Horizon`,
     title: p.name,
+    icon: https(p.icon),
     footer: authors ? `By ${authors}` : "Reviewed before it was listed",
   });
 }
