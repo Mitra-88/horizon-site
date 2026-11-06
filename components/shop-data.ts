@@ -21,8 +21,9 @@ const PREVIEW_DAYS = 7;
 const PREVIEW_KEY = !PRODUCTION && /^[A-Za-z0-9_-]{8,128}$/.test(process.env.SHOP_PREVIEW_KEY ?? "") ? process.env.SHOP_PREVIEW_KEY! : null;
 
 // What the shop holds, as the launcher's Wardrobe sorts it. Launcher themes are free in the launcher's Settings and
-// never part of the shop, so an item of any other slot is left out. A companion, a trail and an aura ride no bone.
-export type ShopSlot = "head" | "torso" | "back" | "shoulder" | "name_tag" | "companion" | "trail" | "aura";
+// never part of the shop, so an item of any other slot is left out. A companion, a trail and an aura ride no bone; an
+// emote is played, never worn.
+export type ShopSlot = "head" | "torso" | "back" | "shoulder" | "name_tag" | "companion" | "trail" | "aura" | "emote";
 export const CURRENCIES = ["USD", "EUR", "CHF", "GBP"] as const;
 export type Currency = (typeof CURRENCIES)[number];
 /** Minor units (cents), the amount the buyer sees, per currency. */
@@ -41,7 +42,8 @@ export type ShopItem = {
   supporter?: boolean;
 };
 export type ShopSet = { id: string; name: string; line?: string; items: string[]; prices: Prices; collection?: string };
-export type ShopCollection = { id: string; name: string; line?: string };
+// `pack`: the set that holds everything the collection sells, shown first.
+export type ShopCollection = { id: string; name: string; line?: string; pack?: string };
 export type Supporter = { item: string; min: Prices; max: Prices };
 export type ShopStatus = { open: boolean; endsAt: number | null; items: ShopItem[]; preview: boolean; selling: boolean };
 export type Catalogue = {
@@ -75,6 +77,12 @@ export type ArtTrail = {
   glow: boolean;
 };
 export type ArtAura = { alpha: number; glow: boolean };
+// An emote (emote.rs): keyframed tracks on the six bones, `root` (the whole body about the feet) or a prop (one of the
+// item's parts). Rotations in radians here (degrees in the file), offsets in pixels, times in ticks.
+export type EmoteEase = "smooth" | "linear" | "in_out" | "step";
+export type EmoteKey = { t: number; offset: Vec3; rotation: Vec3; scale: number; ease: EmoteEase };
+export type EmoteTrack = { part: string; keys: EmoteKey[] };
+export type ArtEmote = { length: number; looping: boolean; blend: number; tracks: EmoteTrack[] };
 export type ItemArt = {
   id: string;
   /** The bone the item rides; unused by a companion, a trail or an aura. */
@@ -87,9 +95,10 @@ export type ItemArt = {
   companion?: ArtCompanion;
   trail?: ArtTrail;
   aura?: ArtAura;
+  emote?: ArtEmote;
 };
 
-const SLOTS = new Set<ShopSlot>(["head", "torso", "back", "shoulder", "name_tag", "companion", "trail", "aura"]);
+const SLOTS = new Set<ShopSlot>(["head", "torso", "back", "shoulder", "name_tag", "companion", "trail", "aura", "emote"]);
 const ID = /^[a-z0-9_]{1,64}$/;
 const HASH = /^[0-9a-f]{1,64}$/;
 const COLOUR = /^#[0-9a-f]{6}$/i;
@@ -181,7 +190,12 @@ function readCatalogue(json: unknown): Read | null {
   const collections: ShopCollection[] = [];
   for (const raw of Array.isArray(json.collections) ? json.collections : [])
     if (obj(raw) && typeof raw.id === "string" && ID.test(raw.id))
-      collections.push({ id: raw.id, name: english(raw.names, 48) ?? raw.id, ...(english(raw.lines, 240) ? { line: english(raw.lines, 240) } : {}) });
+      collections.push({
+        id: raw.id,
+        name: english(raw.names, 48) ?? raw.id,
+        ...(english(raw.lines, 240) ? { line: english(raw.lines, 240) } : {}),
+        ...(typeof raw.pack === "string" && sets.some((s) => s.id === raw.pack && s.collection === raw.id) ? { pack: raw.pack } : {}),
+      });
   const currencies = (Array.isArray(json.currencies) ? json.currencies : ["USD"]).filter((c): c is Currency => CURRENCIES.includes(c as Currency));
   // The founder set in the order the service gives it, after everything else.
   shown.sort((a, b) => Number(!!a.founder) - Number(!!b.founder) || founder.indexOf(a.id) - founder.indexOf(b.id));
@@ -285,10 +299,52 @@ function readFx(json: Json, slot: ShopSlot, png: string): Pick<ItemArt, "compani
   return {};
 }
 
+const EASES = new Set<EmoteEase>(["smooth", "linear", "in_out", "step"]);
+const EMOTE_BONES = new Set(["head", "body", "right_arm", "left_arm", "right_leg", "left_leg"]);
+
+/** The emote block, held to emote.rs's limits (`EmoteFile::check`); null when it breaks one (the game refuses it). */
+function readEmote(block: unknown, props: string[]): ArtEmote | null {
+  if (!obj(block) || !Array.isArray(block.tracks)) return null;
+  const length = num(block.length, -1);
+  const blend = block.blend === undefined ? 4 : num(block.blend, -1);
+  if (length < 4 || length > 200 || blend < 0 || blend > length / 2) return null;
+  if (block.tracks.length < 1 || block.tracks.length > 16) return null;
+  const tracks: EmoteTrack[] = [];
+  let all = 0;
+  for (const raw of block.tracks) {
+    if (!obj(raw) || typeof raw.part !== "string" || !Array.isArray(raw.keys)) return null;
+    const part = raw.part;
+    const root = part === "root";
+    const prop = !root && !EMOTE_BONES.has(part);
+    if ((prop && !props.includes(part)) || tracks.some((t) => t.part === part)) return null;
+    if (raw.keys.length < 1 || raw.keys.length > 32 || (all += raw.keys.length) > 192) return null;
+    const [turn, reach] = root ? [720, 16] : [360, 8];
+    const keys: EmoteKey[] = [];
+    for (const k of raw.keys) {
+      if (!obj(k)) return null;
+      const t = num(k.t, -1);
+      const three = (v: unknown): Vec3 | null => (v === undefined ? [0, 0, 0] : Array.isArray(v) && v.length === 3 && v.every((x) => typeof x === "number" && Number.isFinite(x)) ? (v as Vec3) : null);
+      const offset = three(k.offset);
+      const rotation = three(k.rotation);
+      const scale = k.scale === undefined ? 1 : num(k.scale, -1);
+      const ease = k.ease === undefined ? "smooth" : (k.ease as EmoteEase);
+      if (!offset || !rotation || !EASES.has(ease) || t < 0 || t > length || (keys.length && t <= keys[keys.length - 1].t)) return null;
+      if (rotation.some((r) => Math.abs(r) > turn) || offset.some((o) => Math.abs(o) > reach)) return null;
+      if ((k.scale !== undefined && !prop) || scale < 0 || scale > 2) return null;
+      keys.push({ t, offset, rotation: rotation.map((r) => (r * Math.PI) / 180) as Vec3, scale, ease });
+    }
+    tracks.push({ part, keys });
+  }
+  return { length, looping: block.loop === true, blend, tracks };
+}
+
 function readArt(json: unknown, id: string, slot: ShopSlot): ItemArt | null {
-  if (!obj(json) || json.id !== id || !obj(json.texture) || typeof json.texture.png !== "string") return null;
-  const png = json.texture.png;
-  if (png.length > 65_536 || !BASE64.test(png)) return null;
+  if (!obj(json) || json.id !== id) return null;
+  // An emote without props needs no texture (docs/cosmetics.md "Emotes").
+  const bare = slot === "emote" && !(Array.isArray(json.parts) && json.parts.length) && !obj(json.texture);
+  if (!bare && (!obj(json.texture) || typeof json.texture.png !== "string")) return null;
+  const png = bare ? "" : (json.texture as Json).png as string;
+  if (!bare && (png.length > 65_536 || !BASE64.test(png))) return null;
   // A companion, a trail or an aura: the file says so too, carries its block, and rides no bone (a trail has no parts).
   const loose = slot === "companion" || slot === "trail" || slot === "aura";
   if (loose && json.slot !== slot) return null;
@@ -298,6 +354,17 @@ function readArt(json: unknown, id: string, slot: ShopSlot): ItemArt | null {
   const count = { parts: 0, cubes: 0 };
   const parts = (Array.isArray(json.parts) ? json.parts : []).map((p) => readPart(p, 0, count, !loose)).filter((p): p is ArtPart => p !== null);
   if ((slot === "companion" || slot === "aura") && !parts.length) return null;
+  let emote: ArtEmote | null = null;
+  if (slot === "emote") {
+    if (json.slot !== "emote") return null;
+    const names: string[] = [];
+    const walk = (p: ArtPart) => {
+      names.push(p.name);
+      p.children.forEach(walk);
+    };
+    parts.forEach(walk);
+    if (!(emote = readEmote(json.emote, names))) return null;
+  }
   const attach = obj(json.attach) ? json.attach : {};
   const animations: ArtAnimation[] = [];
   for (const a of Array.isArray(json.animations) ? json.animations : []) {
@@ -323,6 +390,7 @@ function readArt(json: unknown, id: string, slot: ShopSlot): ItemArt | null {
     animations,
     ...(line ? { tagLine: line } : {}),
     ...fx,
+    ...(emote ? { emote } : {}),
   };
 }
 

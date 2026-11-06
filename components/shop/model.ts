@@ -1,4 +1,4 @@
-import type { ArtAnimation, ArtCube, ArtPart, ArtTrail, ItemArt, Vec3 } from "@/components/shop-data";
+import type { ArtAnimation, ArtCube, ArtEmote, ArtPart, ArtTrail, EmoteKey, EmoteTrack, ItemArt, Vec3 } from "@/components/shop-data";
 
 // The cosmetics model math, ported from the game's `horizon_cosmetics` (item.rs, pose.rs, preview.rs) so the site
 // draws exactly what the launcher's Wardrobe and the game draw: vanilla's player model (`PlayerModel`, both skin
@@ -256,6 +256,187 @@ export function animatePoses(animations: ArtAnimation[], roots: Part[], ticks: n
     out.set(anim.part, pose);
   }
   return out;
+}
+
+// ── emotes: emote.rs's sampling and posing, so the shop plays them as the game does ──
+
+type Quat = [number, number, number, number]; // x, y, z, w
+
+const qmul = (a: Quat, b: Quat): Quat => [
+  a[3] * b[0] + a[0] * b[3] + a[1] * b[2] - a[2] * b[1],
+  a[3] * b[1] - a[0] * b[2] + a[1] * b[3] + a[2] * b[0],
+  a[3] * b[2] + a[0] * b[1] - a[1] * b[0] + a[2] * b[3],
+  a[3] * b[3] - a[0] * b[0] - a[1] * b[1] - a[2] * b[2],
+];
+
+/** glam's `Quat::from_euler(EulerRot::ZYX, z, y, x)`: Rz · Ry · Rx, as `poseMatrix` turns a part. */
+function quat(r: Vec3): Quat {
+  const half = (a: number) => [Math.sin(a / 2), Math.cos(a / 2)];
+  const [sx, cx] = half(r[0]);
+  const [sy, cy] = half(r[1]);
+  const [sz, cz] = half(r[2]);
+  return qmul(qmul([0, 0, sz, cz], [0, sy, 0, cy]), [sx, 0, 0, cx]);
+}
+
+/** The x, y, z angles of `q` read back as Rz · Ry · Rx (glam's `to_euler(EulerRot::ZYX)`). */
+function euler(q: Quat): Vec3 {
+  const [x, y, z, w] = q;
+  const r20 = 2 * (x * z - w * y);
+  const r21 = 2 * (y * z + w * x);
+  const r22 = 1 - 2 * (x * x + y * y);
+  const r10 = 2 * (x * y + w * z);
+  const r00 = 1 - 2 * (y * y + z * z);
+  return [Math.atan2(r21, r22), Math.asin(Math.max(-1, Math.min(1, -r20))), Math.atan2(r10, r00)];
+}
+
+function rotate(q: Quat, v: Vec3): Vec3 {
+  const p = qmul(qmul(q, [v[0], v[1], v[2], 0]), [-q[0], -q[1], -q[2], q[3]]);
+  return [p[0], p[1], p[2]];
+}
+
+function slerp(a: Quat, b: Quat, t: number): Quat {
+  let d = a[0] * b[0] + a[1] * b[1] + a[2] * b[2] + a[3] * b[3];
+  const c: Quat = d < 0 ? [-b[0], -b[1], -b[2], -b[3]] : [...b];
+  d = Math.abs(d);
+  if (d > 0.9995) {
+    const q = a.map((v, i) => v + (c[i] - v) * t) as Quat;
+    const n = Math.hypot(...q) || 1;
+    return q.map((v) => v / n) as Quat;
+  }
+  const th = Math.acos(d);
+  const [wa, wb] = [Math.sin((1 - t) * th) / Math.sin(th), Math.sin(t * th) / Math.sin(th)];
+  return a.map((v, i) => v * wa + c[i] * wb) as Quat;
+}
+
+function catmull(p0: number, p1: number, p2: number, p3: number, s: number) {
+  const s2 = s * s;
+  return 0.5 * (2 * p1 + (p2 - p0) * s + (2 * p0 - 5 * p1 + 4 * p2 - p3) * s2 + (3 * p1 - p0 - 3 * p2 + p3) * s2 * s);
+}
+
+type Sample = { offset: Vec3; rotation: Vec3; scale: number };
+
+/** `Track::sample`: the track at tick `t` (wrapped for a loop, held at the ends for a one-shot). */
+export function sampleTrack(track: EmoteTrack, t: number, length: number, looping: boolean): Sample {
+  const keys = track.keys;
+  const n = keys.length;
+  const at = (k: EmoteKey): Sample => ({ offset: [...k.offset], rotation: [...k.rotation], scale: k.scale });
+  t = looping ? ((t % length) + length) % length : Math.min(length, Math.max(0, t));
+  let i = -1;
+  for (let k = n - 1; k >= 0; k--)
+    if (keys[k].t <= t) {
+      i = k;
+      break;
+    }
+  if (i < 0) {
+    if (!looping) return at(keys[0]);
+    i = n - 1;
+  }
+  if (i === n - 1 && !looping) return at(keys[i]);
+  const next = (i + 1) % n;
+  const t0 = keys[i].t;
+  let t1 = keys[next].t;
+  let now = t;
+  if (next <= i) {
+    t1 += length;
+    if (now < t0) now += length;
+  }
+  const span = t1 - t0;
+  const s = span > 0 ? Math.min(1, Math.max(0, (now - t0) / span)) : 0;
+  const [k0, k1] = [keys[i], keys[next]];
+  const near = (j: number) => keys[looping ? ((j % n) + n) % n : Math.min(n - 1, Math.max(0, j))];
+  const [kp, kn] = [near(i - 1), near(i + 2)];
+  const mix = (a: number, b: number, pa: number, nb: number) =>
+    k0.ease === "step" ? a : k0.ease === "linear" ? a + (b - a) * s : k0.ease === "in_out" ? a + (b - a) * (s * s * (3 - 2 * s)) : catmull(pa, a, b, nb, s);
+  const three = (f: (k: EmoteKey) => Vec3): Vec3 => [0, 1, 2].map((c) => mix(f(k0)[c], f(k1)[c], f(kp)[c], f(kn)[c])) as Vec3;
+  return { offset: three((k) => k.offset), rotation: three((k) => k.rotation), scale: mix(k0.scale, k1.scale, kp.scale, kn.scale) };
+}
+
+const smooth01 = (x: number) => {
+  const c = Math.min(1, Math.max(0, x));
+  return c * c * (3 - 2 * c);
+};
+
+/** `Emote::weight`: how much of the emote shows at `t` (it fades in, and a one-shot out, over its blend). */
+export function emoteWeight(e: ArtEmote, t: number) {
+  if (t < 0 || (!e.looping && t >= e.length)) return 0;
+  if (e.blend <= 0) return 1;
+  const fadeIn = smooth01(t / e.blend);
+  return e.looping ? fadeIn : Math.min(fadeIn, smooth01((e.length - t) / e.blend));
+}
+
+export const EMOTE_BODY = ["head", "body", "right_arm", "left_arm", "right_leg", "left_leg"] as const;
+/** The feet (pixels under the neck), what `root` turns about. */
+const FEET: Vec3 = [0, 24, 0];
+
+/** `Emote::pose_body`: the six bones at `t`, blended by `weight` from `current` (their poses without the emote) toward
+ * the emote's; `rest` is each bone's rest pose (where its offsets count from). */
+export function poseBody(e: ArtEmote, t: number, weight: number, rest: Map<string, Pose>, current: Map<string, Pose>): Map<string, Pose> {
+  const now = new Map<string, Pose>();
+  for (const b of EMOTE_BODY) {
+    const p = current.get(b) ?? rest.get(b);
+    if (p) now.set(b, { p: [...p.p], r: [...p.r], s: p.s });
+  }
+  if (weight <= 0) return now;
+  const target = new Map<string, Pose>([...now].map(([b, p]) => [b, { p: [...p.p], r: [...p.r], s: p.s }]));
+  for (const track of e.tracks) {
+    const r = rest.get(track.part);
+    if (!r || !(EMOTE_BODY as readonly string[]).includes(track.part)) continue;
+    const s = sampleTrack(track, t, e.length, e.looping);
+    target.set(track.part, { p: [r.p[0] + s.offset[0], r.p[1] + s.offset[1], r.p[2] + s.offset[2]], r: s.rotation, s: r.s });
+  }
+  const root = e.tracks.find((tr) => tr.part === "root");
+  if (root) {
+    const s = sampleTrack(root, t, e.length, e.looping);
+    const turn = quat(s.rotation);
+    for (const p of target.values()) {
+      const d = rotate(turn, [p.p[0] - FEET[0], p.p[1] - FEET[1], p.p[2] - FEET[2]]);
+      p.p = [FEET[0] + d[0] + s.offset[0], FEET[1] + d[1] + s.offset[1], FEET[2] + d[2] + s.offset[2]];
+      p.r = euler(qmul(turn, quat(p.r)));
+    }
+  }
+  if (weight >= 1) return target;
+  for (const [b, p] of now) {
+    const goal = target.get(b)!;
+    p.p = [0, 1, 2].map((c) => p.p[c] + (goal.p[c] - p.p[c]) * weight) as Vec3;
+    p.r = euler(slerp(quat(p.r), quat(goal.r), weight));
+  }
+  return now;
+}
+
+/** `Emote::pose_props`: each prop's pose at `t`, from its rest (`rest`), its keys added (and its scale multiplied). */
+export function poseProps(e: ArtEmote, t: number, roots: Part[]): Map<string, Pose> {
+  const out = new Map<string, Pose>();
+  for (const track of e.tracks) {
+    if (track.part === "root" || (EMOTE_BODY as readonly string[]).includes(track.part)) continue;
+    let part: Part | null = null;
+    for (const r of roots) part ??= find(r, track.part);
+    if (!part) continue;
+    const s = sampleTrack(track, t, e.length, e.looping);
+    const p = part.pose;
+    out.set(track.part, { p: [p.p[0] + s.offset[0], p.p[1] + s.offset[1], p.p[2] + s.offset[2]], r: [p.r[0] + s.rotation[0], p.r[1] + s.rotation[1], p.r[2] + s.rotation[2]], s: p.s * s.scale });
+  }
+  return out;
+}
+
+/** The tick a still picture of the emote shows: where the body is furthest from its rest (the move at its fullest),
+ * with its props shown as large as they get. */
+export function emoteStill(e: ArtEmote): number {
+  let best = e.length / 2;
+  let most = -1;
+  for (let k = 1; k < 32; k++) {
+    const t = (e.length * k) / 32;
+    let far = 0;
+    for (const track of e.tracks) {
+      const s = sampleTrack(track, t, e.length, e.looping);
+      if (track.part !== "root" && !(EMOTE_BODY as readonly string[]).includes(track.part)) {
+        far += 4 * s.scale;
+        continue;
+      }
+      far += Math.abs(s.rotation[0]) + Math.abs(s.rotation[1]) + Math.abs(s.rotation[2]) + (Math.abs(s.offset[0]) + Math.abs(s.offset[1]) + Math.abs(s.offset[2])) / 8;
+    }
+    if (far > most) [most, best] = [far, t];
+  }
+  return best;
 }
 
 // ── the player: vanilla's PlayerModel on a 64×64 skin (preview.rs `player_model`) ──

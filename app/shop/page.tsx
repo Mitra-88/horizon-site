@@ -87,7 +87,7 @@ export default async function ShopPage() {
           <p className="mt-6 max-w-2xl text-lg leading-relaxed text-white/70">
             {shop.selling
               ? "Cosmetics for Horizon players: type your Minecraft name, turn your player around and see what each item looks like on you before you buy. Prices are what you pay; nothing is random, and nothing leaves the shop."
-              : "Four things for the players who were here first: a cap, a T-shirt, a backpack and a name tag. Type your Minecraft name to see them on your own skin, then claim them below; they're yours to keep."}
+              : "Five things for the players who were here first: a cap, a T-shirt, a backpack, a name tag and the Wave Hello emote. Type your Minecraft name to see them on your own skin, then claim them below; they're yours to keep."}
           </p>
           <div className="mt-6 flex flex-wrap items-center gap-x-5 gap-y-2 text-[15px] text-white/60">
             {endsAt !== null && (
