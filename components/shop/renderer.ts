@@ -3,11 +3,14 @@ import {
   animatePoses,
   apply,
   bobArms,
+  EMOTE_BODY,
   fxBase,
   itemRoots,
   mul,
   playerModel,
+  poseBody,
   poseMatrix,
+  poseProps,
   prepareSkin,
   rotX,
   rotY,
@@ -39,6 +42,8 @@ export type Scene = {
   distance: number;
   /** The arms breathe, as vanilla's idle pose. */
   idle: boolean;
+  /** An emote playing: its item, the tick it's at and how much of it shows (its blend). */
+  emote?: { art: ItemArt; t: number; weight: number };
 };
 
 const FOV = 30 * (Math.PI / 180);
@@ -135,9 +140,17 @@ function buildScene(scene: Scene, textures: Map<string, Tex>, view: Mat4) {
   if (!body) BODIES.set(scene.slim, (body = playerModel(scene.slim)));
   const bones = new Map<string, Mat4>();
   const skin: number[] = [];
-  emit(body, translation(0, 0, 0), scene.idle ? bobArms(body, scene.ticks) : new Map(), view, skin, bones);
+  let poses: Map<string, Pose> = scene.idle ? bobArms(body, scene.ticks) : new Map();
+  const emote = scene.emote?.art.emote && scene.emote.weight > 0 ? scene.emote : null;
+  if (emote) {
+    const rest = new Map(body.children.filter((c) => (EMOTE_BODY as readonly string[]).includes(c.name)).map((c) => [c.name, c.pose]));
+    poses = poseBody(emote.art.emote!, emote.t, emote.weight, rest, poses);
+  }
+  emit(body, translation(0, 0, 0), poses, view, skin, bones);
   const batches: Quads[] = [{ key: scene.skin, data: skin, blend: false }];
-  for (const art of scene.items) {
+  // An emote's props ride its bone while it plays (scaled from nothing where its keys say so).
+  const items = emote && emote.art.parts.length ? [...scene.items, emote.art] : scene.items;
+  for (const art of items) {
     const key = itemKey(art);
     const tex = textures.get(key);
     if (!tex) continue;
@@ -153,7 +166,7 @@ function buildScene(scene: Scene, textures: Map<string, Tex>, view: Mat4) {
       const roots = itemRoots(art, tex.w, tex.h);
       MODELS.set(key, (model = { roots, all: roots.map((r) => r.root) }));
     }
-    const poses = animatePoses(art.animations, model.all, scene.ticks);
+    const poses = art.emote ? poseProps(art.emote, emote?.t ?? 0, model.all) : animatePoses(art.animations, model.all, scene.ticks);
     const data: number[] = [];
     const loose = fxBase(art);
     const shade = art.companion ? { glow: art.companion.glow, alpha: 1 } : art.aura ? art.aura : PLAIN;
@@ -186,7 +199,7 @@ export function itemBounds(items: ItemArt[], slim: boolean, textures: { w: numbe
   let top = -0.5;
   items.forEach((art, i) => {
     const t = textures[i];
-    if (!t) return;
+    if (!t || art.emote) return;
     if (art.trail) {
       // Its first stretch, from the feet back: the stream goes on out of the picture.
       trailQuads(art.trail, 0, [1, 0, 0], [0, -1, 0], pts, (z) => z <= 2.5);
@@ -500,7 +513,7 @@ export async function itemTextures(gl: ShopGL, items: ItemArt[]) {
   await Promise.allSettled(
     items.map((art) => {
       const key = itemKey(art);
-      if (gl.has(key)) return Promise.resolve(key);
+      if (!art.texture || gl.has(key)) return Promise.resolve(key);
       let p = loading.get(key);
       if (!p) {
         p = decode(`data:image/png;base64,${art.texture}`, false).then((img) => {

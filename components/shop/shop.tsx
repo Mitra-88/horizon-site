@@ -22,7 +22,21 @@ export const SLOT_LABEL: Record<ShopSlot, string> = {
   companion: "Companion",
   trail: "Trail",
   aura: "Aura",
+  emote: "Emote",
 };
+
+/** The every-item list's headings, in the Wardrobe's order. */
+const SLOT_GROUP: [ShopSlot, string][] = [
+  ["head", "Headwear"],
+  ["torso", "Shirts"],
+  ["back", "On your back"],
+  ["shoulder", "Shoulder pets"],
+  ["companion", "Companions"],
+  ["trail", "Trails"],
+  ["aura", "Auras"],
+  ["emote", "Emotes"],
+  ["name_tag", "Name tags"],
+];
 
 type Player = { uuid: string; name: string; skin: string | null; slim: boolean; owned: Set<string> };
 
@@ -125,9 +139,12 @@ export function Shop({ catalogue, art, api, claimOpen }: { catalogue: Catalogue;
   const [ready, setReady] = useState(false);
 
   const [currency, setCurrency] = useState<Currency>("USD");
-  // What the model wears: one item per slot. It starts with the first set (or the founder set) on.
+  // What the model wears: one item per slot (and the emote it plays). It starts with the first look, the first set
+  // that isn't a whole collection's pack (or the founder set), on.
   const [trying, setTrying] = useState<Partial<Record<ShopSlot, string>>>(() => {
-    const first = catalogue.sets[0]?.items ?? catalogue.items.filter((i) => i.founder).map((i) => i.id);
+    const packs = new Set(catalogue.collections.map((c) => c.pack));
+    const look = catalogue.sets.find((s) => !packs.has(s.id)) ?? catalogue.sets[0];
+    const first = look?.items ?? catalogue.items.filter((i) => i.founder).map((i) => i.id);
     const out: Partial<Record<ShopSlot, string>> = {};
     for (const id of first) {
       const item = catalogue.items.find((i) => i.id === id);
@@ -194,7 +211,11 @@ export function Shop({ catalogue, art, api, claimOpen }: { catalogue: Catalogue;
   const owned = me?.owned ?? new Set<string>();
   const slim = me?.slim ?? false;
   const shownSkin = ready ? skin : null;
-  const worn = (Object.values(trying) as string[]).map((id) => artById.get(id)).filter((a): a is ItemArt => !!a);
+  const worn = (Object.entries(trying) as [ShopSlot, string][])
+    .filter(([slot]) => slot !== "emote")
+    .map(([, id]) => artById.get(id))
+    .filter((a): a is ItemArt => !!a);
+  const playing = trying.emote ? artById.get(trying.emote) : undefined;
   const tagItem = (Object.entries(trying) as [ShopSlot, string][]).find(([slot]) => slot === "name_tag")?.[1];
   const tagArt = tagItem ? artById.get(tagItem) : undefined;
 
@@ -216,20 +237,61 @@ export function Shop({ catalogue, art, api, claimOpen }: { catalogue: Catalogue;
       return next;
     });
 
+  const setById = (id: string) => catalogue.sets.find((s) => s.id === id);
+  // A set inside another (a look inside the pack): the bigger one stands for it, so the service never sees two sets
+  // that share an item.
+  const within = (inner: ShopSet, outer: ShopSet) => inner.id !== outer.id && inner.items.every((i) => outer.items.includes(i));
   const add = (id: string) =>
     setBasket((b) => {
       if (b.items.includes(id)) return b;
-      const set = catalogue.sets.find((s) => s.id === id);
-      // A set takes the place of its own items already in the basket.
-      const rest = set ? b.items.filter((i) => !set.items.includes(i)) : b.items;
+      const set = setById(id);
+      if (set && b.items.some((o) => setById(o) && within(set, setById(o)!))) return b;
+      // A set takes the place of its own items, and of the sets inside it, already in the basket.
+      const rest = set ? b.items.filter((i) => !set.items.includes(i) && !(setById(i) && within(setById(i)!, set))) : b.items;
       return { ...b, items: [...rest, id] };
     });
   const remove = (id: string) => setBasket((b) => (id === catalogue.supporter?.item ? { ...b, supporter: null } : { ...b, items: b.items.filter((i) => i !== id) }));
-  const inBasket = (id: string) => basket.items.includes(id) || basket.items.some((b) => catalogue.sets.find((s) => s.id === b)?.items.includes(id));
+  const inBasket = (id: string) => basket.items.includes(id) || basket.items.some((b) => setById(b)?.items.includes(id));
+  const setAdded = (set: ShopSet) => basket.items.includes(set.id) || basket.items.some((b) => setById(b) && within(set, setById(b)!));
 
   const price = (minor: number) => formatPrice(minor, currency);
   const groups = collectionGroups(catalogue);
-  const wornLabel = worn.length ? `Your player wearing ${worn.map((a) => items.get(a.id)?.name ?? a.id).join(", ")}.` : "Your player, wearing nothing from the shop.";
+  const wornLabel =
+    (worn.length ? `Your player wearing ${worn.map((a) => items.get(a.id)?.name ?? a.id).join(", ")}.` : "Your player, wearing nothing from the shop.") +
+    (playing ? ` Playing the ${items.get(playing.id)?.name ?? playing.id} emote.` : "");
+  const card = (item: ShopItem) => (
+    <ItemCard
+      key={item.id}
+      item={item}
+      art={artById.get(item.id)}
+      price={item.prices ? price(item.prices[currency] ?? item.prices.USD!) : item.price}
+      owned={owned.has(item.id)}
+      wearing={trying[item.slot] === item.id}
+      added={inBasket(item.id)}
+      skin={shownSkin}
+      slim={slim}
+      name={me?.name ?? "You"}
+      claimOpen={claimOpen}
+      onTry={() => (trying[item.slot] === item.id ? takeOff(item.slot) : tryOn([item.id], item.slot))}
+      onAdd={item.prices ? () => add(item.id) : undefined}
+    />
+  );
+  const setCard = (s: ShopSet, kind: "set" | "look") => (
+    <SetCard
+      key={s.id}
+      set={s}
+      kind={kind}
+      items={items}
+      art={artById}
+      owned={owned}
+      currency={currency}
+      skin={shownSkin}
+      slim={slim}
+      added={setAdded(s)}
+      onTry={() => tryOn(s.items, "all")}
+      onAdd={() => add(s.id)}
+    />
+  );
 
   return (
     <div className="grid gap-8 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:gap-10">
@@ -237,7 +299,7 @@ export function Shop({ catalogue, art, api, claimOpen }: { catalogue: Catalogue;
       <div className="lg:sticky lg:top-24 lg:self-start">
         <div id="viewer" className="scroll-mt-24 overflow-hidden rounded-2xl bg-white/[0.04] ring-1 ring-white/[0.08]">
           <div className="relative h-[min(68svh,520px)] min-h-[340px] bg-[radial-gradient(120%_90%_at_50%_100%,rgb(107_75_255/0.22),transparent_60%)]">
-            <Viewer skin={shownSkin} slim={slim} worn={worn} focus={focus.at} focusKey={focus.n} tag={<NameTag name={me?.name ?? "You"} art={tagArt} big />} label={wornLabel} />
+            <Viewer skin={shownSkin} slim={slim} worn={worn} emote={playing} focus={focus.at} focusKey={focus.n} tag={<NameTag name={me?.name ?? "You"} art={tagArt} big />} label={wornLabel} />
             {gl && !shownSkin && <div aria-hidden className="absolute inset-0 animate-pulse bg-white/[0.03] motion-reduce:animate-none" />}
           </div>
           {worn.length > 0 && (
@@ -332,52 +394,59 @@ export function Shop({ catalogue, art, api, claimOpen }: { catalogue: Catalogue;
 
       {/* The cards. */}
       <div className="min-w-0">
-        {groups.map((g) => (
-          <section key={g.id} aria-labelledby={`c-${g.id}`} className="mb-14 last:mb-0">
-            <h2 id={`c-${g.id}`} className="font-display text-[clamp(1.6rem,3.5vw,2.25rem)] leading-tight font-semibold tracking-[-0.03em] text-white">
-              {g.name}
-            </h2>
-            {g.line && <p className="mt-2 max-w-2xl text-[15px] leading-relaxed text-white/65">{g.line}</p>}
-            {g.sets.length > 0 && (
-              <ul className="mt-6 grid gap-3">
-                {g.sets.map((s) => (
-                  <SetCard
-                    key={s.id}
-                    set={s}
-                    items={items}
-                    art={artById}
-                    owned={owned}
-                    currency={currency}
-                    skin={shownSkin}
-                    slim={slim}
-                    added={basket.items.includes(s.id)}
-                    onTry={() => tryOn(s.items, "all")}
-                    onAdd={() => add(s.id)}
-                  />
-                ))}
-              </ul>
-            )}
-            <ul className="mt-3 grid grid-cols-2 gap-3 xl:grid-cols-3">
-              {g.items.map((item) => (
-                <ItemCard
-                  key={item.id}
-                  item={item}
-                  art={artById.get(item.id)}
-                  price={item.prices ? price(item.prices[currency] ?? item.prices.USD!) : item.price}
-                  owned={owned.has(item.id)}
-                  wearing={trying[item.slot] === item.id}
-                  added={inBasket(item.id)}
-                  skin={shownSkin}
-                  slim={slim}
-                  name={me?.name ?? "You"}
-                  claimOpen={claimOpen}
-                  onTry={() => (trying[item.slot] === item.id ? takeOff(item.slot) : tryOn([item.id], item.slot))}
-                  onAdd={item.prices ? () => add(item.id) : undefined}
-                />
-              ))}
-            </ul>
-          </section>
-        ))}
+        {groups.map((g) =>
+          g.pack ? (
+            <section key={g.id} aria-labelledby={`c-${g.id}`} className="mb-14 last:mb-0">
+              <PackCard
+                pack={g.pack}
+                collection={g.name}
+                line={g.line}
+                looks={g.sets}
+                items={items}
+                art={artById}
+                owned={owned}
+                currency={currency}
+                skin={shownSkin}
+                slim={slim}
+                added={setAdded(g.pack)}
+                onTry={(look) => tryOn(look.items, "all")}
+                onAdd={() => add(g.pack!.id)}
+              />
+              {g.sets.length > 0 && (
+                <>
+                  <h3 className="mt-12 font-display text-[clamp(1.35rem,2.8vw,1.75rem)] leading-tight font-semibold tracking-[-0.02em] text-white">
+                    {g.sets.length === 3 ? "Three looks" : "The looks"}
+                  </h3>
+                  <p className="mt-1.5 max-w-2xl text-[15px] leading-relaxed text-white/65">
+                    Each one is a whole character: what you wear, what floats beside you or follows your steps, and a move to play. Every item is in one look.
+                  </p>
+                  <ul className="mt-5 grid gap-3">{g.sets.map((s) => setCard(s, "look"))}</ul>
+                </>
+              )}
+              <h3 className="mt-12 font-display text-[clamp(1.35rem,2.8vw,1.75rem)] leading-tight font-semibold tracking-[-0.02em] text-white">Every item</h3>
+              <p className="mt-1.5 max-w-2xl text-[15px] leading-relaxed text-white/65">Each one on its own, by where it goes. Try any of them on your player above.</p>
+              {SLOT_GROUP.map(([slot, heading]) => {
+                const list = g.items.filter((i) => i.slot === slot);
+                if (!list.length) return null;
+                return (
+                  <div key={slot} className="mt-7">
+                    <h4 className="text-[14px] font-medium tracking-wide text-white/55 uppercase">{heading}</h4>
+                    <ul className="mt-3 grid grid-cols-2 gap-3 xl:grid-cols-3">{list.map(card)}</ul>
+                  </div>
+                );
+              })}
+            </section>
+          ) : (
+            <section key={g.id} aria-labelledby={`c-${g.id}`} className="mb-14 last:mb-0">
+              <h2 id={`c-${g.id}`} className="font-display text-[clamp(1.6rem,3.5vw,2.25rem)] leading-tight font-semibold tracking-[-0.03em] text-white">
+                {g.name}
+              </h2>
+              {g.line && <p className="mt-2 max-w-2xl text-[15px] leading-relaxed text-white/65">{g.line}</p>}
+              {g.sets.length > 0 && <ul className="mt-6 grid gap-3">{g.sets.map((s) => setCard(s, "set"))}</ul>}
+              <ul className="mt-3 grid grid-cols-2 gap-3 xl:grid-cols-3">{g.items.map(card)}</ul>
+            </section>
+          ),
+        )}
 
         {catalogue.supporter && items.get(catalogue.supporter.item) && (
           <SupporterCard
@@ -409,21 +478,27 @@ export function Shop({ catalogue, art, api, claimOpen }: { catalogue: Catalogue;
   );
 }
 
-type Group = { id: string; name: string; line?: string; sets: ShopSet[]; items: ShopItem[] };
+// `pack`: the collection's pack, shown first; `sets` are then the looks inside it.
+type Group = { id: string; name: string; line?: string; pack?: ShopSet; sets: ShopSet[]; items: ShopItem[] };
 
 /** Cards by collection, in the catalogue's order; the founder set after them (while its claim is open). */
 function collectionGroups(c: Catalogue): Group[] {
   const groups: Group[] = c.collections.map((col) => ({ id: col.id, name: col.name, line: col.line, sets: [], items: [] }));
   const byId = new Map(groups.map((g) => [g.id, g]));
+  const packs = new Map(c.collections.filter((col) => col.pack).map((col) => [col.pack!, col.id]));
   const other: Group = { id: "more", name: groups.length ? "More" : "The shop", sets: [], items: [] };
   const founder: Group = { id: "founder", name: "The founder set", line: "Free for the players who were here first, while the claim below is open.", sets: [], items: [] };
-  for (const s of c.sets) (byId.get(s.collection ?? "") ?? other).sets.push(s);
+  for (const s of c.sets) {
+    const g = byId.get(s.collection ?? "") ?? other;
+    if (packs.get(s.id) === g.id) g.pack = s;
+    else g.sets.push(s);
+  }
   for (const i of c.items) {
     if (i.supporter) continue;
     if (i.founder) founder.items.push(i);
     else (byId.get(i.collection ?? "") ?? other).items.push(i);
   }
-  return [...groups, other, founder].filter((g) => g.sets.length || g.items.length);
+  return [...groups, other, founder].filter((g) => g.pack || g.sets.length || g.items.length);
 }
 
 // ── cards ──
@@ -451,11 +526,13 @@ function ItemCard(props: {
             <span className="flex h-full items-center justify-center">
               <NameTag name={props.name} art={art} />
             </span>
+          ) : item.slot === "emote" ? (
+            art && <Thumb items={[]} slot="emote" emote={art} skin={props.skin} slim={props.slim} label={`Your player playing ${item.name}`} />
           ) : (
             art && <Thumb items={[art]} slot={item.slot} skin={props.skin} slim={props.slim} label={`${item.name} on your player`} />
           )}
           <span className="absolute right-2 bottom-2 rounded-md bg-black/50 px-2 py-1 text-[12px] font-medium text-white/85 opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100">
-            {props.wearing ? "Take off" : "Try on"}
+            {item.slot === "emote" ? (props.wearing ? "Stop" : "Play it") : props.wearing ? "Take off" : "Try on"}
           </span>
         </span>
         <span className="block px-1.5 pt-2.5">
@@ -488,6 +565,7 @@ function ItemCard(props: {
 
 function SetCard(props: {
   set: ShopSet;
+  kind: "set" | "look";
   items: Map<string, ShopItem>;
   art: Map<string, ItemArt>;
   owned: ReadonlySet<string>;
@@ -501,16 +579,18 @@ function SetCard(props: {
   const { set, currency } = props;
   const p = setPrice(set, props.items, props.owned, currency);
   const all = p.owned === set.items.length;
-  const art = set.items.map((id) => props.art.get(id)).filter((a): a is ItemArt => !!a && props.items.get(a.id)?.slot !== "name_tag");
+  const { worn: art, emote } = lookArt(set, props.items, props.art);
   const fmt = (m: number) => formatPrice(m, currency);
   return (
     <li className="grid gap-4 rounded-2xl bg-white/[0.06] p-3 ring-1 ring-white/[0.06] backdrop-blur-xl sm:grid-cols-[180px_minmax(0,1fr)] sm:p-4">
       <button type="button" onClick={props.onTry} className="group relative block aspect-[4/5] overflow-hidden rounded-xl bg-[#0b0718]/70 outline-none focus-visible:ring-2 focus-visible:ring-[#a98fff] sm:aspect-auto sm:h-full sm:min-h-[220px]">
-        <Thumb items={art} skin={props.skin} slim={props.slim} whole label={`Your player wearing the ${set.name}`} />
-        <span className="absolute right-2 bottom-2 rounded-md bg-black/50 px-2 py-1 text-[12px] font-medium text-white/85">Try the set</span>
+        <Thumb items={art} emote={emote} skin={props.skin} slim={props.slim} whole label={`Your player wearing the ${set.name}`} />
+        <span className="absolute right-2 bottom-2 rounded-md bg-black/50 px-2 py-1 text-[12px] font-medium text-white/85">Try the {props.kind}</span>
       </button>
       <div className="flex min-w-0 flex-col">
-        <p className="text-[13px] font-medium text-white/55">Set · {set.items.length} items</p>
+        <p className="text-[13px] font-medium text-white/55">
+          {props.kind === "look" ? "Look" : "Set"} · {set.items.length} items
+        </p>
         <h3 className="mt-1 font-display text-[22px] leading-tight font-semibold tracking-[-0.01em] text-white">{set.name}</h3>
         {set.line && <p className="mt-1.5 text-[14px] leading-relaxed text-white/65">{set.line}</p>}
         <ul className="mt-3 grid gap-1 text-[14px]">
@@ -545,12 +625,108 @@ function SetCard(props: {
               </a>
             ) : (
               <button type="button" onClick={props.onAdd} className={`${BUTTON} h-10`}>
-                Add the set
+                Add the {props.kind}
               </button>
             ))}
         </div>
       </div>
     </li>
+  );
+}
+
+/** What a set's picture shows: its worn items (one per slot; a name tag is drawn by the page) and its first emote. */
+function lookArt(set: ShopSet, items: Map<string, ShopItem>, art: Map<string, ItemArt>) {
+  const worn: ItemArt[] = [];
+  const taken = new Set<ShopSlot>();
+  let emote: ItemArt | undefined;
+  for (const id of set.items) {
+    const a = art.get(id);
+    const slot = items.get(id)?.slot;
+    if (!a || !slot || slot === "name_tag") continue;
+    if (slot === "emote") emote ??= a;
+    else if (!taken.has(slot)) {
+      taken.add(slot);
+      worn.push(a);
+    }
+  }
+  return { worn, emote };
+}
+
+/** A collection's pack, first on the page: the whole collection in one, its looks side by side to try. */
+function PackCard(props: {
+  pack: ShopSet;
+  collection: string;
+  line?: string;
+  looks: ShopSet[];
+  items: Map<string, ShopItem>;
+  art: Map<string, ItemArt>;
+  owned: ReadonlySet<string>;
+  currency: Currency;
+  skin: string | null;
+  slim: boolean;
+  added: boolean;
+  onTry: (look: ShopSet) => void;
+  onAdd: () => void;
+}) {
+  const { pack, currency } = props;
+  const p = setPrice(pack, props.items, props.owned, currency);
+  const all = p.owned === pack.items.length;
+  const fmt = (m: number) => formatPrice(m, currency);
+  const looksApart = props.looks.reduce((sum, l) => sum + (l.prices[currency] ?? 0), 0);
+  return (
+    <div className="overflow-hidden rounded-2xl bg-white/[0.06] ring-1 ring-white/[0.08] backdrop-blur-xl">
+      <div className="p-4 sm:p-6">
+        <p className="text-[13px] font-medium text-white/55">The whole collection · {pack.items.length} items</p>
+        <h2 id={`c-${pack.collection ?? pack.id}`} className="mt-1 font-display text-[clamp(1.75rem,4vw,2.6rem)] leading-[1.05] font-semibold tracking-[-0.03em] text-white">
+          {pack.name}
+        </h2>
+        <p className="mt-2 max-w-2xl text-[15px] leading-relaxed text-white/70">{pack.line ?? props.line ?? props.collection}</p>
+      </div>
+      {props.looks.length > 0 && (
+        <ul className="grid grid-cols-3 gap-2 px-4 sm:gap-3 sm:px-6">
+          {props.looks.map((look) => {
+            const { worn, emote } = lookArt(look, props.items, props.art);
+            return (
+              <li key={look.id}>
+                <button
+                  type="button"
+                  onClick={() => props.onTry(look)}
+                  className="group relative block aspect-[3/4] w-full overflow-hidden rounded-xl bg-[#0b0718]/70 outline-none focus-visible:ring-2 focus-visible:ring-[#a98fff]"
+                >
+                  <Thumb items={worn} emote={emote} skin={props.skin} slim={props.slim} whole label={`Your player wearing the ${look.name}`} />
+                  <span className="absolute inset-x-1.5 bottom-1.5 truncate rounded-md bg-black/50 px-2 py-1 text-center text-[12px] font-medium text-white/85">
+                    {look.name.replace(/ look$/i, "")}
+                  </span>
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+      )}
+      <div className="flex flex-wrap items-end justify-between gap-4 p-4 sm:p-6">
+        {all ? (
+          <p className="font-display text-[22px] font-semibold text-white/60">You own all of it</p>
+        ) : (
+          <div>
+            <p className="font-display text-[clamp(1.9rem,4vw,2.4rem)] leading-none font-semibold text-white tabular-nums">{fmt(p.amount)}</p>
+            <p className="mt-1.5 text-[14px] text-white/60">
+              {fmt(p.apart)} for the items one by one
+              {p.owned ? `, without the ${p.owned === 1 ? "item" : `${p.owned} items`} you own` : looksApart > p.amount ? `; ${fmt(looksApart)} for the ${props.looks.length} looks` : ""}
+            </p>
+          </div>
+        )}
+        {!all &&
+          (props.added ? (
+            <a href="#basket" className={`${QUIET} h-12`}>
+              In basket
+            </a>
+          ) : (
+            <button type="button" onClick={props.onAdd} className={`${BUTTON} h-12 px-6`}>
+              Add the whole pack
+            </button>
+          ))}
+      </div>
+    </div>
   );
 }
 

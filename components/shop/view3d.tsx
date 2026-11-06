@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useSyncExternalStore, type ReactNode } from "react";
 import type { ItemArt, ShopSlot, Vec3 } from "@/components/shop-data";
+import { emoteStill, emoteWeight } from "@/components/shop/model";
 import { fitDistance, itemBounds, project, ShopGL, textureSizes, type Scene } from "@/components/shop/renderer";
 
 // The shop's 3D: the big viewer (the shared canvas, live) and the cards' pictures (drawn once each by the same context,
@@ -46,6 +47,8 @@ const FOCUS: Record<Focus, Camera> = {
   companion: { yaw: -30, pitch: 8, target: [0, -0.3, 0.3], radius: 1.35 },
   aura: { yaw: -28, pitch: -22, target: [0, 1.2, 0], radius: 1.1 },
   trail: { yaw: -115, pitch: -12, target: [0, 1.0, 1.1], radius: 1.7 },
+  // The whole player from the front, with room for a hop or a spin.
+  emote: { yaw: -22, pitch: 6, target: [0, 0.2, 0], radius: 1.65 },
 };
 
 /** `focus`'s camera for what is worn: a companion floats on one side or the other, so the view follows it. */
@@ -59,7 +62,7 @@ function cameraFor(focus: Focus, worn: ItemArt[]): Camera {
   return { ...base, yaw: x > 0 ? -base.yaw : base.yaw, target: [x / 2, (y - 0.25) / 2, z / 2], radius: 0.75 + Math.hypot(x, y + 0.25, z) / 2 };
 }
 
-const THUMB_YAW: Partial<Record<ShopSlot, number>> = { head: -34, torso: -28, back: 150, shoulder: -44, companion: -30, aura: -28, trail: -115 };
+const THUMB_YAW: Partial<Record<ShopSlot, number>> = { head: -34, torso: -28, back: 150, shoulder: -44, companion: -30, aura: -28, trail: -115, emote: -24 };
 const THUMB_PITCH: Partial<Record<ShopSlot, number>> = { aura: -22, trail: -12 };
 
 /** A card's yaw: a companion on the wearer's left (+x) is seen from that side, so the head doesn't hide it. */
@@ -92,10 +95,29 @@ function enqueue(job: Job) {
 }
 
 /** A card's picture: the player (your skin) wearing `items`, framed on them (or whole, for a set). */
-export function Thumb({ items, slot, skin, slim, whole = false, className = "", label }: { items: ItemArt[]; slot?: ShopSlot; skin: string | null; slim: boolean; whole?: boolean; className?: string; label: string }) {
+export function Thumb({
+  items,
+  slot,
+  skin,
+  slim,
+  whole = false,
+  emote,
+  className = "",
+  label,
+}: {
+  items: ItemArt[];
+  slot?: ShopSlot;
+  skin: string | null;
+  slim: boolean;
+  whole?: boolean;
+  /** An emote, shown still at its fullest move. */
+  emote?: ItemArt;
+  className?: string;
+  label: string;
+}) {
   const ref = useRef<HTMLCanvasElement>(null);
   const gl = useShopGL();
-  const key = `${skin}|${slim}|${whole}|${items.map((i) => i.id).join(",")}`;
+  const key = `${skin}|${slim}|${whole}|${items.map((i) => i.id).join(",")}|${emote?.id ?? ""}`;
   useEffect(() => {
     const canvas = ref.current;
     if (!canvas || !gl || !skin) return;
@@ -110,7 +132,12 @@ export function Thumb({ items, slot, skin, slim, whole = false, className = "", 
         canvas,
         scene: () => {
           const aspect = w / h;
-          const framed = whole ? { centre: WHOLE.target, radius: 1.2, top: -0.5 } : itemBounds(items, slim, textureSizes(gl, items));
+          const full = whole || !!emote?.emote;
+          // An emote's props may fly over the head: a taller frame for them.
+          const props = !!emote?.parts.length;
+          const framed = full
+            ? { centre: emote ? ([0, props ? 0.15 : 0.35, 0] as Vec3) : WHOLE.target, radius: emote ? (props ? 1.5 : 1.3) : 1.2, top: -0.5 }
+            : itemBounds(items, slim, textureSizes(gl, items));
           return {
             skin,
             slim,
@@ -121,6 +148,7 @@ export function Thumb({ items, slot, skin, slim, whole = false, className = "", 
             target: framed.centre,
             distance: fitDistance(framed.radius * 1.12, aspect),
             idle: false,
+            ...(emote?.emote ? { emote: { art: emote, t: emoteStill(emote.emote), weight: 1 } } : {}),
           };
         },
         done: () => {
@@ -158,6 +186,8 @@ export type ViewerProps = {
   skin: string | null;
   slim: boolean;
   worn: ItemArt[];
+  /** The emote playing on a loop (a one-shot again after a short pause), or none. */
+  emote?: ItemArt;
   focus: Focus;
   /** Bumped to frame `focus` again (a card tried twice). */
   focusKey: number;
@@ -167,21 +197,26 @@ export type ViewerProps = {
 
 const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
 
-export function Viewer({ skin, slim, worn, focus, focusKey, tag, label }: ViewerProps) {
+/** Ticks a one-shot emote waits before it plays again. */
+const EMOTE_PAUSE = 24;
+
+export function Viewer({ skin, slim, worn, emote, focus, focusKey, tag, label }: ViewerProps) {
   const host = useRef<HTMLDivElement>(null);
   const tagRef = useRef<HTMLDivElement>(null);
   const gl = useShopGL();
   const still = usePrefersStill();
   // The name tag rides above the highest worn item, as the game lifts it (vanilla's height when nothing is taller).
   const tagY = useMemo(() => (gl ? Math.min(-0.86, itemBounds(worn, slim, textureSizes(gl, worn)).top - 0.16) : -0.86), [gl, worn, slim]);
-  const props = useRef({ skin, slim, worn, focus, tagY });
+  const props = useRef({ skin, slim, worn, emote, focus, tagY, since: 0 });
   const goal = useRef<Camera>(cameraFor(focus, worn));
   const wake = useRef<() => void>(() => {});
 
   useEffect(() => {
-    props.current = { skin, slim, worn, focus, tagY };
+    // A new emote starts from its beginning.
+    const since = emote?.id !== props.current.emote?.id ? (performance.now() / 1000) * 20 : props.current.since;
+    props.current = { skin, slim, worn, emote, focus, tagY, since };
     wake.current();
-  }, [skin, slim, worn, focus, tagY]);
+  }, [skin, slim, worn, emote, focus, tagY]);
 
   useEffect(() => {
     goal.current = cameraFor(focus, worn);
@@ -206,11 +241,23 @@ export function Viewer({ skin, slim, worn, focus, focusKey, tag, label }: Viewer
       const dpr = Math.min(2, window.devicePixelRatio || 1);
       const w = Math.max(1, Math.round(el.clientWidth * dpr));
       const h = Math.max(1, Math.round(el.clientHeight * dpr));
+      const ticks = (now / 1000) * 20;
+      let played: Scene["emote"];
+      const e = p.emote?.emote;
+      if (e && p.emote) {
+        if (still) played = { art: p.emote, t: emoteStill(e), weight: 1 };
+        else {
+          const age = ticks - p.since;
+          const t = e.looping ? age : age % (e.length + EMOTE_PAUSE);
+          played = { art: p.emote, t, weight: emoteWeight(e, t) };
+        }
+      }
       const scene: Scene = {
         skin: p.skin,
         slim: p.slim,
         items: p.worn,
-        ticks: still ? 0 : (now / 1000) * 20,
+        ...(played ? { emote: played } : {}),
+        ticks: still ? 0 : ticks,
         yaw: cam.yaw,
         pitch: cam.pitch,
         target: cam.target,
