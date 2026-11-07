@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useSyncExternalStore, type ReactNode } from "react";
 import type { ItemArt, ShopSlot, Vec3 } from "@/components/shop-data";
 import { emoteStill, emoteWeight } from "@/components/shop/model";
-import { fitDistance, itemBounds, project, ShopGL, textureSizes, type Scene } from "@/components/shop/renderer";
+import { fitBox, fitDistance, itemBounds, project, ShopGL, textureSizes, type Scene } from "@/components/shop/renderer";
 
 // The shop's 3D: the big viewer (the shared canvas, live) and the cards' pictures (drawn once each by the same context,
 // when a card scrolls into view). Animations run at the game's 20 ticks a second, only while the viewer is on screen,
@@ -34,21 +34,22 @@ export type Focus = "all" | ShopSlot;
 
 type Camera = { yaw: number; pitch: number; target: Vec3; radius: number };
 
-const WHOLE: Camera = { yaw: -28, pitch: 8, target: [0, 0.42, 0], radius: 1.32 };
+// Slightly from above (a negative pitch looks down), as the cards are.
+const WHOLE: Camera = { yaw: -28, pitch: -8, target: [0, 0.32, 0], radius: 1.32 };
 const FOCUS: Record<Focus, Camera> = {
   all: WHOLE,
-  head: { yaw: -32, pitch: 10, target: [0, -0.4, 0], radius: 0.8 },
-  torso: { yaw: -26, pitch: 6, target: [0, 0.25, 0], radius: 1.0 },
-  back: { yaw: 155, pitch: 10, target: [0, 0.05, 0], radius: 1.2 },
-  shoulder: { yaw: -48, pitch: 10, target: [0, -0.2, 0], radius: 1.0 },
-  name_tag: { yaw: -20, pitch: 4, target: [0, -0.2, 0], radius: 1.0 },
+  head: { yaw: -32, pitch: -12, target: [0, -0.4, 0], radius: 0.8 },
+  torso: { yaw: -26, pitch: -8, target: [0, 0.25, 0], radius: 1.0 },
+  back: { yaw: 155, pitch: -10, target: [0, 0.05, 0], radius: 1.2 },
+  shoulder: { yaw: -48, pitch: -10, target: [0, -0.2, 0], radius: 1.0 },
+  name_tag: { yaw: -20, pitch: -4, target: [0, -0.2, 0], radius: 1.0 },
   // A companion beside the head (`cameraFor` turns to its side), an aura round the feet and a trail from the side,
-  // behind, both from above (a negative pitch looks down).
-  companion: { yaw: -30, pitch: 8, target: [0, -0.3, 0.3], radius: 1.35 },
+  // behind, both from higher.
+  companion: { yaw: -30, pitch: -8, target: [0, -0.3, 0.3], radius: 1.35 },
   aura: { yaw: -28, pitch: -22, target: [0, 1.2, 0], radius: 1.1 },
   trail: { yaw: -115, pitch: -12, target: [0, 1.0, 1.1], radius: 1.7 },
   // The whole player from the front, with room for a hop or a spin.
-  emote: { yaw: -22, pitch: 6, target: [0, 0.2, 0], radius: 1.65 },
+  emote: { yaw: -22, pitch: -6, target: [0, 0.2, 0], radius: 1.65 },
 };
 
 /** `focus`'s camera for what is worn: a companion floats on one side or the other, so the view follows it. */
@@ -62,8 +63,15 @@ function cameraFor(focus: Focus, worn: ItemArt[]): Camera {
   return { ...base, yaw: x > 0 ? -base.yaw : base.yaw, target: [x / 2, (y - 0.25) / 2, z / 2], radius: 0.75 + Math.hypot(x, y + 0.25, z) / 2 };
 }
 
-const THUMB_YAW: Partial<Record<ShopSlot, number>> = { head: -34, torso: -28, back: 150, shoulder: -44, companion: -30, aura: -28, trail: -115, emote: -24 };
-const THUMB_PITCH: Partial<Record<ShopSlot, number>> = { aura: -22, trail: -12 };
+// The cards' framing, shared with the launcher's Shop (its CPU renderer draws the same): ~30° round from the front and
+// ~15° from above (a negative pitch looks down). An aura is seen from higher, a back item from behind so its face
+// shows, a trail from its side behind the player.
+const THUMB_YAW: Partial<Record<ShopSlot, number>> = { head: -30, torso: -30, back: 150, shoulder: -40, companion: -30, aura: -30, trail: -115, emote: -24 };
+const THUMB_PITCH: Partial<Record<ShopSlot, number>> = { aura: -35, trail: -20 };
+const THUMB_PITCH_DEFAULT = -15;
+/** A whole player (a look, an emote): the same angle, a little less from above. */
+const WHOLE_YAW = -30;
+const WHOLE_PITCH = -10;
 
 /** A card's yaw: a companion on the wearer's left (+x) is seen from that side, so the head doesn't hide it. */
 function thumbYaw(slot: ShopSlot, items: ItemArt[]) {
@@ -103,6 +111,7 @@ export function Thumb({
   whole = false,
   emote,
   className = "",
+  raise = 0,
   label,
 }: {
   items: ItemArt[];
@@ -113,11 +122,13 @@ export function Thumb({
   /** An emote, shown still at its fullest move. */
   emote?: ItemArt;
   className?: string;
+  /** How far up the subject sits, as a fraction of the picture's height (room for a label under it). */
+  raise?: number;
   label: string;
 }) {
   const ref = useRef<HTMLCanvasElement>(null);
   const gl = useShopGL();
-  const key = `${skin}|${slim}|${whole}|${items.map((i) => i.id).join(",")}|${emote?.id ?? ""}`;
+  const key = `${skin}|${slim}|${whole}|${raise}|${items.map((i) => i.id).join(",")}|${emote?.id ?? ""}`;
   useEffect(() => {
     const canvas = ref.current;
     if (!canvas || !gl || !skin) return;
@@ -135,18 +146,30 @@ export function Thumb({
           const full = whole || !!emote?.emote;
           // An emote's props may fly over the head: a taller frame for them.
           const props = !!emote?.parts.length;
+          // A trail: the whole player from behind, the stream behind them.
+          const trail = !full && slot === "trail";
           const framed = full
-            ? { centre: emote ? ([0, props ? 0.15 : 0.35, 0] as Vec3) : WHOLE.target, radius: emote ? (props ? 1.5 : 1.3) : 1.2, top: -0.5 }
-            : itemBounds(items, slim, textureSizes(gl, items));
+            ? { centre: emote ? ([0, props ? 0.15 : 0.35, 0] as Vec3) : ([0, 0.42, 0] as Vec3), radius: emote ? (props ? 1.5 : 1.3) : 1.2, top: -0.5 }
+            : trail
+              ? { centre: [0, 0.2, 0.6] as Vec3, radius: 1.4, top: -0.5 }
+              : itemBounds(items, slim, textureSizes(gl, items));
+          // A whole player (a look, an emote) fills most of the card's height, with room on each side for a companion;
+          // an emote alone a little closer.
+          const distance = full
+            ? fitBox(1.1, whole ? (props ? 1.7 : 1.45) : props ? 1.55 : 1.3, aspect)
+            : trail
+              ? fitBox(1.3, 1.6, aspect)
+              : fitDistance(framed.radius * 1.12, aspect);
           return {
             skin,
             slim,
             items,
             ticks: 0,
-            yaw: whole ? -26 : thumbYaw(slot ?? "head", items),
-            pitch: whole ? 10 : (THUMB_PITCH[slot ?? "head"] ?? 10),
-            target: framed.centre,
-            distance: fitDistance(framed.radius * 1.12, aspect),
+            yaw: whole ? WHOLE_YAW : thumbYaw(slot ?? "head", items),
+            pitch: whole || emote ? WHOLE_PITCH : (THUMB_PITCH[slot ?? "head"] ?? THUMB_PITCH_DEFAULT),
+            // Model y is down: looking lower moves the subject up the picture.
+            target: [framed.centre[0], framed.centre[1] + raise * 2 * distance * Math.tan(Math.PI / 12), framed.centre[2]] as Vec3,
+            distance,
             idle: false,
             ...(emote?.emote ? { emote: { art: emote, t: emoteStill(emote.emote), weight: 1 } } : {}),
           };
@@ -164,12 +187,22 @@ export function Thumb({
       { rootMargin: "200px" },
     );
     io.observe(canvas);
+    // Drawn again at its new size when the card grows or shrinks (a window resized, a phone turned).
+    let size = `${canvas.clientWidth}x${canvas.clientHeight}`;
+    const ro = new ResizeObserver(() => {
+      const now = `${canvas.clientWidth}x${canvas.clientHeight}`;
+      if (now === size || !drawn) return;
+      size = now;
+      draw();
+    });
+    ro.observe(canvas);
     const undo = gl.onRestore(() => {
       drawn = false;
       draw();
     });
     return () => {
       io.disconnect();
+      ro.disconnect();
       undo();
       const at = queue.findIndex((j) => j.canvas === canvas);
       if (at >= 0) queue.splice(at, 1);

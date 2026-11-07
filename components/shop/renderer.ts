@@ -35,7 +35,7 @@ export type Scene = {
   ticks: number;
   /** Degrees: 0 shows the front. */
   yaw: number;
-  /** Degrees down. */
+  /** Degrees: a negative pitch looks down on the player from above. */
   pitch: number;
   /** What the camera looks at (blocks, model space) and from how far. */
   target: Vec3;
@@ -96,6 +96,13 @@ export function project(scene: Scene, w: number, h: number, p: Vec3): [number, n
 export function fitDistance(radius: number, aspect: number) {
   const half = Math.min(FOV / 2, Math.atan(Math.tan(FOV / 2) * aspect));
   return radius / Math.sin(half);
+}
+
+/** The camera distance that fits a box `rx` blocks to each side and `ry` up and down, in a view of the given aspect: a
+ * standing player in a tall card fills its height instead of its width. */
+export function fitBox(rx: number, ry: number, aspect: number) {
+  const across = Math.atan(Math.tan(FOV / 2) * aspect);
+  return Math.max(ry / Math.sin(FOV / 2), rx / Math.sin(across));
 }
 
 /** `blend`: drawn see-through, after the solids. */
@@ -202,7 +209,7 @@ export function itemBounds(items: ItemArt[], slim: boolean, textures: { w: numbe
     if (!t || art.emote) return;
     if (art.trail) {
       // Its first stretch, from the feet back: the stream goes on out of the picture.
-      trailQuads(art.trail, 0, [1, 0, 0], [0, -1, 0], pts, (z) => z <= 2.5);
+      trailQuads(art.trail, 0, [1, 0, 0], [0, -1, 0], pts, (z) => z <= 1.6);
       pts.push(0, 1.5, 0, 0, 0, 1, 1);
       return;
     }
@@ -400,12 +407,12 @@ export class ShopGL {
     this.drawScene(scene, w, h);
   }
 
-  /** Draws `scene` off screen at twice `w`×`h` and puts it, scaled down (smooth edges), on `target`. */
+  /** Draws `scene` off screen at up to twice `w`×`h` and puts it, scaled down (smooth edges), on `target`. */
   snapshot(scene: Scene, target: HTMLCanvasElement) {
     if (this.lost) return false;
     const gl = this.gl;
     const [w, h] = [target.width, target.height];
-    const ss = Math.max(1, Math.min(2, Math.floor(1024 / Math.max(w, h))));
+    const ss = Math.max(1, Math.min(2, Math.floor(2048 / Math.max(w, h))));
     const [W, H] = [w * ss, h * ss];
     if (!this.fbo || this.fbo.w < W || this.fbo.h < H) {
       if (this.fbo) {
