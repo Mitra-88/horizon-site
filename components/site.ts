@@ -20,7 +20,7 @@ export const KEYWORDS = [
   "Minecraft server in Rust",
   "open source Minecraft client",
 ];
-export const OPERATING_SYSTEMS = "Windows x64, macOS 11 or later on Apple Silicon, Linux x86-64";
+export const OPERATING_SYSTEMS = "Windows x64 or ARM64, macOS 12 or later on Apple Silicon or Intel, Linux x86-64";
 export const AUTHOR = { "@type": "Person", name: "Ludovic Marie", url: "https://lu4ovic.com" } as const;
 export const SAME_AS = [GITHUB_URL, "https://github.com/horizon-rust", DISCORD_URL];
 

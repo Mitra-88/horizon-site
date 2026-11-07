@@ -11,7 +11,7 @@ const POINTS = [
   {
     icon: ChipIcon,
     title: "Native on three platforms",
-    body: "Linux, macOS on Apple Silicon and Windows. Worlds come from a Rust port of the vanilla generators, drawn with vanilla's block models, lighting, sky and fog.",
+    body: "Linux, macOS on Apple Silicon or Intel, and Windows on x64 or ARM. Worlds come from a Rust port of the vanilla generators, drawn with vanilla's block models, lighting, sky and fog.",
   },
   {
     icon: CodeIcon,

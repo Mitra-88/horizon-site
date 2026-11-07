@@ -84,7 +84,7 @@ This works today, on a VPS or any computer. Everything below is the same program
 
 ### 1. Install
 
-On Linux (x86-64) and macOS (Apple Silicon):
+On Linux (x86-64) and macOS (Apple Silicon or Intel):
 
 ```sh
 curl -fsSL https://raw.githubusercontent.com/horizon-rust/horizon/main/packaging/server/install.sh | sh

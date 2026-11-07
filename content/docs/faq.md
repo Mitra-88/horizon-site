@@ -52,7 +52,7 @@ Every subsystem matches vanilla in every harness that compares it. It means 100%
 
 ## Which systems does it run on?
 
-Linux x86-64, macOS on Apple Silicon and Windows x64. See [supported systems](/docs/#supported-systems).
+Linux x86-64, macOS on Apple Silicon or Intel, and Windows x64 or ARM64. See [supported systems](/docs/#supported-systems).
 
 ## Are shader packs supported?
 

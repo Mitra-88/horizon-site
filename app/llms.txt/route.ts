@@ -20,7 +20,7 @@ export async function GET() {
     "",
     "> Horizon is Minecraft: Java Edition 26.3 rewritten from scratch in Rust, sometimes called Minecraft Rust Edition. It is free, open source under the MIT licence, and unofficial: it is not approved by or associated with Mojang or Microsoft.",
     "",
-    "- Players install it with the Horizon launcher, for Windows x64, macOS on Apple Silicon and Linux x86-64.",
+    "- Players install it with the Horizon launcher, for Windows x64 and ARM64, macOS on Apple Silicon and Intel, and Linux x86-64.",
     "- It contains no Minecraft code, assets or data. It builds its game files from the player's own legally obtained copy of Minecraft: Java Edition 26.3, on their computer.",
     "- It reads the same worlds, plays by the same rules and generates the same terrain as the Java game. Differential harnesses feed the same inputs to Horizon and to vanilla and compare the results.",
     "- Forge, NeoForge, Fabric and Quilt mods do not run in it. It has its own mod system, and the launcher can carry over the content of some Java mods.",

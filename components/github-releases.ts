@@ -72,13 +72,17 @@ export async function getReleases(): Promise<Release[] | null> {
 }
 
 export type DesktopOs = "windows" | "macos" | "linux";
-export type LauncherBuild = { version: string; files: Partial<Record<DesktopOs, { url: string; size: number }>> };
+// A system's own launcher build: the OS, or an OS on its other processor (Intel Macs, Windows on ARM).
+export type LauncherTarget = DesktopOs | "macos-x64" | "windows-arm64";
+export type LauncherBuild = { version: string; files: Partial<Record<LauncherTarget, { url: string; size: number }>> };
 
 // Windows gets the per-user setup: it installs into %LOCALAPPDATA%, where the launcher can update itself (a copy run
 // from inside a ZIP or a protected folder can't, horizon#9287).
-const LAUNCHER_FILES: Record<DesktopOs, RegExp> = {
+const LAUNCHER_FILES: Record<LauncherTarget, RegExp> = {
   windows: /^horizon-launcher-setup\.exe$/i,
+  "windows-arm64": /^horizon-launcher-setup-arm64\.exe$/i,
   macos: /macos-arm64\.dmg$/i,
+  "macos-x64": /macos-x64\.dmg$/i,
   linux: /linux-x86_64\.tar\.gz$/i,
 };
 
@@ -86,7 +90,7 @@ export function launcherBuild(releases: Release[] | null): LauncherBuild | null 
   const release = releases?.find((r) => r.kind === "launcher");
   if (!release) return null;
   const files: LauncherBuild["files"] = {};
-  for (const os of Object.keys(LAUNCHER_FILES) as DesktopOs[]) {
+  for (const os of Object.keys(LAUNCHER_FILES) as LauncherTarget[]) {
     const asset = release.assets.find((a) => LAUNCHER_FILES[os].test(a.name));
     if (asset) files[os] = { url: asset.url, size: asset.size };
   }
