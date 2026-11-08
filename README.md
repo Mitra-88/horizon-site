@@ -104,7 +104,8 @@ Release view counts live in `.data/`, which is reset by every deploy unless a vo
   Mojang or Microsoft.", is under the headline, in the phone menu, the footer and the 404 page.
 - No Minecraft logo or wordmark; "Minecraft" appears only descriptively ("for Minecraft:
   Java Edition 26.3"). No game files are offered or linked.
-- Parity is worded as the README words it: 100% of what the harnesses compare.
+- Parity is worded as what the harnesses compare, never as a percentage or a "100% parity" claim (decided
+  2026-11-09); the parity section's numbers are where the project started.
 - No cookies, analytics, trackers or third-party fonts and scripts.
 - Motion stops under `prefers-reduced-motion`; nothing hijacks the scroll.
 

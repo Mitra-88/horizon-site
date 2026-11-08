@@ -9,7 +9,7 @@ const SCALE = [
   { score: 0.25, label: "started" },
   { score: 0.5, label: "playable, major features missing" },
   { score: 0.75, label: "mostly complete" },
-  { score: 1, label: "complete and verified against vanilla by differential tests" },
+  { score: 1, label: "its harnesses cover it and pass" },
 ];
 
 const SUBSYSTEMS = [
@@ -97,7 +97,7 @@ const SUBSYSTEMS = [
 const half = Math.ceil(SUBSYSTEMS.length / 2);
 
 const status = (score: number) =>
-  score === 1 ? "Passes its harnesses" : `Scores ${score}: ${SCALE.find((s) => s.score === score)?.label}`;
+  score === 1 ? "Passed its harnesses" : `Scored ${score}: ${SCALE.find((s) => s.score === score)?.label}`;
 
 function Meter({ score }: { score: number }) {
   return (
@@ -132,8 +132,8 @@ export function Parity() {
               {HARNESSES}
             </p>
             <p className="mt-6 max-w-sm text-lg leading-relaxed text-pretty text-white/70">
-              differential harnesses drive the same inputs through Horizon and through the vanilla client and server,
-              and compare what comes out.
+              differential harnesses when we started: each drives the same inputs through Horizon and through the
+              vanilla client and server, and compares what comes out.
             </p>
           </div>
 
@@ -142,14 +142,15 @@ export function Parity() {
               id="parity-title"
               className="font-display text-[clamp(2rem,3.6vw,3rem)] leading-[1.08] font-semibold tracking-[-0.03em] text-balance text-white"
             >
-              Every subsystem passes the harnesses that compare it.
+              Where the project started.
             </h2>
             <p className="mt-4 max-w-xl text-[15px] leading-relaxed text-pretty text-white/60">
-              Below is the project&apos;s own audit of each subsystem. Every subsystem now matches vanilla in every
-              harness that compares it.
+              Below is the project&apos;s first audit of each subsystem: what its harnesses compared then, and how
+              much of it they covered. It is not a parity claim: players still find differences, and parity work on
+              26.3 continues, redstone first.
             </p>
             <p className="mt-5 text-sm leading-relaxed text-white/50">
-              Last audited <time dateTime={AUDITED}>{AUDITED}</time>
+              Audited <time dateTime={AUDITED}>{AUDITED}</time>
               <Dot />
               players still find differences:{" "}
               <a
@@ -194,7 +195,7 @@ export function Parity() {
         </div>
 
         <div className="reveal mt-10 text-sm leading-relaxed text-white/50">
-          <p>Each subsystem scores</p>
+          <p>Each subsystem scored</p>
           <ul className="mt-3 flex flex-wrap gap-x-6 gap-y-2">
             {SCALE.map((s) => (
               <li key={s.score} className="flex items-center gap-2">

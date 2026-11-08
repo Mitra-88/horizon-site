@@ -84,10 +84,9 @@ async function parityNumbers() {
   try {
     const readme = await repoFile("README.md");
     const harnesses = readme.match(/all (\d[\d,]*) (?:parity )?harnesses/)?.[1];
-    const percent = readme.match(/^#+ .*parity[^\n]*?([\d.]+%)/im)?.[1];
-    return { harnesses: harnesses ?? "281", percent: percent ?? "100%" };
+    return { harnesses: harnesses ?? "281" };
   } catch {
-    return { harnesses: "281", percent: "100%" };
+    return { harnesses: "281" };
   }
 }
 
@@ -101,7 +100,7 @@ export async function getDocs(): Promise<Doc[]> {
   cacheTag(TAGS.main);
   const nav = await getDocsNav();
   const slugs = new Set(nav.flatMap((g) => g.pages));
-  const { harnesses, percent } = await parityNumbers();
+  const { harnesses } = await parityNumbers();
   let failed = false;
   const docs = await Promise.all(
     nav.flatMap(({ group, pages }) =>
@@ -133,7 +132,7 @@ export async function getDocs(): Promise<Doc[]> {
         }
         text = text.replace(/\r\n?/g, "\n");
         if (api) text = apiLinks(text.replace(/^<!--[\s\S]*?-->\n/, ""), source, slugs);
-        text = text.replaceAll("{{HARNESSES}}", harnesses).replaceAll("{{PERCENT}}", percent);
+        text = text.replaceAll("{{HARNESSES}}", harnesses);
         const m = text.match(/^# (.+)\n\n((?:[^\n]+\n)+)\n/);
         const title = m ? m[1].replace(/`/g, "").trim() : (API_TITLES[slug] ?? slug);
         const lede = m ? m[2].trim().replace(/\n/g, " ") : "";

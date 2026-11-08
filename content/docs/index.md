@@ -5,7 +5,7 @@ Horizon is Minecraft: Java Edition 26.3 rewritten in Rust. You install it with a
 ## In one minute
 
 - **A new game program, not a mod.** Horizon is written from scratch in Rust. It reads the same worlds, plays by the same rules and generates the same terrain as the Java game.
-- **Checked against vanilla.** {{HARNESSES}} automated tests ("harnesses") feed the same inputs to Horizon and to the real game, then compare the results. Today every subsystem matches in every harness that compares it. That is {{PERCENT}} of what the harnesses compare, which is not proof that nothing else differs. The [status table](/#parity) lists what is covered.
+- **Checked against vanilla.** {{HARNESSES}} automated tests ("harnesses") feed the same inputs to Horizon and to the real game, then compare the results. Passing them is not proof that nothing else differs, and players still find differences. The [status table](/#parity) shows what they covered when the project started.
 - **Light and fast.** It starts quickly, uses little memory and draws efficiently. See [Performance](/docs/performance) for what is measured and what is not.
 - **A few things vanilla doesn't have.** Its own settings, added to vanilla's menus the way mods add theirs, graphics presets, distant terrain, controller support, optional extras such as dynamic lights, official mods such as zoom and a minimap, an invite code to play your world with friends, and a server you can run without Java.
 

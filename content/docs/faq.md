@@ -46,9 +46,9 @@ No. Horizon only reads your Minecraft files when it prepares, and keeps what it 
 
 Preparation runs vanilla's own data generator on your copy of the game, to read data such as every item's default components, and that is Java. It is needed for the preparation only. The game and the server themselves run without Java.
 
-## What does "100% vanilla parity" mean?
+## How close is Horizon to vanilla?
 
-Every subsystem matches vanilla in every harness that compares it. It means 100% of what the harnesses compare, not proof that nothing else differs. See [What Horizon is](/docs/) and [the status table](/#parity).
+The harnesses compare Horizon with the real game on the same inputs, subsystem by subsystem; [the status table](/#parity) shows what they covered when the project started. Passing them is not proof that nothing else differs, and players still find differences. Parity work targets 26.3, redstone first. See [What Horizon is](/docs/).
 
 ## Which systems does it run on?
 

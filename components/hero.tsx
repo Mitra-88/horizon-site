@@ -60,7 +60,7 @@ export async function Hero() {
 
           <p className="rise mt-6 max-w-xl text-lg leading-relaxed text-white/70" style={delay(160)}>
             The Minecraft: Java Edition 26.3 client and its game logic, rewritten in Rust and checked against the
-            vanilla game by 281 differential harnesses.
+            vanilla game by differential harnesses.
           </p>
 
           <div className="rise mt-9 flex flex-col gap-3 sm:flex-row sm:items-center" style={delay(240)}>
