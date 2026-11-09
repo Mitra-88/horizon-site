@@ -1,0 +1,223 @@
+{
+  "languageName": "Español",
+  "meta": {
+    "title": "Horizon: Minecraft Rust Edition, Java 26.3 reescrito en Rust",
+    "description": "Minecraft: Java Edition 26.3 reescrito en Rust. Gratis, de código abierto y comprobado frente a vanilla. Descarga el launcher de Horizon para Windows, macOS y Linux."
+  },
+  "common": {
+    "newTab": "(se abre en una pestaña nueva)"
+  },
+  "header": {
+    "nav": {
+      "about": "Qué es",
+      "hub": "Hub",
+      "benchmarks": "Benchmarks",
+      "mods": "Mods",
+      "releases": "Versiones",
+      "docs": "Docs",
+      "players": "Jugadores",
+      "shop": "Tienda"
+    },
+    "mainNav": "Principal",
+    "download": "Descargar",
+    "openMenu": "Abrir el menú",
+    "closeMenu": "Cerrar el menú",
+    "unseen": ", {n} nuevas",
+    "unseenMenu": "{n} nuevas"
+  },
+  "footer": {
+    "disclaimer": "No es un producto oficial de Minecraft. No está aprobado por Mojang ni Microsoft ni asociado con ellos.",
+    "whoTitle": "Quién lo hace",
+    "who": "Horizon lo hace Ludovic Marie; puedes contactarle en <lu4ovic>lu4ovic.com</lu4ovic>. Este sitio lo desarrolla Anthony S, de <dezerx>DezerX</dezerx>, que es su responsable. Horizon no contiene código, recursos ni datos de Minecraft, y este sitio no ofrece archivos del juego: necesitas tu propia copia legal de Minecraft: Java Edition. Minecraft es una marca de Mojang Synergies AB. Los cosméticos de Horizon los vende Ludovic Marie a través de Paddle.com, el comerciante registrado.",
+    "licencesTitle": "Licencias",
+    "licences": "El trabajo original de Horizon está bajo la <mit>licencia MIT</mit>. Las fuentes son Geist, Geist Mono y Bricolage Grotesque, bajo la <ofl>SIL Open Font License</ofl>. Todos los recursos de este sitio figuran en LEGAL.md.",
+    "privacyTitle": "Privacidad",
+    "privacy": "Este sitio no usa cookies, no tiene analíticas ni rastreadores y no carga nada de terceros salvo GitHub. Cuando abres una versión, el servidor guarda un hash irreversible de tu dirección IP para que esa versión cuente cada visitante una sola vez; la dirección en sí nunca se guarda. Para mostrar las últimas versiones, notas de parche, enlaces y colaboradores, tu navegador los pide a api.github.com y raw.githubusercontent.com, y las fotos de los colaboradores a avatars.githubusercontent.com; la <github>declaración de privacidad de GitHub</github> cubre esas peticiones. El launcher no envía nada salvo que lo permitas: <telemetry>qué puede enviar y cómo borrarlo</telemetry>.",
+    "legal": {
+      "privacy": "Política de privacidad",
+      "terms": "Condiciones de venta",
+      "refunds": "Reembolsos",
+      "shop": "Tienda"
+    },
+    "madeInRust": "Hecho en abierto, en Rust."
+  },
+  "notFound": {
+    "title": "No hay nada",
+    "titleAccent": "en esta dirección.",
+    "body": "La página se movió o nunca existió. Estos son los sitios que más se buscan.",
+    "home": "Volver al inicio",
+    "docs": "La documentación",
+    "mods": "Mods"
+  },
+  "home": {
+    "hero": {
+      "writtenIn": "Escrito en <rust>Rust</rust>",
+      "title": "El juego que conoces,",
+      "titleAccent": "rehecho en Rust.",
+      "lead": "El cliente de Minecraft: Java Edition 26.3 y su lógica de juego, reescritos en Rust y comprobados frente al juego vanilla con pruebas diferenciales.",
+      "download": "Descargar el launcher",
+      "github": "Ver en GitHub",
+      "launcher": "Launcher {version}",
+      "downloadsTitle": "Descargas del launcher desde GitHub, todas las versiones, actualizaciones incluidas",
+      "downloads": "<n>{n}</n> descargas"
+    },
+    "frameRate": {
+      "eyebrow": "Benchmarks",
+      "title": "<accent>{ratio}×</accent> los fotogramas.",
+      "lead": "Fotogramas por segundo de media en vanilla 26.3 sin mods instalados.",
+      "standard": "Launcher estándar",
+      "sliderLabel": "Fotogramas del launcher estándar",
+      "hint": "Arrastra la barra del launcher estándar para probar tus propios fotogramas. Los resultados varían según el hardware."
+    },
+    "about": {
+      "eyebrow": "Qué es",
+      "title": "Mismas entradas, salidas idénticas.",
+      "lead": "Horizon, a veces llamado Minecraft Rust Edition, rehace Minecraft: Java Edition 26.3 en Rust, subsistema a subsistema, y somete cada pieza a las mismas entradas que el juego vanilla hasta que las salidas son idénticas.",
+      "contributors": "Ver colaboradores",
+      "imageAlt": "Un molino de Minecraft sobre un campo de lavanda",
+      "points": {
+        "copy": {
+          "title": "Tu propia copia",
+          "body": "Instala Java Edition con el launcher oficial y juega a la 26.3 una vez. Horizon crea sus recursos a partir de esos archivos en tu equipo, y nunca descarga ni comparte archivos del juego."
+        },
+        "native": {
+          "title": "Nativo en tres plataformas",
+          "body": "Linux, macOS en Apple Silicon o Intel, y Windows en x64 o ARM. Los mundos salen de una adaptación a Rust de los generadores vanilla, dibujados con los modelos de bloques, la iluminación, el cielo y la niebla de vanilla."
+        },
+        "open": {
+          "title": "Código abierto",
+          "body": "El código de Horizon es MIT. No contiene código, recursos ni datos de Minecraft; esos pertenecen a Mojang y Microsoft bajo el EULA de Minecraft."
+        }
+      }
+    },
+    "sponsor": {
+      "title": "Tu servidor<br/>de Minecraft, <accent>online 24/7.</accent>",
+      "lead": "¡Consigue tu servidor ahora en menos de ~60 segundos!",
+      "cta": "Quiero mi servidor",
+      "copy": "Copiar el código {code}",
+      "copied": "Cupón copiado al portapapeles",
+      "selected": "Seleccionado: pulsa Ctrl+C para copiar",
+      "hide": "Ocultar este socio"
+    },
+    "community": {
+      "eyebrow": "Comunidad",
+      "title": "Hecho en abierto.",
+      "lead": "Cada cambio llega a GitHub en público. Ven a preguntar, informar de errores o enviar un pull request.",
+      "links": {
+        "discord": {
+          "title": "Discord",
+          "body": "Preguntas, informes de errores y capturas."
+        },
+        "sponsor": {
+          "title": "Patrocinar",
+          "body": "Los patrocinadores en GitHub financian la próxima versión."
+        },
+        "source": {
+          "title": "Código",
+          "body": "Issues y pull requests son bienvenidos."
+        },
+        "build": {
+          "title": "Cómo se hace",
+          "body": "Quién lo escribe, cómo se comprueban los cambios y por qué es seguro ejecutarlo."
+        }
+      },
+      "artists": "¿Haces modelos 3D? <link>Horizon busca artistas 3D</link>."
+    },
+    "gallery": {
+      "eyebrow": "Dibujado por",
+      "title": "El juego que te encanta, <accent>6× más rápido.</accent>",
+      "lead": "Cada fotograma de aquí lo renderizó Horizon, con los modelos de bloques, la iluminación, el cielo y la niebla de vanilla.",
+      "shots": {
+        "nether": "Un piglin con una espada de oro en un bosque carmesí sobre un mar de lava en el Nether",
+        "village": "Una aldea de sabana con casas de paja entre acacias bajo un cielo azul",
+        "night": "Una aldea iluminada con antorchas bajo una luna cuadrada y un cielo estrellado",
+        "ocean": "Peces tropicales nadando sobre un arrecife de coral en un océano cálido"
+      }
+    },
+    "contributors": {
+      "eyebrow": "Colaboradores",
+      "title": "Hecho por {n} personas.",
+      "claude": "…y<claude/>Claude también",
+      "titleFallback": "Hecho por sus colaboradores.",
+      "lead": "Todos los que tienen commits en {repo}, primero los que más, y las personas detrás de este sitio.",
+      "all": "Todos los colaboradores en GitHub",
+      "oneCommit": "1 commit",
+      "commits": "{n} commits",
+      "webDeveloper": "Desarrollador web"
+    },
+    "parity": {
+      "harnesses": "pruebas diferenciales cuando empezamos: cada una pasa las mismas entradas por Horizon y por el cliente y el servidor vanilla, y compara lo que sale.",
+      "title": "Dónde empezó el proyecto.",
+      "lead": "Abajo está la primera auditoría del proyecto de cada subsistema: qué comparaban entonces sus pruebas y cuánto cubrían. No es una afirmación de paridad: los jugadores aún encuentran diferencias, y el trabajo de paridad en la 26.3 continúa, empezando por la redstone.",
+      "audited": "Auditado el <date/><dot/>los jugadores aún encuentran diferencias: <link>los informes abiertos</link>",
+      "passed": "Pasó sus pruebas",
+      "scored": "Puntuación {score}: {label}",
+      "scaleTitle": "Cada subsistema puntuó",
+      "scale": {
+        "0": "ausente",
+        "0.25": "empezado",
+        "0.5": "jugable, faltan funciones importantes",
+        "0.75": "casi completo",
+        "1": "sus pruebas lo cubren y pasan"
+      },
+      "subsystems": {
+        "loop": {
+          "name": "Ventana, entrada y bucle de juego",
+          "detail": "El bucle de juego, las opciones, la cámara, el salto automático, correr/agacharse con un toque, la entrada local y el limitador de fotogramas coinciden con vanilla."
+        },
+        "assets": {
+          "name": "Recursos",
+          "detail": "Los modelos de objetos coinciden con vanilla en 196.290 stacks y el cliente dibuja cada objeto con ellos; la pantalla de paquetes de recursos coincide con el dibujo de vanilla en 3000 sesiones de clics, desplazamiento y búsqueda, incluida su confirmación de incompatibilidad."
+        },
+        "network": {
+          "name": "Protocolo de red y multijugador",
+          "detail": "Se une a servidores vanilla; el servidor dedicado (--dedicated) coincide con los archivos de vanilla, el ping de estado, el inicio de sesión, la configuración, el juego, los chunks, el chat, las recetas, los logros y el árbol de comandos, un cliente hecho con el código de paquetes de vanilla se une a él, Horizon se une a un servidor vanilla, y el descubrimiento LAN coincide en 462 casos (solo en modo offline)."
+        },
+        "chunks": {
+          "name": "Almacenamiento de chunks y paletas",
+          "detail": "El cliente y las partidas guardadas comparten contenedores con paleta, idénticos a vanilla en 266 escenarios."
+        },
+        "meshing": {
+          "name": "Mallado de secciones",
+          "detail": "112 escenas y más de un millón de quads idénticos a vanilla."
+        },
+        "rendering": {
+          "name": "Renderizado",
+          "detail": "Los modelos de entidades, los renderizadores de entidades de bloque (407 casos, incluidos los portales del End, los accesos y la vista previa de estandartes del telar) y sus animaciones (296 casos, incluidos los haces de los accesos del End), las capas del HUD (2200 estados), el libro de recetas (600 estados), la lista de jugadores, los subtítulos y el borde del mundo coinciden con vanilla."
+        },
+        "lighting": {
+          "name": "Iluminación",
+          "detail": "La luz guardada y la recalculada coinciden con vanilla, incluidas losas y escaleras."
+        },
+        "worldgen": {
+          "name": "Generación de mundos",
+          "detail": "2352 chunks completos en 225 lugares con estructuras, en las tres dimensiones, idénticos a vanilla."
+        },
+        "saves": {
+          "name": "Archivos de región y partidas",
+          "detail": "Las partidas van y vuelven con vanilla, y los mundos de la 1.8 a la 26.2 se actualizan como lo hacen los DataFixers de vanilla, incluidos los mundos superplanos; también se actualizan los antiguos options.txt y hotbar.nbt."
+        },
+        "entities": {
+          "name": "Entidades y física",
+          "detail": "Los atributos, las dimensiones, el botín al morir, las reglas de aparición, la aparición natural (15.500 casos), las incursiones y patrullas (1900 casos), el equipo, los encantamientos y el estado de los mobs que aparecen (finalizeSpawn, 24.000 casos) y la IA de los mobs (92 escenarios, incluidos la cría y los rumores de los aldeanos, el warden, los ghastlings y los gólems de cobre) coinciden con vanilla."
+        },
+        "inventory": {
+          "name": "Interacción e inventario",
+          "detail": "Los clics en menús coinciden en más de 8000 secuencias de clics, incluidos el telar y el crafter; la colocación del libro de recetas (6000 casos), sus botones (1200), el libro guardado (1500) y las pantallas del telar y del crafter (1600) coinciden con vanilla."
+        },
+        "menus": {
+          "name": "Menús, HUD y chat",
+          "detail": "Todos los comandos funcionan como en vanilla (758 comandos en 39.685 entradas analizadas), los marcadores y equipos coinciden (81.000 operaciones), la lista de jugadores coincide en más de 872.000 llamadas de dibujo con cabezas dibujadas a partir de las skins de los jugadores (texturas de authlib, búsqueda de SkinManager, conversión de skins antiguas), y el chat coincide con foco y con desplazamiento; la pantalla de paquetes de recursos (selección en más de 4000 casos, dibujo y su confirmación de incompatibilidad en 3000 sesiones) y la entrada del chat con sus sugerencias de comandos, líneas de uso, autocompletado con Tab e historial (3000 sesiones sobre el árbol de comandos del cliente vanilla) coinciden con vanilla."
+        },
+        "audio": {
+          "name": "Audio",
+          "detail": "El motor de sonido, los eventos de sonido, la música, la música situacional, el ambiente y los subtítulos coinciden con vanilla."
+        },
+        "blocks": {
+          "name": "Comportamiento y ticks de bloques",
+          "detail": "Las actualizaciones de bloques, los ticks aleatorios, la redstone, los dispensadores (6000 casos), los crafters (4000 crafteos), la eliminación de entidades de bloque (los contenedores sueltan su contenido, 4000 casos), la clasificación de cofres de los gólems de cobre y la familia del sculk (435 escenarios, incluidos los avisos del chillador y la invocación del warden) coinciden con vanilla."
+        }
+      }
+    }
+  }
+}

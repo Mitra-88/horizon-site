@@ -4,6 +4,7 @@ import { Contributors } from "@/components/contributors";
 import { Gallery } from "@/components/gallery";
 import { getReleases } from "@/components/github-releases";
 import { Hero } from "@/components/hero";
+import { getMessages, type Locale } from "@/components/i18n";
 import { JsonLd } from "@/components/json-ld";
 import { DOWNLOAD_URL, GITHUB_URL } from "@/components/links";
 import { Parity } from "@/components/parity";
@@ -14,21 +15,18 @@ import {
   AUTHOR,
   OPERATING_SYSTEMS,
   ORGANIZATION_ID,
-  pageMetadata,
   SAME_AS,
-  SITE_DESCRIPTION,
   SITE_NAME,
-  SITE_TITLE,
   SITE_URL,
   WEBSITE_ID,
 } from "@/components/site";
 import { Sponsor } from "@/components/sponsor";
 
-export const metadata = pageMetadata({ title: SITE_TITLE, description: SITE_DESCRIPTION, path: "/" });
-
 const SCREENSHOTS = ["/media/nether.webp", "/media/village-800.webp", "/media/night-800.webp", "/media/underwater.webp"];
 
-export default async function Home() {
+// The home page in each language: app/(en)/page.tsx and app/es/page.tsx.
+export async function HomePage({ locale }: { locale: Locale }) {
+  const { meta } = getMessages(locale);
   const releases = await getReleases();
   const game = releases?.find((r) => r.kind === "horizon");
 
@@ -43,8 +41,8 @@ export default async function Home() {
               url: SITE_URL,
               name: SITE_NAME,
               alternateName: ALTERNATE_NAMES,
-              description: SITE_DESCRIPTION,
-              inLanguage: "en",
+              description: meta.description,
+              inLanguage: locale,
               publisher: { "@id": ORGANIZATION_ID },
             },
             {
@@ -61,7 +59,7 @@ export default async function Home() {
               "@id": APP_ID,
               name: SITE_NAME,
               alternateName: ALTERNATE_NAMES,
-              description: SITE_DESCRIPTION,
+              description: meta.description,
               url: SITE_URL,
               applicationCategory: "GameApplication",
               applicationSubCategory: "Minecraft: Java Edition client",
@@ -81,13 +79,13 @@ export default async function Home() {
           ],
         }}
       />
-      <Hero locale="en" />
-      <About locale="en" />
-      <Sponsor locale="en" />
-      <Community locale="en" />
-      <Gallery locale="en" />
-      <Contributors locale="en" />
-      <Parity locale="en" />
+      <Hero locale={locale} />
+      <About locale={locale} />
+      <Sponsor locale={locale} />
+      <Community locale={locale} />
+      <Gallery locale={locale} />
+      <Contributors locale={locale} />
+      <Parity locale={locale} />
     </main>
   );
 }

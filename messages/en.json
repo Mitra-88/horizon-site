@@ -1,4 +1,9 @@
 {
+  "languageName": "English",
+  "meta": {
+    "title": "Horizon: Minecraft Rust Edition, Java 26.3 rewritten in Rust",
+    "description": "Minecraft: Java Edition 26.3 rewritten in Rust. Free, open source and tested against vanilla. Get the Horizon launcher for Windows, macOS and Linux."
+  },
   "common": {
     "newTab": "(opens in a new tab)"
   },
@@ -99,10 +104,22 @@
       "title": "Built in the open.",
       "lead": "Every change lands on GitHub in public. Come ask questions, report bugs or send a pull request.",
       "links": {
-        "discord": { "title": "Discord", "body": "Questions, bug reports and screenshots." },
-        "sponsor": { "title": "Sponsor", "body": "Sponsors on GitHub fund the next release." },
-        "source": { "title": "Source", "body": "Issues and pull requests are welcome." },
-        "build": { "title": "How it's built", "body": "Who writes it, how changes are checked, why it's safe to run." }
+        "discord": {
+          "title": "Discord",
+          "body": "Questions, bug reports and screenshots."
+        },
+        "sponsor": {
+          "title": "Sponsor",
+          "body": "Sponsors on GitHub fund the next release."
+        },
+        "source": {
+          "title": "Source",
+          "body": "Issues and pull requests are welcome."
+        },
+        "build": {
+          "title": "How it's built",
+          "body": "Who writes it, how changes are checked, why it's safe to run."
+        }
       },
       "artists": "Do you make 3D models? <link>Horizon is looking for 3D artists</link>."
     },

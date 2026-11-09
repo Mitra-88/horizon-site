@@ -13,6 +13,8 @@ const nextConfig: NextConfig = {
   },
   experimental: {
     agentFeedback: true,
+    // Each language has its own root layout (app/(en), app/es), so unmatched addresses need app/global-not-found.tsx.
+    globalNotFound: true,
   },
   async redirects() {
     return [

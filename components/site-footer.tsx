@@ -1,7 +1,9 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { GitHubIcon, HorizonMark, MicrosoftIcon, MojangIcon, RustIcon } from "@/components/icons";
-import { getMessages, rich, type Locale } from "@/components/i18n";
+import { getMessages, LOCALES, rich, type Locale } from "@/components/i18n";
+import { localePath } from "@/components/i18n-text";
+import { LanguageSwitch } from "@/components/language-switch";
 import { GITHUB_URL } from "@/components/links";
 
 // Paddle's website review and Mojang's guidelines want these reachable from every page.
@@ -11,6 +13,9 @@ const LEGAL = [
   { href: "/refunds", key: "refunds" },
   { href: "/shop", key: "shop" },
 ] as const;
+
+const LEGAL_LINK =
+  "font-medium text-white/80 underline decoration-white/25 underline-offset-4 transition-colors hover:text-white hover:decoration-white/60";
 
 const GITHUB_PRIVACY_URL = "https://docs.github.com/site-policy/privacy-policies/github-general-privacy-statement";
 
@@ -46,7 +51,7 @@ export function SiteFooter({ locale }: { locale: Locale }) {
     <footer className="mt-auto border-t border-white/[0.08]">
       <div className="mx-auto w-full max-w-6xl px-6 pt-14 pb-10 lg:px-10">
         <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between md:gap-16">
-          <Link href="/" className="flex shrink-0 items-center gap-2 text-white">
+          <Link href={localePath(locale, "/")} className="flex shrink-0 items-center gap-2 text-white">
             <HorizonMark className="size-8" />
             <span className="font-display text-[19px] font-semibold tracking-[-0.02em]">Horizon</span>
           </Link>
@@ -77,14 +82,14 @@ export function SiteFooter({ locale }: { locale: Locale }) {
             </p>
             <p className="mt-3 flex flex-wrap gap-x-4 gap-y-1">
               {LEGAL.map(({ href, key }) => (
-                <Link
-                  key={href}
-                  href={href}
-                  className="font-medium text-white/80 underline decoration-white/25 underline-offset-4 transition-colors hover:text-white hover:decoration-white/60"
-                >
+                <Link key={href} href={href} className={LEGAL_LINK}>
                   {t.legal[key]}
                 </Link>
               ))}
+              <LanguageSwitch
+                languages={LOCALES.filter((l) => l !== locale).map((l) => ({ locale: l, name: getMessages(l).languageName }))}
+                className={LEGAL_LINK}
+              />
             </p>
           </div>
         </div>

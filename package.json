@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "i18n:unreviewed": "node scripts/i18n-unreviewed.mjs"
   },
   "dependencies": {
     "@hugeicons/core-free-icons": "^4.4.0",

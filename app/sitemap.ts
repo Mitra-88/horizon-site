@@ -1,9 +1,11 @@
 import type { MetadataRoute } from "next";
 import { getDocs } from "@/components/docs-data";
 import { getReleases } from "@/components/github-releases";
+import { languageAlternates, LOCALES } from "@/components/i18n";
+import { localePath } from "@/components/i18n-text";
 import { getMods } from "@/components/mods-data";
 import { getShopStatus } from "@/components/shop-data";
-import { absolute, SITE_URL } from "@/components/site";
+import { absolute } from "@/components/site";
 
 const newest = (dates: (string | undefined)[]) => dates.filter((d): d is string => Boolean(d)).sort().at(-1);
 
@@ -15,7 +17,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const modsUpdated = newest((mods ?? []).map((p) => p.versions[0]?.published));
 
   return [
-    { url: SITE_URL, lastModified: released, changeFrequency: "daily", priority: 1 },
+    ...LOCALES.map((locale) => ({
+      url: absolute(localePath(locale, "/")).replace(/\/$/, ""),
+      lastModified: released,
+      changeFrequency: "daily" as const,
+      priority: locale === "en" ? 1 : 0.9,
+      alternates: { languages: Object.fromEntries(Object.entries(languageAlternates("/") ?? {}).map(([l, p]) => [l, absolute(p).replace(/\/$/, "")])) },
+    })),
     { url: absolute("/releases"), lastModified: released, changeFrequency: "hourly", priority: 0.9 },
     { url: absolute("/benchmarks"), changeFrequency: "weekly", priority: 0.8 },
     { url: absolute("/mods"), lastModified: modsUpdated, changeFrequency: "daily", priority: 0.8 },

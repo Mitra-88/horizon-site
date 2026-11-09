@@ -47,10 +47,22 @@ deployment live. After a deploy, check https://playhorizon.dev (/, /hub, /mods, 
 
 ## Text and translations
 
-The text of the header, the footer, the 404 page and the home page lives in `messages/en.json`, read through `components/i18n.ts`
-(`getMessages`, `rich` for text with links in it, `format` for `{values}`). Pages move there one by one as they are
-translated: the plan, the routes (`/es/...`) and what stays English are in horizon-site#29. Moving text there must
-not change the rendered page: compare the built HTML and screenshots before and after.
+The text of the header, the footer, the 404 page and the home page lives in `messages/<lang>.json` (`en.json` is the
+reference; `es.json` must have every key, `tsc` checks it), read through `components/i18n.ts` (`getMessages`, `rich`
+for text with links in it, `format` for `{values}`). Client components get their strings as props and use
+`components/i18n-text.ts`, which ships no JSON. Plan, routes and what stays English: horizon-site#29.
+
+- English keeps its URLs under `app/(en)/`; Spanish pages live in `app/es/`, each a few lines rendering the same
+  component with `locale="es"`. Each language has its own root layout (`components/site-shell.tsx`) for `<html lang>`;
+  `app/global-not-found.tsx` serves addresses that match nothing.
+- A page joins a language when its text is translated: add its English path to `TRANSLATED_PATHS`
+  (`components/i18n-text.ts`), its `app/es/` file and `languages: languageAlternates(path)` in both pages' metadata.
+  Header links, the footer's language links, hreflang and the sitemap follow.
+- Machine translations start **unreviewed**: `messages/review/<lang>.json` holds the entries a speaker checked, with
+  the text they checked; `npm run i18n:unreviewed -- es` lists the rest. Only a person who speaks the language adds to
+  a review file (reports come through #translations on Discord).
+- A translation never changes the layout: if a string is too long for its place, shorten the wording. Moving text
+  must not change the rendered English page: compare the built HTML and screenshots before and after.
 
 ## Rules
 

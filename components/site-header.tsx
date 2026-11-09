@@ -6,7 +6,7 @@ import { Suspense, useEffect, useState, useSyncExternalStore } from "react";
 import { GitHubIcon, HorizonMark, MenuIcon, XIcon } from "@/components/icons";
 import type { LauncherBuild } from "@/components/github-releases";
 import type { Messages } from "@/components/i18n";
-import { format } from "@/components/i18n-text";
+import { format, localePath, type Locale } from "@/components/i18n-text";
 import { LauncherLink } from "@/components/launcher-download";
 import { GITHUB_URL } from "@/components/links";
 import { useUnseenCount } from "@/components/release-seen";
@@ -33,7 +33,7 @@ const subscribe = (onChange: () => void) => {
   return () => window.removeEventListener("scroll", onChange);
 };
 
-type SiteHeaderProps = { t: Messages["header"]; releaseIds?: number[]; launcher?: LauncherBuild | null; shop?: boolean };
+type SiteHeaderProps = { locale: Locale; t: Messages["header"]; releaseIds?: number[]; launcher?: LauncherBuild | null; shop?: boolean };
 
 // The current path is runtime data: read outside <Suspense> it stops Next.js from rendering pages that aren't
 // prerendered (CLIENT_HOOK_DYNAMIC). The fallback is the same header with no link marked as current.
@@ -49,8 +49,8 @@ function SiteHeaderAtPath(props: SiteHeaderProps) {
   return <SiteHeaderView {...props} pathname={usePathname()} />;
 }
 
-function SiteHeaderView({ t, releaseIds = [], launcher = null, shop = false, pathname }: SiteHeaderProps & { pathname: string }) {
-  const nav = shop ? [...NAV, SHOP] : NAV;
+function SiteHeaderView({ locale, t, releaseIds = [], launcher = null, shop = false, pathname }: SiteHeaderProps & { pathname: string }) {
+  const nav = (shop ? [...NAV, SHOP] : NAV).map((item) => ({ ...item, href: localePath(locale, item.href) }));
   const scrolled = useSyncExternalStore(
     subscribe,
     () => window.scrollY > 8,
@@ -79,7 +79,7 @@ function SiteHeaderView({ t, releaseIds = [], launcher = null, shop = false, pat
       }`}
     >
       <div className="mx-auto flex h-18 w-full max-w-6xl items-center gap-12 px-6 lg:px-10">
-        <Link href="/" className="flex items-center gap-2 text-white">
+        <Link href={localePath(locale, "/")} className="flex items-center gap-2 text-white">
           <HorizonMark className="size-8" />
           <span className="font-display text-[19px] font-semibold tracking-[-0.02em]">Horizon</span>
         </Link>
@@ -94,7 +94,7 @@ function SiteHeaderView({ t, releaseIds = [], launcher = null, shop = false, pat
               className={isCurrent(item.href) ? `${NAV_LINK} text-white` : NAV_LINK}
             >
               {t.nav[item.key]}
-              {item.href === "/releases" && unseen > 0 && (
+              {item.key === "releases" && unseen > 0 && (
                 <>
                   <span
                     aria-hidden
@@ -153,7 +153,7 @@ function SiteHeaderView({ t, releaseIds = [], launcher = null, shop = false, pat
                   }`}
                 >
                   {t.nav[item.key]}
-                  {item.href === "/releases" && unseen > 0 && (
+                  {item.key === "releases" && unseen > 0 && (
                     <span className="text-sm text-[#c4b5ff]">{format(t.unseenMenu, { n: unseen > 9 ? "9+" : unseen })}</span>
                   )}
                 </Link>

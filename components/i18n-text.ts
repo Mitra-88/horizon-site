@@ -1,6 +1,34 @@
 import { createElement, Fragment, type ReactNode } from "react";
 
-// Message helpers with no messages in them, so client components can use them without shipping the JSON files.
+// The languages and message helpers, with no messages in them, so client components can use them without shipping the
+// JSON files.
+
+// English is the default and keeps its URLs; the others live under /<locale>/ (horizon-site#29).
+export const LOCALES = ["en", "es"] as const;
+export type Locale = (typeof LOCALES)[number];
+
+// The pages that exist in every language, by their English path. A page joins when its text is translated.
+export const TRANSLATED_PATHS = ["/"];
+
+// A page's English path from its path in any language: "/es" → "/", "/es/releases" → "/releases".
+export function englishPath(pathname: string): string {
+  const [, first, ...rest] = pathname.split("/");
+  return LOCALES.includes(first as Locale) && first !== "en" ? `/${rest.join("/")}` : pathname;
+}
+
+// Where a link to an English path goes in `locale`: its translation when there is one, else the English page.
+// Keeps a #fragment: ("es", "/#about") → "/es#about".
+export function localePath(locale: Locale, href: string): string {
+  const [path, hash] = href.split("#");
+  if (locale === "en" || !TRANSLATED_PATHS.includes(path)) return href;
+  return `/${locale}${path === "/" ? "" : path}${hash === undefined ? "" : `#${hash}`}`;
+}
+
+// The same page in another language, or that language's home page when the page has no translation.
+export function switchPath(target: Locale, pathname: string): string {
+  const english = englishPath(pathname);
+  return localePath(target, TRANSLATED_PATHS.includes(english) ? english : "/");
+}
 
 // "{n} new" with { n: 3 } → "3 new".
 export function format(text: string, values: Record<string, string | number>): string {
