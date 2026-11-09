@@ -5,7 +5,7 @@ export type Stamp = number | string;
 export type Choice = "for" | "against" | "abstain";
 export type Tally = { for: number; against: number; abstain: number };
 export type Role = "mod" | "support" | "team";
-export type Status = "open" | "veto-window" | "stalled" | "owner" | "accepted" | "declined";
+export type Status = "open" | "veto-window" | "objection-window" | "council-poll" | "age-wait" | "stalled" | "owner" | "accepted" | "declined";
 
 export type Application = {
   id: string;
@@ -27,6 +27,8 @@ export type Application = {
     againstComments?: string[];
   };
   veto?: { until: number } | null;
+  objection?: { from: number; until: number; by: string[] } | null;
+  council?: { reason: string; at: number; poll: string | null } | null;
   tally?: Tally | null;
   decidedAt?: Stamp;
   revoked?: { at: Stamp; result?: { error?: string } } | null;

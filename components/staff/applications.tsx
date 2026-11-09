@@ -15,7 +15,11 @@ const ACTION: Record<string, string> = {
   extended: "not enough votes: 48 more hours",
   stalled: "still not enough votes: sent to Ludovic",
   "to-owner": "too few active voters: sent to Ludovic",
-  passed: "the vote passed: Ludovic's 12-hour veto window opened",
+  passed: "the vote passed",
+  "objection-window": "the council's 24-hour objection window opened",
+  objection: "objected (council)",
+  "to-council": "sent to a council poll",
+  "age-wait": "accepted once they make the 18+ declaration",
   veto: "vetoed it",
   accepted: "accepted",
   declined: "declined",
@@ -32,6 +36,12 @@ export function standing(a: Application, now = Date.now()) {
     return `${votes} · closes in ${left(v.closesAt, now)}${v.extended ? " (extended once)" : ""}`;
   }
   if (a.status === "veto-window") return `Passed · goes through in ${left(a.veto?.until ?? now, now)} unless Ludovic vetoes it`;
+  if (a.status === "objection-window") {
+    const n = a.objection?.by.length ?? 0;
+    return `Passed · accepted in ${left(a.objection?.until ?? now, now)} unless two council members object${n ? ` (${n} so far)` : ""}`;
+  }
+  if (a.status === "council-poll") return a.council?.poll ? `With the council · poll ${a.council.poll} in #council` : "Going to a council poll";
+  if (a.status === "age-wait") return "Accepted · the role comes once they make the 18+ declaration";
   if (a.status === "stalled") return "Not enough votes, even after 48 more hours · Ludovic decides";
   if (a.status === "owner") return "Too few active voters · Ludovic decides";
   if (a.status === "accepted") return `Accepted ${when(a.decidedAt)}${a.revoked ? ` · role taken back ${when(a.revoked.at)}` : ""}`;
@@ -235,7 +245,7 @@ function ApplicationCard({ a, people, dashboard, onDone }: { a: Application; peo
   const tally = a.vote.tally || a.tally;
   const r = a.result;
   const notes: string[] = [];
-  if (a.githubManual && ["veto-window", "accepted"].includes(a.status)) notes.push("Accepting gives only the Discord role: GitHub organisation access is Ludovic's to give, by hand.");
+  if (a.githubManual && ["veto-window", "council-poll", "age-wait", "accepted"].includes(a.status)) notes.push("Accepting gives only the Discord role: GitHub organisation access is Ludovic's to give, by hand.");
   if (r && a.status === "accepted" && !r.granted) notes.push(`The role was not given${r.error ? `: ${r.error}` : ""}.`);
   if (r && r.dmSent === false) notes.push(`The DM was not sent${r.error ? `: ${r.error}` : ""}.`);
   if (a.revoked?.result?.error) notes.push(`Taking the role back: ${a.revoked.result.error}.`);
