@@ -86,10 +86,6 @@ export function SiteFooter({ locale }: { locale: Locale }) {
                   {t.legal[key]}
                 </Link>
               ))}
-              <LanguageSwitch
-                languages={LOCALES.filter((l) => l !== locale).map((l) => ({ locale: l, name: getMessages(l).languageName }))}
-                className={LEGAL_LINK}
-              />
             </p>
           </div>
         </div>
@@ -99,10 +95,17 @@ export function SiteFooter({ locale }: { locale: Locale }) {
             {t.madeInRust}
             <RustIcon className="size-4" />
           </p>
-          <a href={GITHUB_URL} className="inline-flex items-center gap-2 transition-colors hover:text-white">
-            <GitHubIcon className="size-4" />
-            {GITHUB_URL.replace("https://github.com/", "")}
-          </a>
+          {/* One line on every width, so the language links add no height (horizon-site#29). */}
+          <div className="flex items-center gap-4">
+            <LanguageSwitch
+              languages={LOCALES.filter((l) => l !== locale).map((l) => ({ locale: l, name: getMessages(l).languageName }))}
+              className="transition-colors hover:text-white"
+            />
+            <a href={GITHUB_URL} className="inline-flex items-center gap-2 transition-colors hover:text-white">
+              <GitHubIcon className="size-4" />
+              {GITHUB_URL.replace("https://github.com/", "")}
+            </a>
+          </div>
         </div>
       </div>
     </footer>
