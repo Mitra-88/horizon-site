@@ -2,7 +2,7 @@ import Image from "next/image";
 import type { CSSProperties } from "react";
 import { FrameRateComparison } from "@/components/frame-rate-comparison";
 import { HorizonScene } from "@/components/horizon-scene";
-import { DownloadIcon, GitHubIcon, LinuxIcon, RustIcon, WindowsIcon } from "@/components/icons";
+import { AppleIcon, DownloadIcon, GitHubIcon, LinuxIcon, RustIcon, WindowsIcon } from "@/components/icons";
 import { getLauncherDownloads, getReleases, launcherBuild } from "@/components/github-releases";
 import { LauncherLink, LauncherMeta } from "@/components/launcher-download";
 import { GITHUB_URL, RUST_WIKI_URL } from "@/components/links";
@@ -85,6 +85,10 @@ export async function Hero() {
               <LauncherLink build={launcher} os="windows" className="inline-flex items-center gap-2 text-white/75 transition-colors hover:text-white">
                 <WindowsIcon className="size-3.5" />
                 Windows
+              </LauncherLink>
+              <LauncherLink build={launcher} os="macos" className="inline-flex items-center gap-2 text-white/75 transition-colors hover:text-white">
+                <AppleIcon className="size-4" />
+                macOS
               </LauncherLink>
               <LauncherLink build={launcher} os="linux" className="inline-flex items-center gap-2 text-white/75 transition-colors hover:text-white">
                 <LinuxIcon className="size-4" />

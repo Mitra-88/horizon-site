@@ -241,15 +241,17 @@ export function BoardFilter({ items }: { items: { id: string; title: string }[] 
         onChange={(e) => setQuery(e.target.value)}
         className={`${FIELD} h-10 text-sm sm:max-w-xs`}
       />
-      <select aria-label="Roadmap item" value={item} onChange={(e) => setItem(e.target.value)} className={`${FIELD} h-10 text-sm sm:max-w-xs`}>
-        <option value="">Every card</option>
-        <option value="-">Cards of a roadmap item</option>
-        {items.map((i) => (
-          <option key={i.id} value={i.id}>
-            {i.title}
-          </option>
-        ))}
-      </select>
+      {items.length > 0 && (
+        <select aria-label="Roadmap item" value={item} onChange={(e) => setItem(e.target.value)} className={`${FIELD} h-10 text-sm sm:max-w-xs`}>
+          <option value="">Every card</option>
+          <option value="-">Cards of a roadmap item</option>
+          {items.map((i) => (
+            <option key={i.id} value={i.id}>
+              {i.title}
+            </option>
+          ))}
+        </select>
+      )}
       {shown !== null && (
         <p className="text-sm text-white/50 sm:ml-2" role="status">
           {shown} {shown === 1 ? "card matches" : "cards match"}
