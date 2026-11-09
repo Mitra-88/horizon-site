@@ -2,7 +2,11 @@
 
 import { useEffect, useMemo, useRef, useState, useSyncExternalStore, type ReactNode } from "react";
 import type { ReleaseKind } from "@/components/github-releases";
+import type { Messages } from "@/components/i18n";
+import { format } from "@/components/i18n-text";
 import { CheckIcon, ChevronDownIcon } from "@/components/icons";
+
+type ListText = Messages["releases"]["list"];
 
 const KEY = "horizon:seen-releases";
 const listeners = new Set<() => void>();
@@ -93,7 +97,7 @@ function countView(id: number) {
     .catch(() => counted.delete(id));
 }
 
-export function ReleaseViews({ id }: { id: number }) {
+export function ReleaseViews({ id, t, numberLocale }: { id: number; t: ListText; numberLocale: string }) {
   const all = useSyncExternalStore(subscribeViews, () => views, () => null);
   if (!all) return null;
   const n = all[id] ?? 0;
@@ -103,7 +107,7 @@ export function ReleaseViews({ id }: { id: number }) {
         ·
       </span>
       <span className="tabular-nums">
-        {n.toLocaleString("en-US")} view{n === 1 ? "" : "s"}
+        {n === 1 ? t.oneView : format(t.views, { n: n.toLocaleString(numberLocale) })}
       </span>
     </>
   );
@@ -116,14 +120,9 @@ export function useUnseenCount(ids: number[]) {
 
 type Filter = "all" | ReleaseKind;
 
-const TABS: { filter: Filter; label: string }[] = [
-  { filter: "all", label: "All" },
-  { filter: "horizon", label: "Horizon" },
-  { filter: "launcher", label: "Launcher" },
-  { filter: "nightly", label: "Nightly" },
-];
+const TABS: Filter[] = ["all", "horizon", "launcher", "nightly"];
 
-export function ReleaseList({ entries, children }: { entries: { id: number; kind: ReleaseKind }[]; children: ReactNode }) {
+export function ReleaseList({ t, entries, children }: { t: ListText; entries: { id: number; kind: ReleaseKind }[]; children: ReactNode }) {
   const [filter, setFilter] = useState<Filter>("all");
   const seen = useSeen();
   const shown = filter === "all" ? entries : entries.filter((e) => e.kind === filter);
@@ -134,19 +133,19 @@ export function ReleaseList({ entries, children }: { entries: { id: number; kind
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex flex-wrap gap-1.5">
           {TABS.map((tab) => {
-            const count = tab.filter === "all" ? entries.length : entries.filter((e) => e.kind === tab.filter).length;
-            const active = filter === tab.filter;
+            const count = tab === "all" ? entries.length : entries.filter((e) => e.kind === tab).length;
+            const active = filter === tab;
             return (
               <button
-                key={tab.filter}
+                key={tab}
                 type="button"
                 aria-pressed={active}
-                onClick={() => setFilter(tab.filter)}
+                onClick={() => setFilter(tab)}
                 className={`inline-flex h-9 items-center gap-2 rounded-lg px-3.5 text-sm font-medium transition-colors focus-visible:ring-2 focus-visible:ring-[#a98fff] focus-visible:outline-none ${
                   active ? "bg-white text-background" : "bg-white/[0.06] text-white/70 hover:bg-white/[0.1] hover:text-white"
                 }`}
               >
-                {tab.label}
+                {t.tabs[tab]}
                 <span className={`tabular-nums ${active ? "text-background/55" : "text-white/40"}`}>{count}</span>
               </button>
             );
@@ -156,7 +155,7 @@ export function ReleaseList({ entries, children }: { entries: { id: number; kind
         <div className="flex items-center gap-4 text-sm">
           {seen && (
             <span aria-live="polite" className={unseen.length ? "font-medium text-[#a98fff]" : "text-white/50"}>
-              {unseen.length ? `${unseen.length} new` : "All caught up"}
+              {unseen.length ? format(t.newCount, { n: unseen.length }) : t.caughtUp}
             </span>
           )}
           <button
@@ -165,7 +164,7 @@ export function ReleaseList({ entries, children }: { entries: { id: number; kind
             onClick={() => markSeen(unseen.map((e) => e.id))}
             className="rounded-md text-white/70 underline decoration-white/25 underline-offset-4 transition-colors hover:text-white disabled:pointer-events-none disabled:opacity-40 focus-visible:ring-2 focus-visible:ring-[#a98fff] focus-visible:outline-none"
           >
-            Mark all as seen
+            {t.markAllSeen}
           </button>
         </div>
       </div>
@@ -177,7 +176,7 @@ export function ReleaseList({ entries, children }: { entries: { id: number; kind
   );
 }
 
-export function ReleaseItem({ id, summary, children }: { id: number; summary: ReactNode; children: ReactNode }) {
+export function ReleaseItem({ id, t, summary, children }: { id: number; t: ListText; summary: ReactNode; children: ReactNode }) {
   const seen = useSeen();
   const isSeen = seen?.has(id) ?? false;
   const ref = useRef<HTMLDetailsElement>(null);
@@ -214,11 +213,11 @@ export function ReleaseItem({ id, summary, children }: { id: number; summary: Re
           (isSeen ? (
             <span className="mt-0.5 inline-flex shrink-0 items-center gap-1 text-xs text-white/40">
               <CheckIcon className="size-3.5" />
-              Seen
+              {t.seen}
             </span>
           ) : (
             <span className="mt-0.5 shrink-0 rounded-md bg-[#a98fff]/15 px-2 py-0.5 text-xs font-medium text-[#c9bbff]">
-              New
+              {t.new}
             </span>
           ))}
         <ChevronDownIcon className="mt-1 size-4 shrink-0 text-white/40 transition-transform group-open:rotate-180" />
@@ -232,7 +231,7 @@ export function ReleaseItem({ id, summary, children }: { id: number; summary: Re
             onClick={() => markUnseen(id)}
             className="mt-4 block rounded-md text-sm text-white/45 underline decoration-white/20 underline-offset-4 transition-colors hover:text-white focus-visible:ring-2 focus-visible:ring-[#a98fff] focus-visible:outline-none"
           >
-            Mark as unseen
+            {t.markUnseen}
           </button>
         )}
       </div>

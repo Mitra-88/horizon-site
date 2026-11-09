@@ -219,5 +219,45 @@
         }
       }
     }
+  },
+  "releases": {
+    "meta": {
+      "title": "Descarga el launcher de Horizon: versiones y nightlies",
+      "description": "Descarga el launcher de Horizon para Windows, macOS y Linux. Cada versión del juego, del launcher y nightly, con sus notas y descargas, directamente desde GitHub."
+    },
+    "eyebrow": "Versiones",
+    "title": "Cada versión,",
+    "titleAccent": "tal como sale.",
+    "lead": "Horizon, su launcher y las builds nightly, directamente desde GitHub. Abre una para leer sus notas; las que ya abriste quedan marcadas como vistas.",
+    "browse": "Ver versiones",
+    "allOnGitHub": "Todas las versiones en GitHub",
+    "changelog": "Registro de cambios",
+    "latest": "Últimas {n} versiones.",
+    "latestFallback": "Las versiones están en GitHub.",
+    "unreachable": "Ahora mismo no se pudo contactar con GitHub. Todas las versiones están en <link>la página de versiones de GitHub</link>.",
+    "kinds": {
+      "horizon": "Horizon",
+      "launcher": "Launcher",
+      "nightly": "Nightly"
+    },
+    "noNotes": "Esta versión no tiene notas.",
+    "downloads": "Descargas",
+    "viewOnGitHub": "Ver en GitHub",
+    "list": {
+      "tabs": {
+        "all": "Todas",
+        "horizon": "Horizon",
+        "launcher": "Launcher",
+        "nightly": "Nightly"
+      },
+      "newCount": "{n} nuevas",
+      "caughtUp": "Todo al día",
+      "markAllSeen": "Marcar todas como vistas",
+      "seen": "Vista",
+      "new": "Nueva",
+      "markUnseen": "Marcar como no vista",
+      "oneView": "1 visita",
+      "views": "{n} visitas"
+    }
   }
 }

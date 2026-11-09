@@ -219,5 +219,45 @@
         }
       }
     }
+  },
+  "releases": {
+    "meta": {
+      "title": "Download the Horizon launcher: releases and nightlies",
+      "description": "Download the Horizon launcher for Windows, macOS and Linux. Every game, launcher and nightly release, with its notes and downloads, straight from GitHub."
+    },
+    "eyebrow": "Releases",
+    "title": "Every release,",
+    "titleAccent": "as it ships.",
+    "lead": "Horizon, its launcher and the nightly builds, straight from GitHub. Open one to read its notes; the ones you've opened are marked as seen.",
+    "browse": "Browse releases",
+    "allOnGitHub": "All releases on GitHub",
+    "changelog": "Changelog",
+    "latest": "The latest {n} releases.",
+    "latestFallback": "Releases are on GitHub.",
+    "unreachable": "GitHub couldn't be reached just now. Every release is listed on <link>the releases page on GitHub</link>.",
+    "kinds": {
+      "horizon": "Horizon",
+      "launcher": "Launcher",
+      "nightly": "Nightly"
+    },
+    "noNotes": "No notes for this release.",
+    "downloads": "Downloads",
+    "viewOnGitHub": "View on GitHub",
+    "list": {
+      "tabs": {
+        "all": "All",
+        "horizon": "Horizon",
+        "launcher": "Launcher",
+        "nightly": "Nightly"
+      },
+      "newCount": "{n} new",
+      "caughtUp": "All caught up",
+      "markAllSeen": "Mark all as seen",
+      "seen": "Seen",
+      "new": "New",
+      "markUnseen": "Mark as unseen",
+      "oneView": "1 view",
+      "views": "{n} views"
+    }
   }
 }
