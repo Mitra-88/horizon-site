@@ -157,7 +157,7 @@ export async function BenchmarksPage({ locale }: { locale: Locale }) {
       </section>
 
       <section className="bg-[#100a1f] py-16 sm:py-20">
-        <div className="mx-auto grid w-full max-w-6xl gap-10 px-6 lg:grid-cols-2 lg:px-10">
+        <div className="mx-auto grid w-full max-w-6xl grid-cols-[minmax(0,1fr)] gap-10 px-6 lg:grid-cols-2 lg:px-10">
           <div>
             <h2 className="font-display text-[clamp(1.75rem,3.5vw,2.5rem)] leading-[1.08] font-semibold tracking-[-0.03em] text-white">{t.method.title}</h2>
             <div className="mt-4 space-y-4 text-[16px] leading-relaxed text-white/65">
