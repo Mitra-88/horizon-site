@@ -18,6 +18,7 @@ import {
   POLICY_URL,
   REGISTRY,
   apiLabel,
+  buildsOn,
   categoriesOf,
   categoryLabel,
   downloadsText,
@@ -424,6 +425,9 @@ async function ModContent({ params }: Pick<PageProps<"/mods/[id]">, "params">) {
                         {[x.published, `for Minecraft ${x.game}`, apiLabel(x.api)].filter(Boolean).join(" · ")}
                       </span>
                     </p>
+                    {buildsOn(x) && (
+                      <p className={`mt-1 text-sm ${buildsOn(x)?.ok ? "text-[#8be0b4]" : "text-[#f07a6a]"}`}>{buildsOn(x)?.text}</p>
+                    )}
                     {x.changelog && (
                       <div className="mt-2 text-[15px]">
                         <DocsProse html={markdown(x.changelog)} />

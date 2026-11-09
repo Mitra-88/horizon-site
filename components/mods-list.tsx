@@ -117,6 +117,12 @@ export function ModsList({ projects, ratings }: { projects: ModSummary[]; rating
             Make a mod
           </Link>
           <Link
+            href="/mods/mine"
+            className="inline-flex h-11 items-center rounded-lg bg-white/10 px-4 text-[15px] font-medium text-white transition-colors outline-none hover:bg-white/15 focus-visible:ring-2 focus-visible:ring-[#a98fff]"
+          >
+            Your mods
+          </Link>
+          <Link
             href={SUBMIT_URL}
             className="inline-flex h-11 items-center gap-2 rounded-lg bg-white px-4 text-[15px] font-medium text-[#100a1f] transition-colors outline-none hover:bg-white/90 focus-visible:ring-2 focus-visible:ring-[#a98fff]"
           >

@@ -1,4 +1,5 @@
 import { cacheLife, cacheTag } from "next/cache";
+import { githubFetch } from "@/components/github-api";
 import { rawMainUrl, TAGS } from "@/components/github-fresh";
 import { KINDS, type ModProject, type Ratings } from "@/components/mods-logic";
 
@@ -67,6 +68,42 @@ export async function getMod(id: string) {
   return mods?.find((p) => p.id === id) ?? null;
 }
 
+
+/** A pull request the submission form opened for an account, as "Your mods" lists it. */
+export type Submission = { number: number; title: string; state: string; merged: boolean; url: string; created: string };
+
+/**
+ * The registry pull requests the submission form opened for `login`, newest first: the form writes
+ * `<!-- submitted-by: <login> -->` into each one's body. GitHub's search matches words, so the body is checked again.
+ */
+export async function getSubmissions(login: string): Promise<Submission[] | null> {
+  "use cache";
+  cacheTag(TAGS.mods);
+  const marker = `<!-- submitted-by: ${login.toLowerCase()} -->`;
+  const query = `repo:horizon-rust/horizon-mods is:pr in:body "submitted-by: ${login}"`;
+  try {
+    const res = await githubFetch(`/search/issues?q=${encodeURIComponent(query)}&sort=created&order=desc&per_page=50`);
+    if (!res.ok) throw new Error(`GitHub responded ${res.status} ${res.statusText}`);
+    const { items } = (await res.json()) as {
+      items?: { number: number; title: string; state: string; html_url: string; created_at: string; body?: string; pull_request?: { merged_at?: string | null } }[];
+    };
+    cacheLife({ stale: 60, revalidate: 120, expire: 3600 });
+    return (items ?? [])
+      .filter((i) => (i.body ?? "").toLowerCase().includes(marker))
+      .map((i) => ({
+        number: i.number,
+        title: i.title,
+        state: i.state,
+        merged: Boolean(i.pull_request?.merged_at),
+        url: i.html_url,
+        created: i.created_at.slice(0, 10),
+      }));
+  } catch (error) {
+    console.error(`Couldn't load the submissions of ${login}:`, error);
+    cacheLife("seconds");
+    return null;
+  }
+}
 
 export async function getModPolicy(): Promise<string | null> {
   "use cache";

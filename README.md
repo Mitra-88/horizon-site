@@ -25,14 +25,15 @@ npm run lint
 ## Layout
 
 ```
-app/                    the routes: /, /hub, /mods, /mods/<id>, /mods/submit, /mods/policy, /releases,
+app/                    the routes: /, /hub, /mods, /mods/<id>, /mods/submit, /mods/mine, /mods/policy, /releases,
                         /benchmarks, /stats, /docs, /docs/<page>, /privacy, /apply, and the staff's
                         pages inside the hub: /hub/team, /hub/mod, /hub/sign-in, /hub/setup, /hub/staff-help
                         (the old /staff/* addresses redirect there; /hub/mod has a Cases tab: Kira's numbered mod
                         cases and appeals), and /hub/appeal: the appeal form for people banned from the Discord
                         server or the official Minecraft server (the link Kira DMs, or Discord sign-in; Kira's
                         appeal/* routes behind the same proxy; timeouts and quarantines are appealed on Discord)
-app/api/                the registry and players proxies, and release view counts
+app/api/                the registry and players proxies, release view counts, and an account's registry
+                        submissions (/api/mod-submissions, read from horizon-mods' pull requests for /mods/mine)
 app/staff/api/          the staff dashboards' proxy to Kira's service
 app/data/               /data/roadmap.json and /data/journal.json, which Kira reads
 app/sitemap.ts, robots.ts, manifest.ts, opengraph-image.tsx, llms.txt/, og/docs/

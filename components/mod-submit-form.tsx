@@ -114,9 +114,13 @@ export function ModSubmitForm({ known }: { known: KnownProject[] }) {
         const data = (await r.json()) as Me;
         if (typeof data.login !== "string") throw new Error("bad answer");
         setMe(data);
+        // `/mods/submit?id=<id>` ("Submit an update" on Your mods): the listed project's id, so the form says it is
+        // listed and offers to fill its page in.
+        const want = new URLSearchParams(window.location.search).get("id") ?? "";
+        if (known.some((p) => p.id === want)) setId(want);
       })
       .catch(() => setClosed(true));
-  }, []);
+  }, [known]);
 
   const signOut = async () => {
     await fetch(`${API}/auth/logout`, { method: "POST", credentials: "same-origin" }).catch(() => {});

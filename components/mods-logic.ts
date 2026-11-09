@@ -8,6 +8,10 @@ export type ModVersion = {
   side?: string;
   capabilities?: string[];
   requires?: { id: string; version: string }[];
+  /** A native mod's hook points version: it builds on any Horizon that has them. */
+  hooks?: number;
+  /** The Horizon commits the registry's daily check found it doesn't build on, with the error. */
+  broken_on?: { horizon: string; code: string }[];
   file: ModFile;
 };
 export type ModProject = {
@@ -257,6 +261,13 @@ export function apiLabel(api?: string) {
   if (!api) return "";
   const native = /^native-\d+\/([0-9a-f]{40})\//.exec(api);
   return native ? `made on Horizon ${native[1].slice(0, 7)}` : `API ${api}`;
+}
+
+/** Whether a native version builds on Horizon beyond the commit it was made on: the registry's daily check, or its hook points. */
+export function buildsOn(v: ModVersion): { ok: boolean; text: string } | null {
+  const broken = v.broken_on?.[0];
+  if (broken) return { ok: false, text: `Doesn't build on Horizon ${broken.horizon.slice(0, 7)} (${broken.code})` };
+  return v.hooks ? { ok: true, text: `Builds on every Horizon with native hook points v${v.hooks}` } : null;
 }
 
 const LOGIN = /^(?!-)(?!.*--)[A-Za-z0-9-]{1,39}(?<!-)$/;
