@@ -27,6 +27,8 @@ export type ModProject = {
   screenshots?: string[];
   versions: ModVersion[];
   downloads?: number;
+  /** The GitHub stars of its `source` repository, read by the registry's publish job every hour. */
+  stars?: number;
 };
 export type ModSummary = {
   id: string;
@@ -35,6 +37,8 @@ export type ModSummary = {
   summary: string;
   authors: string[];
   downloads: number;
+  /** Its GitHub stars: 0 when it has none or its source isn't a GitHub repository. */
+  stars: number;
   version: string;
   icon: string;
   categories: string[];
@@ -193,6 +197,16 @@ export function count(n: number) {
 
 export const safeDownloads = (n?: number) => (Number.isSafeInteger(n) && (n as number) > 0 ? (n as number) : 0);
 
+/** `https://github.com/<owner>/<repo>` of a source on GitHub, else "": where its stars are. */
+export function githubRepo(source?: string) {
+  const m = /^https:\/\/github\.com\/([A-Za-z0-9](?:[A-Za-z0-9-]{0,38}))\/([A-Za-z0-9_.-]{1,100})(?:[/?#]|$)/.exec(source ?? "");
+  if (!m || m[2].startsWith(".")) return "";
+  return `https://github.com/${m[1]}/${m[2].replace(/\.git$/, "")}`;
+}
+
+/** A project's GitHub stars, as the index gives them: 0 unless its source is a GitHub repository. */
+export const starsOf = (p: Pick<ModProject, "stars" | "source">) => (githubRepo(p.source) ? safeDownloads(p.stars) : 0);
+
 export const downloadsText = (n: number) => `${count(n)} download${n === 1 ? "" : "s"}`;
 
 export function ratingOf(ratings: Ratings | null, id: string): Rating | null {
@@ -208,6 +222,7 @@ export function summarize(p: ModProject): ModSummary {
     summary: p.summary ?? "",
     authors: p.authors ?? [],
     downloads: safeDownloads(p.downloads),
+    stars: starsOf(p),
     version: p.versions[0].version,
     icon: https(p.icon),
     categories: categoriesOf(p),

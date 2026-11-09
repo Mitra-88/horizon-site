@@ -18,7 +18,7 @@ import {
   type Ratings,
   type Sort,
 } from "@/components/mods-logic";
-import { ModIcon, Stars } from "@/components/mods-ui";
+import { GitHubStars, ModIcon, Stars } from "@/components/mods-ui";
 
 const SEGMENT = "h-8 rounded-md px-3 text-sm font-medium whitespace-nowrap transition-colors outline-none focus-visible:ring-2 focus-visible:ring-[#a98fff]";
 const segment = (on: boolean) => `${SEGMENT} ${on ? "bg-white text-[#100a1f]" : "text-white/65 hover:text-white"}`;
@@ -187,6 +187,12 @@ export function ModsList({ projects, ratings }: { projects: ModSummary[]; rating
                       {rating && (
                         <>
                           <Stars rating={rating} className="text-white/70" />
+                          <span aria-hidden>·</span>
+                        </>
+                      )}
+                      {p.stars > 0 && (
+                        <>
+                          <GitHubStars stars={p.stars} className="text-white/70" />
                           <span aria-hidden>·</span>
                         </>
                       )}

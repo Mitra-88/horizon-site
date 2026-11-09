@@ -1,5 +1,6 @@
 import Image from "next/image";
-import type { Rating } from "@/components/mods-logic";
+import { GitHubIcon } from "@/components/icons";
+import { count, type Rating } from "@/components/mods-logic";
 
 const INKS = ["#a98fff", "#8be0b4", "#f2c46b", "#f07a6a"];
 
@@ -77,6 +78,23 @@ export function Stars({ rating, className = "" }: { rating: Rating; className?: 
       <span className="tabular-nums">
         {mean} ({rating.count})
       </span>
+    </span>
+  );
+}
+
+/** A project's GitHub stars: GitHub's mark, a star and how many, as its repository shows them. */
+export function GitHubStars({ stars, className = "" }: { stars: number; className?: string }) {
+  const label = `${stars.toLocaleString("en-US")} star${stars === 1 ? "" : "s"} on GitHub`;
+  return (
+    <span className={`inline-flex items-center gap-1 ${className}`} title={label}>
+      <GitHubIcon className="size-3.5 opacity-80" />
+      <span aria-hidden className="text-[#f2c46b]">
+        ★
+      </span>
+      <span aria-hidden className="tabular-nums">
+        {count(stars)}
+      </span>
+      <span className="sr-only">{label}</span>
     </span>
   );
 }

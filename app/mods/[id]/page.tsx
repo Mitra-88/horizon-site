@@ -22,6 +22,7 @@ import {
   categoryLabel,
   downloadsText,
   fileSize,
+  githubRepo,
   https,
   installCommand,
   isOfficial,
@@ -29,10 +30,11 @@ import {
   ratingOf,
   safeDownloads,
   screenshotsOf,
+  starsOf,
   tagsOf,
   type ModProject,
 } from "@/components/mods-logic";
-import { ModIcon, Stars } from "@/components/mods-ui";
+import { GitHubStars, ModIcon, Stars } from "@/components/mods-ui";
 import { PixelAurora } from "@/components/pixel-aurora";
 import { absolute, breadcrumbs, OPERATING_SYSTEMS, pageMetadata } from "@/components/site";
 
@@ -288,6 +290,7 @@ async function ModContent({ params }: Pick<PageProps<"/mods/[id]">, "params">) {
   const authors = (p.authors ?? []).join(", ");
   const caps = v.capabilities ?? [];
   const shots = screenshotsOf(p);
+  const stars = starsOf(p);
 
   return (
     <main>
@@ -311,7 +314,14 @@ async function ModContent({ params }: Pick<PageProps<"/mods/[id]">, "params">) {
               <h1 className="mt-2 font-display text-[clamp(2.25rem,5.5vw,3.75rem)] leading-[1.04] font-semibold tracking-[-0.035em] text-white">{p.name}</h1>
               {p.summary && <p className="mt-4 text-lg leading-relaxed text-white/70">{p.summary}</p>}
               <p className="mt-5 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-white/60">
-                {rating ? <Stars rating={rating} className="text-white/75" /> : <span>No ratings yet</span>}
+                {rating && <Stars rating={rating} className="text-white/75" />}
+                {rating && stars > 0 && <Dot />}
+                {stars > 0 && (
+                  <a href={githubRepo(p.source)} className="transition-colors hover:text-white">
+                    <GitHubStars stars={stars} />
+                  </a>
+                )}
+                {!rating && !stars && <span>No ratings yet</span>}
                 <Dot />
                 <span className="tabular-nums">{downloadsText(safeDownloads(p.downloads))}</span>
                 <Dot />
