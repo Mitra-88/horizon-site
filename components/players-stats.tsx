@@ -1,20 +1,18 @@
 "use client";
 
 import { useEffect, useState, useSyncExternalStore, type PointerEvent } from "react";
+import type { Messages } from "@/components/i18n";
+import { format, formatParts } from "@/components/i18n-text";
 
 type Point = [number, number, number];
 type Moment = { playing: number; at: number };
 type History = { source: string; range: string; step: number; from: number; to: number; series: Point[]; peak?: Moment | null; all_time?: Moment | null; latest?: Moment | null };
 type Live = { playing: number; lan: number; platforms?: Record<string, number> };
 
-const RANGES: [string, string][] = [
-  ["24h", "24 hours"],
-  ["7d", "7 days"],
-  ["30d", "30 days"],
-  ["all", "All"],
-];
-const SPAN: Record<string, string> = { "24h": "over the last 24 hours", "7d": "over the last 7 days", "30d": "over the last 30 days", all: "since the count began" };
-const PLATFORMS: Record<string, string> = { linux: "Linux", macos: "macOS", windows: "Windows", other: "Other" };
+type T = Messages["stats"]["live"];
+type Range = keyof T["ranges"];
+
+const RANGES: Range[] = ["24h", "7d", "30d", "all"];
 const W = 800;
 const H = 260;
 const LEFT = 48;
@@ -22,16 +20,23 @@ const RIGHT = 12;
 const TOP = 14;
 const BOTTOM = 30;
 
-const fmt = (n?: number | null) => (n == null ? "–" : Number(n).toLocaleString("en", { maximumFractionDigits: 1 }));
-const time = (t: number) => new Date(t * 1000).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-const moment = (t: number) => new Date(t * 1000).toLocaleString([], { weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
-const date = (t: number) => new Date(t * 1000).toLocaleDateString([], { weekday: "short", day: "numeric", month: "short", year: "numeric" });
+// Numbers follow the page's language ("en", "es"). Dates and times on the English page follow the reader's own browser;
+// a translated page writes them in its language, in the reader's time zone.
+const formatter = (locale: string) => (n?: number | null) => (n == null ? "–" : Number(n).toLocaleString(locale, { maximumFractionDigits: 1 }));
 
-function tick(t: number, range: string) {
-  const d = new Date(t * 1000);
-  if (range === "24h") return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-  if (range === "7d") return d.toLocaleDateString([], { weekday: "short", day: "numeric" });
-  return d.toLocaleDateString([], { day: "numeric", month: "short" });
+function clockIn(locale: string) {
+  const l = locale === "en" ? [] : locale;
+  return {
+    time: (t: number) => new Date(t * 1000).toLocaleTimeString(l, { hour: "2-digit", minute: "2-digit" }),
+    moment: (t: number) => new Date(t * 1000).toLocaleString(l, { weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }),
+    date: (t: number) => new Date(t * 1000).toLocaleDateString(l, { weekday: "short", day: "numeric", month: "short", year: "numeric" }),
+    tick(t: number, range: string) {
+      const d = new Date(t * 1000);
+      if (range === "24h") return d.toLocaleTimeString(l, { hour: "2-digit", minute: "2-digit" });
+      if (range === "7d") return d.toLocaleDateString(l, { weekday: "short", day: "numeric" });
+      return d.toLocaleDateString(l, { day: "numeric", month: "short" });
+    },
+  };
 }
 
 function niceMax(v: number) {
@@ -96,7 +101,9 @@ function segments(series: Point[], step: number) {
   return out;
 }
 
-function Chart({ h, title }: { h: History; title: string }) {
+function Chart({ h, title, t, numbers }: { h: History; title: string; t: T; numbers: string }) {
+  const fmt = formatter(numbers);
+  const { moment, date, tick } = clockIn(numbers);
   const [hover, setHover] = useState<number | null>(null);
   const first = h.series.length ? h.series[0][0] : h.to - 86400;
   const from = h.range === "all" ? Math.min(first, h.to - 86400) : h.from;
@@ -119,25 +126,25 @@ function Chart({ h, title }: { h: History; title: string }) {
     for (let i = 1; i < h.series.length; i++) if (Math.abs(h.series[i][0] - t) < Math.abs(h.series[best][0] - t)) best = i;
     setHover(best);
   };
-  if (!h.series.length) return <p className="rounded-xl bg-white/[0.03] px-4 py-10 text-center text-sm text-white/50">No samples in this range yet: the history began on 31 October 2026.</p>;
+  if (!h.series.length) return <p className="rounded-xl bg-white/[0.03] px-4 py-10 text-center text-sm text-white/50">{t.noSamples}</p>;
   return (
     <figure>
       <p className="mb-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-white/60">
         <span className="inline-flex items-center gap-1.5">
           <i className="inline-block size-2.5 rounded-[3px] bg-[#a98fff]/50" />
-          Highest
+          {t.highest}
         </span>
         <span className="inline-flex items-center gap-1.5">
           <i className="inline-block h-0.5 w-3 bg-[#8be0b4]" />
-          Average
+          {t.average}
         </span>
-        {h.peak ? <span className="text-white/45">Peak {fmt(h.peak.playing)} on {moment(h.peak.at)}</span> : null}
+        {h.peak ? <span className="text-white/45">{formatParts(t.peak, { n: fmt(h.peak.playing), when: moment(h.peak.at) })}</span> : null}
       </p>
       <div className="relative">
       <svg
         viewBox={`0 0 ${W} ${H}`}
         role="img"
-        aria-label={`${title}: the highest count per point and the average. The table below lists every point.`}
+        aria-label={format(t.chartLabel, { title })}
         className="w-full touch-none"
         onPointerMove={onMove}
         onPointerLeave={() => setHover(null)}
@@ -173,19 +180,19 @@ function Chart({ h, title }: { h: History; title: string }) {
           style={{ left: `${(x(point[0]) / W) * 100}%`, top: `calc(${(y(point[2]) / H) * 100}% - 10px)` }}
         >
           <span className="block font-medium">{h.range === "all" ? date(point[0]) : moment(point[0])}</span>
-          <span className="block tabular-nums">Highest {fmt(point[2])} · Average {fmt(point[1])}</span>
+          <span className="block tabular-nums">{formatParts(t.tooltip, { max: fmt(point[2]), avg: fmt(point[1]) })}</span>
         </div>
       )}
       </div>
       <details className="mt-2">
-        <summary className="cursor-pointer text-xs text-white/50 hover:text-white">Table</summary>
+        <summary className="cursor-pointer text-xs text-white/50 hover:text-white">{t.table}</summary>
         <div className="mt-2 max-h-72 overflow-auto rounded-xl bg-white/[0.03]">
           <table className="w-full text-left text-[13px]">
             <thead>
               <tr className="text-white/50">
-                <th className="px-3 py-2 font-medium">When</th>
-                <th className="px-3 py-2 font-medium">Highest</th>
-                <th className="px-3 py-2 font-medium">Average</th>
+                <th className="px-3 py-2 font-medium">{t.when}</th>
+                <th className="px-3 py-2 font-medium">{t.highest}</th>
+                <th className="px-3 py-2 font-medium">{t.average}</th>
               </tr>
             </thead>
             <tbody>
@@ -204,16 +211,16 @@ function Chart({ h, title }: { h: History; title: string }) {
   );
 }
 
-function HistoryBlock({ series, title }: { series: "players" | "official"; title: string }) {
-  const [range, setRange] = useState("24h");
+function HistoryBlock({ series, title, t, numbers }: { series: "players" | "official"; title: string; t: T; numbers: string }) {
+  const [range, setRange] = useState<Range>("24h");
   const { data, failed } = useJson<History>(`/api/players?view=history&range=${range}&series=${series}`, range === "24h" ? 60_000 : 300_000);
-  const label = `${title} ${SPAN[range]}`;
+  const label = format(t.label, { title, span: t.spans[range] });
   return (
     <div className="rounded-2xl bg-[#18112c] p-5 sm:p-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h3 className="text-[15px] font-medium text-white">{label}</h3>
-        <div role="group" aria-label="Show the" className="flex rounded-lg bg-white/[0.06] p-1">
-          {RANGES.map(([k, l]) => (
+        <div role="group" aria-label={t.showThe} className="flex rounded-lg bg-white/[0.06] p-1">
+          {RANGES.map((k) => (
             <button
               key={k}
               type="button"
@@ -223,18 +230,18 @@ function HistoryBlock({ series, title }: { series: "players" | "official"; title
                 range === k ? "bg-white text-[#100a1f]" : "text-white/65 hover:text-white"
               }`}
             >
-              {l}
+              {t.ranges[k]}
             </button>
           ))}
         </div>
       </div>
       <div className="mt-4">
         {data && data.range === range ? (
-          <Chart h={data} title={label} />
+          <Chart h={data} title={label} t={t} numbers={numbers} />
         ) : failed ? (
-          <p className="text-sm text-white/55">The server doesn&apos;t answer right now.</p>
+          <p className="text-sm text-white/55">{t.down}</p>
         ) : (
-          <p className="text-sm text-white/45">Loading…</p>
+          <p className="text-sm text-white/45">{t.loading}</p>
         )}
       </div>
     </div>
@@ -268,7 +275,9 @@ function useNow() {
   return useSyncExternalStore(subscribeClock, readClock, () => 0);
 }
 
-export function PlayersStats() {
+export function PlayersStats({ t, numberLocale }: { t: T; numberLocale: string }) {
+  const fmt = formatter(numberLocale);
+  const { time, moment } = clockIn(numberLocale);
   const now0 = useNow();
   const live = useJson<Live>("/api/players?view=live", 60_000);
   const day = useJson<History>("/api/players?view=history&range=24h&series=players", 60_000);
@@ -285,29 +294,33 @@ export function PlayersStats() {
     <div className="space-y-12">
       <section aria-labelledby="now-title">
         <h2 id="now-title" className="sr-only">
-          Now and the peaks
+          {t.nowTitle}
         </h2>
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4" aria-live="polite">
           <Tile
             value={fmt(now?.playing)}
-            label="playing now"
-            note={live.failed ? "The server doesn't answer right now." : now ? `Updated ${time(now0 / 1000)}, again every minute` : "Asking the server…"}
+            label={t.playingNow}
+            note={live.failed ? t.down : now ? format(t.updated, { time: time(now0 / 1000) }) : t.asking}
           />
-          <Tile value={today ? fmt(today.playing) : "–"} label="peak today" note={today ? `at ${time(today.at)}` : day.data ? "No sample yet today" : ""} />
-          <Tile value={day.data?.all_time ? fmt(day.data.all_time.playing) : "–"} label="all-time peak" note={day.data?.all_time ? `on ${moment(day.data.all_time.at)}` : ""} />
+          <Tile value={today ? fmt(today.playing) : "–"} label={t.peakToday} note={today ? format(t.at, { time: time(today.at) }) : day.data ? t.noSampleToday : ""} />
+          <Tile
+            value={day.data?.all_time ? fmt(day.data.all_time.playing) : "–"}
+            label={t.allTime}
+            note={day.data?.all_time ? format(t.on, { when: moment(day.data.all_time.at) }) : ""}
+          />
           <Tile
             value={fmt(now?.lan)}
-            label="open to LAN or friends"
-            note={now?.playing ? `${Math.round((now.lan / now.playing) * 100)}% of those playing` : ""}
+            label={t.lan}
+            note={now?.playing ? format(t.lanShare, { pct: Math.round((now.lan / now.playing) * 100) }) : ""}
           />
         </div>
         <div className="mt-4 rounded-2xl bg-[#18112c] p-5 sm:p-6">
-          <h3 className="text-[15px] font-medium text-white">On which system</h3>
+          <h3 className="text-[15px] font-medium text-white">{t.system}</h3>
           {platforms.length && total ? (
             <ul className="mt-3 space-y-2 text-[13px]">
               {platforms.map(([k, v]) => (
                 <li key={k} className="grid grid-cols-[6rem_minmax(0,1fr)_4rem] items-center gap-3">
-                  <span className="text-white/70">{PLATFORMS[k] ?? k}</span>
+                  <span className="text-white/70">{t.platforms[k as keyof T["platforms"]] ?? k}</span>
                   <span className="h-2.5 rounded-[3px] bg-white/[0.06]">
                     <i className="block h-full rounded-[3px] bg-[#a98fff]" style={{ width: `${Math.round((v / total) * 100)}%` }} />
                   </span>
@@ -316,47 +329,43 @@ export function PlayersStats() {
               ))}
             </ul>
           ) : (
-            <p className="mt-3 text-sm text-white/50">{live.failed ? "The server doesn't answer right now." : now ? "Nobody is playing right now." : "Loading…"}</p>
+            <p className="mt-3 text-sm text-white/50">{live.failed ? t.down : now ? t.nobody : t.loading}</p>
           )}
         </div>
       </section>
 
       <section id="history" aria-labelledby="history-title" className="scroll-mt-24">
         <h2 id="history-title" className="font-display text-2xl font-semibold tracking-[-0.02em] text-white">
-          Over time
+          {t.overTime}
         </h2>
         <div className="mt-4">
-          <HistoryBlock series="players" title="Players" />
+          <HistoryBlock series="players" title={t.playersTitle} t={t} numbers={numberLocale} />
         </div>
-        <p className="mt-3 text-[13px] leading-relaxed text-white/50">
-          Each point is the highest and the average count in its 5 minutes (24 hours), hour (7 days), 3 hours (30 days) or day (all, UTC days). Times are in
-          your time zone.
-        </p>
+        <p className="mt-3 text-[13px] leading-relaxed text-white/50">{t.historyNote}</p>
       </section>
 
       <section id="official" aria-labelledby="official-title" className="scroll-mt-24">
         <h2 id="official-title" className="font-display text-2xl font-semibold tracking-[-0.02em] text-white">
-          The Official Horizon SMP
+          {t.officialTitle}
         </h2>
-        <p className="mt-2 max-w-2xl text-[15px] leading-relaxed text-white/65">
-          The Official Horizon SMP, the survival server at the top of the game&apos;s server list. Every minute the telemetry server asks it how many play, with the same
-          status ping your game&apos;s Multiplayer list sends.
-        </p>
+        <p className="mt-2 max-w-2xl text-[15px] leading-relaxed text-white/65">{t.officialLead}</p>
         <div className="mt-4 grid gap-3 sm:grid-cols-3">
           <Tile
             value={fresh ? fmt(latest!.playing) : "–"}
-            label="playing there now"
-            note={fresh ? `At ${time(latest!.at)}, again every minute` : latest ? `Not answering since ${time(latest.at)}` : official.failed ? "The server doesn't answer right now." : ""}
+            label={t.playingThere}
+            note={
+              fresh ? format(t.atAgain, { time: time(latest!.at) }) : latest ? format(t.notAnswering, { time: time(latest.at) }) : official.failed ? t.down : ""
+            }
           />
-          <Tile value={officialToday ? fmt(officialToday.playing) : "–"} label="peak today" note={officialToday ? `at ${time(officialToday.at)}` : ""} />
+          <Tile value={officialToday ? fmt(officialToday.playing) : "–"} label={t.peakToday} note={officialToday ? format(t.at, { time: time(officialToday.at) }) : ""} />
           <Tile
             value={official.data?.all_time ? fmt(official.data.all_time.playing) : "–"}
-            label="all-time peak"
-            note={official.data?.all_time ? `on ${moment(official.data.all_time.at)}` : ""}
+            label={t.allTime}
+            note={official.data?.all_time ? format(t.on, { when: moment(official.data.all_time.at) }) : ""}
           />
         </div>
         <div className="mt-4">
-          <HistoryBlock series="official" title="On the Official Horizon SMP" />
+          <HistoryBlock series="official" title={t.officialHistory} t={t} numbers={numberLocale} />
         </div>
       </section>
     </div>

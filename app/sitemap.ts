@@ -36,7 +36,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...inEveryLanguage("/benchmarks", { changeFrequency: "weekly", priority: 0.8 }),
     ...inEveryLanguage("/mods", { lastModified: modsUpdated, changeFrequency: "daily", priority: 0.8 }),
     { url: absolute("/hub"), changeFrequency: "daily", priority: 0.7 },
-    { url: absolute("/stats"), changeFrequency: "hourly", priority: 0.5 },
+    ...inEveryLanguage("/stats", { changeFrequency: "hourly", priority: 0.5 }),
     ...docs.map((doc) => ({
       url: absolute(doc.path),
       changeFrequency: "weekly" as const,

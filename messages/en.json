@@ -650,5 +650,70 @@
         "githubOne": "{n} star on GitHub"
       }
     }
+  },
+  "stats": {
+    "meta": {
+      "title": "Horizon player count: how many play right now",
+      "description": "How many people play Horizon right now, its peaks and its history, from the anonymous ping every running game sends."
+    },
+    "kicker": "Players",
+    "kickerLive": "Live, every minute",
+    "titleA": "Who plays Horizon",
+    "titleB": "right now.",
+    "lead": "Every running game sends an anonymous “I'm playing” ping once a minute: no account, no address, nothing you do in the game (<link>what it holds</link>). The count below is exact, and the history keeps only totals.",
+    "live": {
+      "ranges": {
+        "24h": "24 hours",
+        "7d": "7 days",
+        "30d": "30 days",
+        "all": "All"
+      },
+      "spans": {
+        "24h": "over the last 24 hours",
+        "7d": "over the last 7 days",
+        "30d": "over the last 30 days",
+        "all": "since the count began"
+      },
+      "platforms": {
+        "linux": "Linux",
+        "macos": "macOS",
+        "windows": "Windows",
+        "other": "Other"
+      },
+      "label": "{title} {span}",
+      "noSamples": "No samples in this range yet: the history began on 31 October 2026.",
+      "highest": "Highest",
+      "average": "Average",
+      "peak": "Peak {n} on {when}",
+      "chartLabel": "{title}: the highest count per point and the average. The table below lists every point.",
+      "tooltip": "Highest {max} · Average {avg}",
+      "table": "Table",
+      "when": "When",
+      "showThe": "Show the",
+      "down": "The server doesn't answer right now.",
+      "loading": "Loading…",
+      "nowTitle": "Now and the peaks",
+      "playingNow": "playing now",
+      "updated": "Updated {time}, again every minute",
+      "asking": "Asking the server…",
+      "peakToday": "peak today",
+      "at": "at {time}",
+      "noSampleToday": "No sample yet today",
+      "allTime": "all-time peak",
+      "on": "on {when}",
+      "lan": "open to LAN or friends",
+      "lanShare": "{pct}% of those playing",
+      "system": "On which system",
+      "nobody": "Nobody is playing right now.",
+      "overTime": "Over time",
+      "historyNote": "Each point is the highest and the average count in its 5 minutes (24 hours), hour (7 days), 3 hours (30 days) or day (all, UTC days). Times are in your time zone.",
+      "officialTitle": "The Official Horizon SMP",
+      "officialLead": "The Official Horizon SMP, the survival server at the top of the game's server list. Every minute the telemetry server asks it how many play, with the same status ping your game's Multiplayer list sends.",
+      "playingThere": "playing there now",
+      "atAgain": "At {time}, again every minute",
+      "notAnswering": "Not answering since {time}",
+      "playersTitle": "Players",
+      "officialHistory": "On the Official Horizon SMP"
+    }
   }
 }

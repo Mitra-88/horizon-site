@@ -650,5 +650,70 @@
         "githubOne": "{n} estrella en GitHub"
       }
     }
+  },
+  "stats": {
+    "meta": {
+      "title": "Jugadores de Horizon: cuántos juegan ahora mismo",
+      "description": "Cuántas personas juegan a Horizon ahora mismo, sus picos y su historial, a partir del ping anónimo que envía cada partida en marcha."
+    },
+    "kicker": "Jugadores",
+    "kickerLive": "En directo, cada minuto",
+    "titleA": "Quién juega",
+    "titleB": "a Horizon ahora.",
+    "lead": "Cada partida en marcha envía un ping anónimo de “estoy jugando” una vez por minuto: sin cuenta, sin dirección, nada de lo que haces en el juego (<link>qué contiene</link>, en inglés). El recuento de abajo es exacto, y el historial solo guarda totales.",
+    "live": {
+      "ranges": {
+        "24h": "24 horas",
+        "7d": "7 días",
+        "30d": "30 días",
+        "all": "Todo"
+      },
+      "spans": {
+        "24h": "en las últimas 24 horas",
+        "7d": "en los últimos 7 días",
+        "30d": "en los últimos 30 días",
+        "all": "desde que empezó el recuento"
+      },
+      "platforms": {
+        "linux": "Linux",
+        "macos": "macOS",
+        "windows": "Windows",
+        "other": "Otro"
+      },
+      "label": "{title} {span}",
+      "noSamples": "Todavía no hay muestras en este periodo: el historial empezó el 31 de octubre de 2026.",
+      "highest": "Máximo",
+      "average": "Media",
+      "peak": "Pico de {n} el {when}",
+      "chartLabel": "{title}: el recuento más alto de cada punto y la media. La tabla de abajo lista todos los puntos.",
+      "tooltip": "Máximo {max} · Media {avg}",
+      "table": "Tabla",
+      "when": "Cuándo",
+      "showThe": "Mostrar",
+      "down": "El servidor no responde ahora mismo.",
+      "loading": "Cargando…",
+      "nowTitle": "Ahora y los picos",
+      "playingNow": "jugando ahora",
+      "updated": "Actualizado a las {time}, de nuevo cada minuto",
+      "asking": "Preguntando al servidor…",
+      "peakToday": "pico de hoy",
+      "at": "a las {time}",
+      "noSampleToday": "Todavía no hay muestras hoy",
+      "allTime": "récord histórico",
+      "on": "el {when}",
+      "lan": "abiertas en LAN o a amigos",
+      "lanShare": "el {pct} % de quienes juegan",
+      "system": "En qué sistema",
+      "nobody": "Nadie está jugando ahora mismo.",
+      "overTime": "A lo largo del tiempo",
+      "historyNote": "Cada punto es el recuento más alto y la media de sus 5 minutos (24 horas), su hora (7 días), sus 3 horas (30 días) o su día (todo, días UTC). Las horas están en tu zona horaria.",
+      "officialTitle": "El Official Horizon SMP",
+      "officialLead": "El Official Horizon SMP, el servidor de supervivencia que aparece primero en la lista de servidores del juego. Cada minuto, el servidor de telemetría le pregunta cuántos juegan, con el mismo ping de estado que envía la lista de Multijugador de tu juego.",
+      "playingThere": "jugando allí ahora",
+      "atAgain": "A las {time}, de nuevo cada minuto",
+      "notAnswering": "Sin responder desde las {time}",
+      "playersTitle": "Jugadores",
+      "officialHistory": "En el Official Horizon SMP"
+    }
   }
 }
