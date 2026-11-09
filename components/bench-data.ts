@@ -1,6 +1,7 @@
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { cacheLife } from "next/cache";
+import { getMessages, type Locale } from "@/components/i18n";
 
 const DIR = join(process.cwd(), "content", "benchmarks");
 
@@ -61,6 +62,8 @@ export type MachineId = "thinkpad" | "macmini" | "desktop";
 export type BenchMachine = {
   id: MachineId;
   name: string;
+  /** The name inside a sentence ("On the …"), which some languages write in lower case. */
+  inSentence: string;
   kind: string;
   year: string;
   measured: string;
@@ -74,98 +77,62 @@ export type BenchMachine = {
 
 export type ChipThumb = { src: string; credit?: { text: string; href: string } };
 
-const KABY_LAKE: ChipThumb = {
-  src: "/media/bench/chips/kaby-lake-u.webp",
-  credit: { text: "an i5-7200U, the same chip package as the i7-7500U, by Rjluna2 (CC BY-SA 4.0)", href: "https://commons.wikimedia.org/wiki/File:Intel_core_i5-7200u_sr342.jpg" },
-};
-const APPLE_SILICON: ChipThumb = {
-  src: "/media/bench/chips/apple-silicon.webp",
-  credit: { text: "an Apple M1, an earlier chip in the same family, by Henriok (CC0)", href: "https://commons.wikimedia.org/wiki/File:Apple_M1.jpg" },
-};
-const RTX_4080: ChipThumb = { src: "/media/bench/chips/rtx-4080.webp" };
-const RAPTOR_LAKE: ChipThumb = {
-  src: "/media/bench/chips/i7-13700k.webp",
-  credit: { text: "an i7-13700K, the 13700KF with its graphics left on, by 4300streetcar (CC BY 4.0)", href: "https://commons.wikimedia.org/wiki/File:Intel_Core_i7_13700K.jpg" },
+type Chip = "kabyLake" | "appleSilicon" | "raptorLake" | "rtx4080";
+const CHIPS: Record<Chip, { src: string; credit?: { href: string } }> = {
+  kabyLake: { src: "/media/bench/chips/kaby-lake-u.webp", credit: { href: "https://commons.wikimedia.org/wiki/File:Intel_core_i5-7200u_sr342.jpg" } },
+  appleSilicon: { src: "/media/bench/chips/apple-silicon.webp", credit: { href: "https://commons.wikimedia.org/wiki/File:Apple_M1.jpg" } },
+  rtx4080: { src: "/media/bench/chips/rtx-4080.webp" },
+  raptorLake: { src: "/media/bench/chips/i7-13700k.webp", credit: { href: "https://commons.wikimedia.org/wiki/File:Intel_Core_i7_13700K.jpg" } },
 };
 
-const MACHINES: Omit<BenchMachine, "runs" | "note" | "measured">[] = [
+// What isn't words: the words for each machine are in messages/<locale>.json (benchmarks.machines), spec by spec and link by link.
+const MACHINES: { id: MachineId; year: string; image: { src: string; width: number; height: number }; thumbs: (Chip | null)[]; buy: { href: string; primary?: boolean }[] }[] = [
   {
     id: "thinkpad",
-    name: "ThinkPad laptop",
-    kind: "A 2016 laptop",
     year: "2016",
-    image: {
-      src: "/media/bench/thinkpad.webp",
-      width: 919,
-      height: 407,
-      alt: "A Lenovo ThinkPad T470 laptop, its screen showing a village drawn by Horizon",
-      caption: "Pictured: a ThinkPad T470, sold with the same Core i7-7500U. The screen shows Horizon.",
-    },
-    specs: [
-      { label: "Processor", value: "Intel Core i7-7500U, 2 cores", thumb: KABY_LAKE },
-      { label: "Graphics", value: "Intel HD Graphics 620, built in", thumb: KABY_LAKE },
-      { label: "Memory", value: "32 GB" },
-      { label: "System", value: "Linux" },
-    ],
-    buy: [
-      { label: "Find one used on eBay", href: "https://www.ebay.com/sch/i.html?_nkw=thinkpad+t470+i7-7500u", primary: true },
-      { label: "Lenovo's spec sheet", href: "https://psref.lenovo.com/Product/ThinkPad_T470" },
-    ],
-    missing: {
-      "32": "Not measured at 32: on this laptop neither game finished loading the spawn in 5 minutes, so the two would not have drawn the same world.",
-    },
+    image: { src: "/media/bench/thinkpad.webp", width: 919, height: 407 },
+    thumbs: ["kabyLake", "kabyLake", null, null],
+    buy: [{ href: "https://www.ebay.com/sch/i.html?_nkw=thinkpad+t470+i7-7500u", primary: true }, { href: "https://psref.lenovo.com/Product/ThinkPad_T470" }],
   },
   {
     id: "macmini",
-    name: "Mac mini",
-    kind: "Apple's small desktop",
     year: "2024",
-    image: {
-      src: "/media/bench/mac-mini.webp",
-      width: 457,
-      height: 183,
-      alt: "The front of an Apple Mac mini with M4 Pro",
-    },
-    specs: [
-      { label: "Chip", value: "Apple M4 Pro, 14-core CPU, 20-core GPU", thumb: APPLE_SILICON },
-      { label: "Memory", value: "64 GB" },
-      { label: "System", value: "macOS" },
-    ],
-    buy: [
-      { label: "Buy on apple.com", href: "https://www.apple.com/shop/buy-mac/mac-mini", primary: true },
-      { label: "Compare Mac mini models", href: "https://www.apple.com/mac-mini/specs/" },
-    ],
-    missing: {},
+    image: { src: "/media/bench/mac-mini.webp", width: 457, height: 183 },
+    thumbs: ["appleSilicon", null, null],
+    buy: [{ href: "https://www.apple.com/shop/buy-mac/mac-mini", primary: true }, { href: "https://www.apple.com/mac-mini/specs/" }],
   },
   {
     id: "desktop",
-    name: "Gaming desktop",
-    kind: "A desktop PC",
     year: "2022",
-    image: {
-      src: "/media/bench/rtx-4080.webp",
-      width: 1200,
-      height: 572,
-      alt: "An NVIDIA GeForce RTX 4080 Founders Edition graphics card",
-      caption: "Pictured: its graphics card, the GeForce RTX 4080 Founders Edition.",
-    },
-    specs: [
-      { label: "Graphics", value: "NVIDIA GeForce RTX 4080, 16 GB", thumb: RTX_4080 },
-      { label: "Processor", value: "Intel Core i7-13700KF, 16 cores", thumb: RAPTOR_LAKE },
-      { label: "Memory", value: "32 GB" },
-      { label: "System", value: "Linux" },
-    ],
+    image: { src: "/media/bench/rtx-4080.webp", width: 1200, height: 572 },
+    thumbs: ["rtx4080", "raptorLake", null, null],
     buy: [
-      {
-        label: "RTX 4080 at Best Buy",
-        href: "https://www.bestbuy.com/site/nvidia-geforce-rtx-4080-16gb-gddr6x-graphics-card-titanium-black/6521431.p?skuId=6521431",
-        primary: true,
-      },
-      { label: "Core i7-13700KF on Amazon", href: "https://www.amazon.com/s?k=Intel+Core+i7-13700KF" },
+      { href: "https://www.bestbuy.com/site/nvidia-geforce-rtx-4080-16gb-gddr6x-graphics-card-titanium-black/6521431.p?skuId=6521431", primary: true },
+      { href: "https://www.amazon.com/s?k=Intel+Core+i7-13700KF" },
     ],
-    missing: {},
   },
 ];
+
+function describe(locale: Locale, meta: (typeof MACHINES)[number]): Omit<BenchMachine, "runs" | "note" | "measured"> {
+  const { machines, credits } = getMessages(locale).benchmarks;
+  const t = machines[meta.id];
+  const thumb = (chip: Chip | null): ChipThumb | undefined => {
+    if (!chip) return undefined;
+    const { src, credit } = CHIPS[chip];
+    return credit ? { src, credit: { text: credits[chip as Exclude<Chip, "rtx4080">], href: credit.href } } : { src };
+  };
+  return {
+    id: meta.id,
+    name: t.name,
+    inSentence: t.inSentence,
+    kind: t.kind,
+    year: meta.year,
+    image: { ...meta.image, alt: t.alt, ...(t.caption ? { caption: t.caption } : {}) },
+    specs: t.specs.map((s, i) => ({ ...s, ...(meta.thumbs[i] ? { thumb: thumb(meta.thumbs[i]) } : {}) })),
+    buy: meta.buy.map((b, i) => ({ label: t.buy[i], ...b })),
+    missing: t.missing32 ? { "32": t.missing32 } : {},
+  };
+}
 
 const SUMMARY_MACHINE: Record<MachineId, string> = {
   thinkpad: "ThinkPad (i7-7500U, HD Graphics 620)",
@@ -213,7 +180,7 @@ function run(row: SummaryRow, histogram: number[], seconds: number): GameRun {
   };
 }
 
-export async function getBenchmarks() {
+export async function getBenchmarks(locale: Locale = "en") {
   "use cache";
   cacheLife("days");
   const [summary, fleet] = await Promise.all([readJson<{ generated: string; groups: SummaryRow[] }>("summary.json"), readJson<FleetEntry[]>("fleet.json")]);
@@ -235,6 +202,7 @@ export async function getBenchmarks() {
 
   const rows = summary.groups;
   const machines: BenchMachine[] = MACHINES.map((meta) => {
+    const text = describe(locale, meta);
     const name = SUMMARY_MACHINE[meta.id];
     const mine = rows.filter((r) => r.machine === name);
     const pair = (rd: Distance) => {
@@ -247,7 +215,7 @@ export async function getBenchmarks() {
       return { horizon: run(h, hh.histogram, hh.seconds), vanilla: run(v, vh.histogram, vh.seconds) };
     };
     return {
-      ...meta,
+      ...text,
       measured: mine[0]?.measured ?? "",
       note: fleet.find((f) => f.machine === name && f.note)?.note ?? null,
       runs: { "12": pair("12"), "32": pair("32") },

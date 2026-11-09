@@ -259,5 +259,266 @@
       "oneView": "1 visita",
       "views": "{n} visitas"
     }
+  },
+  "benchmarks": {
+    "meta": {
+      "title": "Horizon frente a Minecraft Java: FPS, memoria y carga",
+      "description": "Horizon frente a Minecraft: Java Edition 26.3 en un ThinkPad de 2016, un Mac mini y un PC gaming: FPS, tirones, carga y memoria, medidos de la misma forma."
+    },
+    "titleA": "Horizon frente a",
+    "titleB": "Java Edition.",
+    "lead": "Los mismos tres ordenadores ejecutaron ambos juegos en el mismo mundo, con la misma ruta de vuelo y los mismos ajustes. Esto es lo que notarías, en palabras sencillas, incluido dónde Java Edition sigue ganando.",
+    "compare": "Compara un ordenador",
+    "estimate": "Estima el tuyo",
+    "inShort": "En resumen",
+    "summary": {
+      "noHitches": "Ningún tirón en Horizon; {java} por minuto en Java Edition.",
+      "fewer": "Alrededor de un {pct} % menos de tirones, y {h} FPS de media frente a {v}.",
+      "smooth": "Fluido en ambos. {lead}{far}.",
+      "leadMore": "Horizon tiene de media un {pct} % más de FPS a distancia de renderizado 12",
+      "leadSame": "Ambos juegos rinden de media casi igual a distancia de renderizado 12",
+      "javaFar": "; Java Edition es más rápido a 32"
+    },
+    "metrics": {
+      "avgFps": "FPS medios",
+      "low1": "FPS en los peores momentos",
+      "hitches": "Tirones por minuto",
+      "world": "Del arranque al mundo",
+      "terrain": "Carga de terreno nuevo",
+      "memory": "Memoria en uso"
+    },
+    "units": {
+      "fps": "{n} FPS",
+      "seconds": "{n} s",
+      "gb": "{n} GB"
+    },
+    "losses": {
+      "title": "Donde Java Edition sigue siendo más rápido",
+      "intro": "Cada caso de estas pruebas en el que el juego original lo hizo mejor. Unos fotogramas más estables a distancias de renderizado largas están en la <link>hoja de ruta</link> como trabajo en curso.",
+      "where": "{machine}, distancia de renderizado {rd}",
+      "java": "Java Edition {value}",
+      "horizon": "Horizon {value}"
+    },
+    "yours": {
+      "title": "¿Y tu ordenador?",
+      "lead": "Elige tu tarjeta gráfica y tu procesador. La estimación parte del ordenador medido más parecido al tuyo y lo escala según las especificaciones de los chips, así que es un rango, no una promesa."
+    },
+    "method": {
+      "title": "Cómo se midió",
+      "p1": "Cada juego empieza en un mundo nuevo (semilla 1234, creativo), espera a que todos los chunks alrededor del punto de aparición estén cargados y dibujados, y luego visita una aldea, un bosque, un océano y una montaña. En cada uno espera al terreno, se detiene 2 segundos y vuela una ruta recta de 192 bloques en 12 segundos, registrando cada fotograma.",
+      "p2": "VSync desactivado, sin límite de fotogramas, una ventana de 1280x720, distancia de simulación 12 y todo lo demás con los valores por defecto de vanilla. Java Edition 26.3 se ejecuta tal como la reciben los jugadores, con las opciones de Java del launcher oficial. Cada cifra es la mediana de las pruebas{measured}.",
+      "measuredOn": ", medidas el {day}",
+      "measuredBetween": ", medidas entre el {from} y el {to}",
+      "p3": "El método completo y sus salvedades están en <link>docs/benchmark.md</link> (en inglés)."
+    },
+    "own": {
+      "title": "Mide tu propio ordenador",
+      "lead": "Ejecuta esto en una terminal. Vuela la misma ruta y guarda un informe en la carpeta benchmarks de la carpeta del juego. Compártelo en Discord y tu máquina ayudará a mejorar estas cifras.",
+      "copyLabel": "Copiar el comando del benchmark",
+      "copy": "Copiar el comando",
+      "copied": "Copiado",
+      "docs": "Más en la documentación"
+    },
+    "explorer": {
+      "pickTitle": "Elige un ordenador",
+      "pickLead": "Tres máquinas del propio proyecto, de un portátil de 2016 a un PC gaming.",
+      "renderDistance": "Distancia de renderizado",
+      "renderDistanceShort": "Distancia",
+      "distances": {
+        "12": "(normal)",
+        "32": "(lejos)"
+      },
+      "computer": "Ordenador",
+      "showing12": "{missing} Se muestra la distancia de renderizado 12.",
+      "horizon": "Horizon",
+      "java": "Java Edition",
+      "java263": "Java Edition 26.3",
+      "classes": {
+        "smooth": "Más de 120 FPS",
+        "fine": "De 60 a 120",
+        "slow": "De 30 a 60",
+        "stutter": "Menos de 30"
+      },
+      "times": "{n} veces",
+      "percent": "un {n} %",
+      "verdict": {
+        "never": "Horizon nunca bajó de 60 FPS en el {machine}; Java Edition lo hizo {java} veces por minuto.",
+        "fewer": "En el {machine}, Horizon dio {h} tirones por minuto frente a {v} de Java Edition.",
+        "javaSmoother": "En el {machine}, Java Edition fue más fluido aquí: {v} tirones por minuto frente a {h} de Horizon.",
+        "same": "En el {machine}, ambos juegos fueron casi igual de fluidos.",
+        "faster": "entró en el mundo {amount} más rápido",
+        "half": "usó la mitad de memoria",
+        "less": "usó un {pct} % menos de memoria",
+        "and": " y ",
+        "it": "Horizon {rest}.",
+        "javaFaster": "Java Edition entró en el mundo más rápido."
+      },
+      "hitches": {
+        "title": "Tirones en un minuto de juego",
+        "body": "Un tirón es un fotograma más lento que un refresco de una pantalla de 60 Hz, así que ves la misma imagen dos veces. Las marcas rojas son los largos, por debajo de 30 FPS, que notas como un parón.",
+        "stutters": "Parones largos por minuto: Horizon {h}, Java Edition {v}."
+      },
+      "fps": {
+        "title": "Fotogramas por segundo",
+        "average": "De media",
+        "worst": "En los peores momentos",
+        "lows": "mínimos del 1 %",
+        "capped": "Aquí la pantalla del Mac limita Horizon a {n}, así que su media no puede subir más. Mira los peores momentos."
+      },
+      "waiting": {
+        "title": "Esperas",
+        "again": "Repetir"
+      },
+      "memory": {
+        "title": "Memoria durante el juego",
+        "peak": "pico de {h} y {v}",
+        "needs": "Java Edition necesita {times} más, algo que importa en un ordenador con 8 GB.",
+        "same": "Más o menos igual."
+      },
+      "frames": {
+        "title": "Dónde cayó cada fotograma",
+        "share": "{label}: {pct} %"
+      },
+      "feel": {
+        "title": "Siente la diferencia",
+        "lead": "Ambas vistas se desplazan a la misma velocidad, pero cada una solo avanza cuando su juego termina un fotograma, con los tiempos de fotograma medidos en el {machine} a distancia de renderizado {rd}. Cada congelación y cada salto que ves es un tirón.",
+        "speed": "Velocidad de reproducción",
+        "realTime": "Tiempo real",
+        "slower": "{n}x más lento",
+        "play": "Reproducir",
+        "pause": "Pausa",
+        "soFar": "{n} tirones hasta ahora",
+        "note": "Una reproducción de la distribución medida de los tiempos de fotograma, no una grabación. Tu pantalla muestra como mucho su propia frecuencia de refresco, así que en tiempo real todos los fotogramas más rápidos que eso se ven igual. {n}x más lento reproduce los mismos fotogramas a una cuarta parte de la velocidad, para que cada uno dure lo bastante como para verlo."
+      },
+      "chipPhotos": "Fotos de los chips:",
+      "aboutRuns": "Sobre las pruebas de este ordenador"
+    },
+    "estimator": {
+      "gpu": "Tarjeta gráfica",
+      "cpu": "Procesador",
+      "renderDistance": "Distancia de renderizado",
+      "gpuSelect": {
+        "choose": "Elige una tarjeta gráfica",
+        "search": "Buscar tarjetas gráficas",
+        "placeholder": "Buscar entre {n} tarjetas gráficas",
+        "none": "Ninguna tarjeta gráfica coincide con “{query}”. Elige la más parecida que encuentres."
+      },
+      "cpuSelect": {
+        "choose": "Elige un procesador",
+        "search": "Buscar procesadores",
+        "placeholder": "Buscar entre {n} procesadores",
+        "none": "Ningún procesador coincide con “{query}”. Elige el más parecido que encuentres."
+      },
+      "tflops": "{n} TFLOPS",
+      "ghz": "{n} GHz",
+      "headlineExact": "Medido en esta misma combinación: en los peores momentos, {h} FPS en Horizon y {v} en Java Edition.",
+      "headline": "En los peores momentos, cuenta con unos {h} FPS en Horizon y {v} en Java Edition.",
+      "atLeast": "al menos {n}",
+      "range": "{low}–{high}",
+      "line": "{range} FPS de media · entra al mundo en {low}–{high} s",
+      "measured": "Son las cifras medidas en el {machine}.",
+      "scaled": "Escalado a partir del {machine}, el ordenador medido más parecido al tuyo, según las especificaciones publicadas de los dos chips.",
+      "caveat": "Los drivers, la refrigeración y el sistema operativo pueden importar tanto como el chip, así que tómalo como una idea aproximada y ejecuta el benchmark de abajo para obtener tu cifra real.",
+      "floor": " La media de Horizon estaba limitada por la pantalla, así que la estimación solo da un mínimo.",
+      "none": "Todavía no hay ningún ordenador medido a esta distancia de renderizado del que partir.",
+      "machines": {
+        "ThinkPad (i7-7500U, HD Graphics 620)": "portátil ThinkPad",
+        "Mac mini (M4 Pro)": "Mac mini",
+        "Desktop (RTX 4080, i7-13700KF)": "PC gaming"
+      }
+    },
+    "machines": {
+      "thinkpad": {
+        "name": "Portátil ThinkPad",
+        "inSentence": "portátil ThinkPad",
+        "kind": "Un portátil de 2016",
+        "alt": "Un portátil Lenovo ThinkPad T470 cuya pantalla muestra una aldea dibujada por Horizon",
+        "caption": "En la foto: un ThinkPad T470, que se vendía con el mismo Core i7-7500U. La pantalla muestra Horizon.",
+        "specs": [
+          {
+            "label": "Procesador",
+            "value": "Intel Core i7-7500U, 2 núcleos"
+          },
+          {
+            "label": "Gráficos",
+            "value": "Intel HD Graphics 620, integrada"
+          },
+          {
+            "label": "Memoria",
+            "value": "32 GB"
+          },
+          {
+            "label": "Sistema",
+            "value": "Linux"
+          }
+        ],
+        "buy": [
+          "De segunda mano en eBay",
+          "Ficha técnica de Lenovo"
+        ],
+        "missing32": "Sin medir a 32: en este portátil ningún juego terminó de cargar el punto de aparición en 5 minutos, así que los dos no habrían dibujado el mismo mundo."
+      },
+      "macmini": {
+        "name": "Mac mini",
+        "inSentence": "Mac mini",
+        "kind": "El sobremesa compacto de Apple",
+        "alt": "La parte frontal de un Apple Mac mini con M4 Pro",
+        "caption": "",
+        "specs": [
+          {
+            "label": "Chip",
+            "value": "Apple M4 Pro, CPU de 14 núcleos, GPU de 20 núcleos"
+          },
+          {
+            "label": "Memoria",
+            "value": "64 GB"
+          },
+          {
+            "label": "Sistema",
+            "value": "macOS"
+          }
+        ],
+        "buy": [
+          "Comprar en apple.com",
+          "Comparar modelos de Mac mini"
+        ],
+        "missing32": ""
+      },
+      "desktop": {
+        "name": "PC gaming",
+        "inSentence": "PC gaming",
+        "kind": "Un PC de sobremesa",
+        "alt": "Una tarjeta gráfica NVIDIA GeForce RTX 4080 Founders Edition",
+        "caption": "En la foto: su tarjeta gráfica, la GeForce RTX 4080 Founders Edition.",
+        "specs": [
+          {
+            "label": "Gráficos",
+            "value": "NVIDIA GeForce RTX 4080, 16 GB"
+          },
+          {
+            "label": "Procesador",
+            "value": "Intel Core i7-13700KF, 16 núcleos"
+          },
+          {
+            "label": "Memoria",
+            "value": "32 GB"
+          },
+          {
+            "label": "Sistema",
+            "value": "Linux"
+          }
+        ],
+        "buy": [
+          "RTX 4080 en Best Buy",
+          "Core i7-13700KF en Amazon"
+        ],
+        "missing32": ""
+      }
+    },
+    "credits": {
+      "kabyLake": "un i5-7200U, el mismo encapsulado que el i7-7500U, de Rjluna2 (CC BY-SA 4.0)",
+      "appleSilicon": "un Apple M1, un chip anterior de la misma familia, de Henriok (CC0)",
+      "raptorLake": "un i7-13700K, el 13700KF con sus gráficos activados, de 4300streetcar (CC BY 4.0)"
+    }
   }
 }

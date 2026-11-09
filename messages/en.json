@@ -259,5 +259,266 @@
       "oneView": "1 view",
       "views": "{n} views"
     }
+  },
+  "benchmarks": {
+    "meta": {
+      "title": "Horizon vs Minecraft Java benchmarks: FPS, memory, loading",
+      "description": "Horizon against Minecraft: Java Edition 26.3 on a 2016 ThinkPad, a Mac mini and a gaming desktop: frame rates, hitches, loading and memory, measured alike."
+    },
+    "titleA": "Horizon against",
+    "titleB": "Java Edition.",
+    "lead": "The same three computers ran both games through the same world, on the same flight path, with the same settings. Here is what you would notice, in plain words, including where Java Edition still wins.",
+    "compare": "Compare a computer",
+    "estimate": "Estimate yours",
+    "inShort": "In short",
+    "summary": {
+      "noHitches": "No hitches at all in Horizon; {java} a minute in Java Edition.",
+      "fewer": "About {pct}% fewer hitches, and {h} FPS on average against {v}.",
+      "smooth": "Smooth in both. {lead}{far}.",
+      "leadMore": "Horizon averages {pct}% more FPS at render distance 12",
+      "leadSame": "Both games average about the same at render distance 12",
+      "javaFar": "; Java Edition is faster at 32"
+    },
+    "metrics": {
+      "avgFps": "Average frame rate",
+      "low1": "Frame rate in the worst moments",
+      "hitches": "Hitches a minute",
+      "world": "From launch into the world",
+      "terrain": "Loading new terrain",
+      "memory": "Memory in use"
+    },
+    "units": {
+      "fps": "{n} FPS",
+      "seconds": "{n} s",
+      "gb": "{n} GB"
+    },
+    "losses": {
+      "title": "Where Java Edition is still faster",
+      "intro": "Every case in these runs where the original game did better. Steadier frames at long render distances is on the <link>roadmap</link> as work being done now.",
+      "where": "{machine}, render distance {rd}",
+      "java": "Java Edition {value}",
+      "horizon": "Horizon {value}"
+    },
+    "yours": {
+      "title": "What about your computer?",
+      "lead": "Pick your graphics card and processor. The estimate starts from the measured computer closest to yours and scales it by the chips' specifications, so it is a range, not a promise."
+    },
+    "method": {
+      "title": "How it was measured",
+      "p1": "Each game starts from a fresh world (seed 1234, creative), waits until every chunk around the spawn is loaded and drawn, then visits a village, a forest, an ocean and a mountain. At each it waits for the terrain, holds for 2 seconds and flies a straight 192-block path in 12 seconds, recording every frame.",
+      "p2": "VSync off, no frame cap, a 1280x720 window, simulation distance 12, everything else at vanilla's defaults. Java Edition 26.3 runs as players get it, with the official launcher's Java options. Each figure is the median over the runs{measured}.",
+      "measuredOn": ", measured on {day}",
+      "measuredBetween": ", measured between {from} and {to}",
+      "p3": "The full method and its caveats are in <link>docs/benchmark.md</link>."
+    },
+    "own": {
+      "title": "Benchmark your own computer",
+      "lead": "Run this in a terminal. It flies the same path and writes a report to the benchmarks folder of the game folder. Share it on Discord and your machine helps make these numbers better.",
+      "copyLabel": "Copy the benchmark command",
+      "copy": "Copy the command",
+      "copied": "Copied",
+      "docs": "More in the docs"
+    },
+    "explorer": {
+      "pickTitle": "Pick a computer",
+      "pickLead": "Three of the project's own machines, from a 2016 laptop to a gaming desktop.",
+      "renderDistance": "Render distance",
+      "renderDistanceShort": "Render distance",
+      "distances": {
+        "12": "(default)",
+        "32": "(far)"
+      },
+      "computer": "Computer",
+      "showing12": "{missing} Showing render distance 12.",
+      "horizon": "Horizon",
+      "java": "Java Edition",
+      "java263": "Java Edition 26.3",
+      "classes": {
+        "smooth": "Over 120 FPS",
+        "fine": "60 to 120",
+        "slow": "30 to 60",
+        "stutter": "Under 30"
+      },
+      "times": "{n} times",
+      "percent": "{n}%",
+      "verdict": {
+        "never": "Horizon never dipped below 60 FPS on the {machine}; Java Edition did {java} times a minute.",
+        "fewer": "On the {machine}, Horizon hitched {h} times a minute against Java Edition's {v}.",
+        "javaSmoother": "On the {machine}, Java Edition ran smoother here: {v} hitches a minute against Horizon's {h}.",
+        "same": "On the {machine}, both games stayed about as smooth.",
+        "faster": "got into the world {amount} faster",
+        "half": "used half the memory",
+        "less": "used {pct}% less memory",
+        "and": " and ",
+        "it": "It {rest}.",
+        "javaFaster": "Java Edition got into the world faster."
+      },
+      "hitches": {
+        "title": "Hitches in a minute of play",
+        "body": "A hitch is a frame slower than one refresh of a 60 Hz screen, so you see the same picture twice. Red marks are the long ones, under 30 FPS, that you feel as a stutter.",
+        "stutters": "Long stutters a minute: Horizon {h}, Java Edition {v}."
+      },
+      "fps": {
+        "title": "Frames per second",
+        "average": "On average",
+        "worst": "In the worst moments",
+        "lows": "1% lows",
+        "capped": "Horizon is held at {n} here by the Mac's display, so its average can't go higher. Look at the worst moments."
+      },
+      "waiting": {
+        "title": "Waiting",
+        "again": "Run it again"
+      },
+      "memory": {
+        "title": "Memory while playing",
+        "peak": "peak {h} and {v}",
+        "needs": "Java Edition needs {times} more, which matters on a computer with 8 GB.",
+        "same": "About the same."
+      },
+      "frames": {
+        "title": "Where every frame landed",
+        "share": "{label}: {pct}%"
+      },
+      "feel": {
+        "title": "Feel the difference",
+        "lead": "Both views pan at the same speed, but each one only moves when its game finishes a frame, using the frame times measured on the {machine} at render distance {rd}. Every freeze and jump you see is a hitch.",
+        "speed": "Playback speed",
+        "realTime": "Real time",
+        "slower": "{n}x slower",
+        "play": "Play",
+        "pause": "Pause",
+        "soFar": "{n} hitches so far",
+        "note": "A replay of the measured distribution of frame times, not a recording. Your screen shows at most its own refresh rate, so in real time every frame faster than that looks the same. {n}x slower plays the same frames at a quarter of the speed, so each one stays up long enough to see."
+      },
+      "chipPhotos": "Chip photos:",
+      "aboutRuns": "About this computer's runs"
+    },
+    "estimator": {
+      "gpu": "Graphics card",
+      "cpu": "Processor",
+      "renderDistance": "Render distance",
+      "gpuSelect": {
+        "choose": "Choose a graphics card",
+        "search": "Search graphics cards",
+        "placeholder": "Search {n} graphics cards",
+        "none": "No graphics card matches “{query}”. Pick the closest one you can find."
+      },
+      "cpuSelect": {
+        "choose": "Choose a processor",
+        "search": "Search processors",
+        "placeholder": "Search {n} processors",
+        "none": "No processor matches “{query}”. Pick the closest one you can find."
+      },
+      "tflops": "{n} TFLOPS",
+      "ghz": "{n} GHz",
+      "headlineExact": "Measured on this exact pair: {h} FPS in Horizon's worst moments, against {v} in Java Edition.",
+      "headline": "Expect roughly {h} FPS in Horizon's worst moments, against {v} in Java Edition.",
+      "atLeast": "at least {n}",
+      "range": "{low} to {high}",
+      "line": "{range} FPS on average · in the world in {low} to {high} s",
+      "measured": "These are the figures measured on {machine}.",
+      "scaled": "Scaled from {machine}, the measured computer closest to yours, by the two chips' published specifications.",
+      "caveat": "Drivers, cooling and the operating system can matter as much as the chip, so treat it as a rough idea and run the benchmark below for your real figure.",
+      "floor": " Horizon's average there was held back by the display, so the estimate only gives a floor.",
+      "none": "No measured computer at this render distance to estimate from yet.",
+      "machines": {
+        "ThinkPad (i7-7500U, HD Graphics 620)": "the ThinkPad laptop",
+        "Mac mini (M4 Pro)": "the Mac mini",
+        "Desktop (RTX 4080, i7-13700KF)": "the gaming desktop"
+      }
+    },
+    "machines": {
+      "thinkpad": {
+        "name": "ThinkPad laptop",
+        "inSentence": "ThinkPad laptop",
+        "kind": "A 2016 laptop",
+        "alt": "A Lenovo ThinkPad T470 laptop, its screen showing a village drawn by Horizon",
+        "caption": "Pictured: a ThinkPad T470, sold with the same Core i7-7500U. The screen shows Horizon.",
+        "specs": [
+          {
+            "label": "Processor",
+            "value": "Intel Core i7-7500U, 2 cores"
+          },
+          {
+            "label": "Graphics",
+            "value": "Intel HD Graphics 620, built in"
+          },
+          {
+            "label": "Memory",
+            "value": "32 GB"
+          },
+          {
+            "label": "System",
+            "value": "Linux"
+          }
+        ],
+        "buy": [
+          "Find one used on eBay",
+          "Lenovo's spec sheet"
+        ],
+        "missing32": "Not measured at 32: on this laptop neither game finished loading the spawn in 5 minutes, so the two would not have drawn the same world."
+      },
+      "macmini": {
+        "name": "Mac mini",
+        "inSentence": "Mac mini",
+        "kind": "Apple's small desktop",
+        "alt": "The front of an Apple Mac mini with M4 Pro",
+        "caption": "",
+        "specs": [
+          {
+            "label": "Chip",
+            "value": "Apple M4 Pro, 14-core CPU, 20-core GPU"
+          },
+          {
+            "label": "Memory",
+            "value": "64 GB"
+          },
+          {
+            "label": "System",
+            "value": "macOS"
+          }
+        ],
+        "buy": [
+          "Buy on apple.com",
+          "Compare Mac mini models"
+        ],
+        "missing32": ""
+      },
+      "desktop": {
+        "name": "Gaming desktop",
+        "inSentence": "Gaming desktop",
+        "kind": "A desktop PC",
+        "alt": "An NVIDIA GeForce RTX 4080 Founders Edition graphics card",
+        "caption": "Pictured: its graphics card, the GeForce RTX 4080 Founders Edition.",
+        "specs": [
+          {
+            "label": "Graphics",
+            "value": "NVIDIA GeForce RTX 4080, 16 GB"
+          },
+          {
+            "label": "Processor",
+            "value": "Intel Core i7-13700KF, 16 cores"
+          },
+          {
+            "label": "Memory",
+            "value": "32 GB"
+          },
+          {
+            "label": "System",
+            "value": "Linux"
+          }
+        ],
+        "buy": [
+          "RTX 4080 at Best Buy",
+          "Core i7-13700KF on Amazon"
+        ],
+        "missing32": ""
+      }
+    },
+    "credits": {
+      "kabyLake": "an i5-7200U, the same chip package as the i7-7500U, by Rjluna2 (CC BY-SA 4.0)",
+      "appleSilicon": "an Apple M1, an earlier chip in the same family, by Henriok (CC0)",
+      "raptorLake": "an i7-13700K, the 13700KF with its graphics left on, by 4300streetcar (CC BY 4.0)"
+    }
   }
 }

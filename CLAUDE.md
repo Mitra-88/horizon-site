@@ -47,7 +47,7 @@ deployment live. After a deploy, check https://playhorizon.dev (/, /hub, /mods, 
 
 ## Text and translations
 
-The text of the header, the footer, the 404 page and the home page lives in `messages/<lang>.json` (`en.json` is the
+The text of the header, the footer, the 404 page and the translated pages lives in `messages/<lang>.json` (`en.json` is the
 reference; `es.json` must have every key, `tsc` checks it), read through `components/i18n.ts` (`getMessages`, `rich`
 for text with links in it, `format` for `{values}`). Client components get their strings as props and use
 `components/i18n-text.ts`, which ships no JSON. Plan, routes and what stays English: horizon-site#29.
@@ -63,6 +63,8 @@ for text with links in it, `format` for `{values}`). Client components get their
   a review file (reports come through #translations on Discord).
 - A translation never changes the layout: if a string is too long for its place, shorten the wording. Moving text
   must not change the rendered English page: compare the built HTML and screenshots before and after.
+- Where JSX had values between text (`{a} FPS on average, {b} s`), render the message with `formatParts`, not `format`:
+  Chrome shapes each text node on its own, so one joined string moves English glyphs by a fraction of a pixel.
 
 ## Rules
 

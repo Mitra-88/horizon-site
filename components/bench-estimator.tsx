@@ -2,19 +2,14 @@
 
 import { useMemo, useState } from "react";
 import { CPUS, estimate, GPUS, type EstimateRow, type Range } from "@/components/bench-estimate";
+import { benchNumbers } from "@/components/bench-format";
+import type { Messages } from "@/components/i18n";
+import { format, formatParts } from "@/components/i18n-text";
 import { SearchSelect, type SearchOption } from "@/components/search-select";
 
-const GPU_OPTIONS: SearchOption[] = GPUS.map((g) => ({ value: g.name, label: g.name, detail: `${g.tflops} TFLOPS`, match: g.match }));
-const CPU_OPTIONS: SearchOption[] = CPUS.map((c) => ({ value: c.name, label: c.name, detail: `${c.ghz} GHz`, match: c.match }));
-const MACHINE_NAMES: Record<string, string> = {
-  "ThinkPad (i7-7500U, HD Graphics 620)": "the ThinkPad laptop",
-  "Mac mini (M4 Pro)": "the Mac mini",
-  "Desktop (RTX 4080, i7-13700KF)": "the gaming desktop",
-};
+type T = Messages["benchmarks"]["estimator"];
 
 const round = (n: number) => (n >= 100 ? Math.round(n / 10) * 10 : Math.round(n));
-const rangeText = (r: Range) =>
-  r.atLeast ? `at least ${round(r.low).toLocaleString("en-US")}` : `${round(r.low).toLocaleString("en-US")} to ${round(r.high ?? r.low).toLocaleString("en-US")}`;
 
 function RangeBar({ range, max, color }: { range: Range; max: number; color: string }) {
   const left = (range.low / max) * 100;
@@ -29,7 +24,13 @@ function RangeBar({ range, max, color }: { range: Range; max: number; color: str
   );
 }
 
-export function BenchEstimator({ rows }: { rows: EstimateRow[] }) {
+export function BenchEstimator({ rows, t, numberLocale }: { rows: EstimateRow[]; t: T; numberLocale: string }) {
+  const n = benchNumbers(numberLocale);
+  const gpuOptions: SearchOption[] = GPUS.map((g) => ({ value: g.name, label: g.name, detail: format(t.tflops, { n: n.plain(g.tflops) }), match: g.match }));
+  const cpuOptions: SearchOption[] = CPUS.map((c) => ({ value: c.name, label: c.name, detail: format(t.ghz, { n: n.plain(c.ghz) }), match: c.match }));
+  const whole = (x: number) => n.int(round(x));
+  const rangeText = (r: Range) => (r.atLeast ? format(t.atLeast, { n: whole(r.low) }) : format(t.range, { low: whole(r.low), high: whole(r.high ?? r.low) }));
+  const machineName = (machine: string) => t.machines[machine as keyof T["machines"]] ?? machine;
   const [gpuName, setGpuName] = useState("NVIDIA GeForce RTX 3060");
   const [cpuName, setCpuName] = useState("AMD Ryzen 5 5600X");
   const [rd, setRd] = useState(12);
@@ -42,10 +43,10 @@ export function BenchEstimator({ rows }: { rows: EstimateRow[] }) {
   return (
     <div className="grid gap-4 lg:grid-cols-[20rem_minmax(0,1fr)]">
       <form className="space-y-4 rounded-2xl bg-[#18112c] p-5 sm:p-6" onSubmit={(e) => e.preventDefault()}>
-        <SearchSelect label="Graphics card" noun="graphics card" value={gpuName} options={GPU_OPTIONS} onChange={setGpuName} />
-        <SearchSelect label="Processor" noun="processor" value={cpuName} options={CPU_OPTIONS} onChange={setCpuName} />
+        <SearchSelect label={t.gpu} text={t.gpuSelect} value={gpuName} options={gpuOptions} onChange={setGpuName} />
+        <SearchSelect label={t.cpu} text={t.cpuSelect} value={cpuName} options={cpuOptions} onChange={setCpuName} />
         <fieldset>
-          <legend className="text-sm font-medium text-white/80">Render distance</legend>
+          <legend className="text-sm font-medium text-white/80">{t.renderDistance}</legend>
           <div className="mt-2 flex rounded-lg bg-white/[0.06] p-1">
             {[12, 32].map((d) => (
               <button
@@ -66,8 +67,7 @@ export function BenchEstimator({ rows }: { rows: EstimateRow[] }) {
         {horizon && vanilla ? (
           <>
             <p className="font-display text-[clamp(1.25rem,2.2vw,1.6rem)] leading-snug font-medium tracking-[-0.015em] text-white">
-              {horizon.exact ? "Measured on this exact pair: " : "Expect roughly "}
-              {rangeText(horizon.low1)} FPS in Horizon&apos;s worst moments, against {rangeText(vanilla.low1)} in Java Edition.
+              {formatParts(horizon.exact ? t.headlineExact : t.headline, { h: rangeText(horizon.low1), v: rangeText(vanilla.low1) })}
             </p>
             <div className="mt-6 space-y-5">
               {(
@@ -80,7 +80,7 @@ export function BenchEstimator({ rows }: { rows: EstimateRow[] }) {
                   <p className="flex flex-wrap items-baseline justify-between gap-x-4 text-sm">
                     <span className="font-medium text-white">{name}</span>
                     <span className="text-white/60 tabular-nums">
-                      {rangeText(est.avg)} FPS on average · in the world in {Math.round(est.world.low / 1000)} to {Math.round((est.world.high ?? est.world.low) / 1000)} s
+                      {formatParts(t.line, { range: rangeText(est.avg), low: Math.round(est.world.low / 1000), high: Math.round((est.world.high ?? est.world.low) / 1000) })}
                     </span>
                   </p>
                   <div className="mt-2">
@@ -90,15 +90,12 @@ export function BenchEstimator({ rows }: { rows: EstimateRow[] }) {
               ))}
             </div>
             <p className="mt-6 text-[13px] leading-relaxed text-white/50">
-              {horizon.exact
-                ? `These are the figures measured on ${MACHINE_NAMES[horizon.base.machine] ?? horizon.base.machine}.`
-                : `Scaled from ${MACHINE_NAMES[horizon.base.machine] ?? horizon.base.machine}, the measured computer closest to yours, by the two chips' published specifications.`}{" "}
-              Drivers, cooling and the operating system can matter as much as the chip, so treat it as a rough idea and run the benchmark below for your real figure.
-              {horizon.avg.atLeast && " Horizon's average there was held back by the display, so the estimate only gives a floor."}
+              {format(horizon.exact ? t.measured : t.scaled, { machine: machineName(horizon.base.machine) })} {t.caveat}
+              {horizon.avg.atLeast && t.floor}
             </p>
           </>
         ) : (
-          <p className="text-[15px] text-white/60">No measured computer at this render distance to estimate from yet.</p>
+          <p className="text-[15px] text-white/60">{t.none}</p>
         )}
       </div>
     </div>

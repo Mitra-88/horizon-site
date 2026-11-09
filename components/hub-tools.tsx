@@ -25,7 +25,7 @@ async function copyText(text: string) {
   }
 }
 
-export function CopyCommand({ command, label, text }: { command: string; label: string; text?: string }) {
+export function CopyCommand({ command, label, text, copied: done = "Copied" }: { command: string; label: string; text?: string; copied?: string }) {
   const [copied, setCopied] = useCopied();
   return (
     <button
@@ -35,9 +35,9 @@ export function CopyCommand({ command, label, text }: { command: string; label: 
       className="inline-flex h-8 shrink-0 items-center gap-1.5 rounded-lg bg-white/[0.06] px-2.5 text-[13px] font-medium text-white/80 transition-colors outline-none hover:bg-white/[0.11] hover:text-white focus-visible:ring-2 focus-visible:ring-[#a98fff]"
     >
       {copied ? <CheckIcon className="size-3.5 text-emerald-300" /> : null}
-      {copied ? "Copied" : (text ?? command)}
+      {copied ? done : (text ?? command)}
       <span className="sr-only" aria-live="polite">
-        {copied ? `Copied ${command}` : ""}
+        {copied ? `${done} ${command}` : ""}
       </span>
     </button>
   );

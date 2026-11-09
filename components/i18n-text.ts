@@ -8,7 +8,7 @@ export const LOCALES = ["en", "es"] as const;
 export type Locale = (typeof LOCALES)[number];
 
 // The pages that exist in every language, by their English path. A page joins when its text is translated.
-export const TRANSLATED_PATHS = ["/", "/releases"];
+export const TRANSLATED_PATHS = ["/", "/releases", "/benchmarks"];
 
 // A page's English path from its path in any language: "/es" → "/", "/es/releases" → "/releases".
 export function englishPath(pathname: string): string {
@@ -33,6 +33,21 @@ export function switchPath(target: Locale, pathname: string): string {
 // "{n} new" with { n: 3 } → "3 new".
 export function format(text: string, values: Record<string, string | number>): string {
   return text.replace(/\{(\w+)\}/g, (all, name: string) => (name in values ? String(values[name]) : all));
+}
+
+// Like format, but each value stays its own text node, as JSX's `{a} text {b}` renders: the browser shapes text
+// node by node, so joining them into one string moves glyphs by a fraction of a pixel.
+export function formatParts(text: string, values: Record<string, string | number>): (string | number)[] {
+  const out: (string | number)[] = [];
+  let last = 0;
+  for (const m of text.matchAll(/\{(\w+)\}/g)) {
+    if (!(m[1] in values)) continue;
+    if (m.index > last) out.push(text.slice(last, m.index));
+    out.push(values[m[1]]);
+    last = m.index + m[0].length;
+  }
+  if (last < text.length) out.push(text.slice(last));
+  return out;
 }
 
 type Tag = (chunks: string) => ReactNode;

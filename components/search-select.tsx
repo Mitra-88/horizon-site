@@ -1,9 +1,13 @@
 "use client";
 
 import { useEffect, useId, useMemo, useRef, useState, type FocusEvent, type KeyboardEvent } from "react";
+import { format } from "@/components/i18n-text";
 import { CheckIcon, ChevronDownIcon, SearchIcon } from "@/components/icons";
 
 export type SearchOption = { value: string; label: string; detail?: string; match?: RegExp };
+
+/** The select's own words: choose ("Choose a processor"), search, placeholder ("Search {n} processors") and none ("No processor matches “{query}”…"). */
+export type SearchSelectText = { choose: string; search: string; placeholder: string; none: string };
 
 const words = (query: string) => query.toLowerCase().split(/\s+/).filter(Boolean);
 
@@ -46,13 +50,13 @@ function Highlight({ text, query }: { text: string; query: string }) {
 
 export function SearchSelect({
   label,
-  noun,
+  text,
   value,
   options,
   onChange,
 }: {
   label: string;
-  noun: string;
+  text: SearchSelectText;
   value: string;
   options: SearchOption[];
   onChange: (value: string) => void;
@@ -148,7 +152,7 @@ export function SearchSelect({
         onKeyDown={onTriggerKey}
         className="group mt-2 flex h-11 w-full items-center justify-between gap-3 rounded-lg bg-white/[0.06] px-3 text-left text-[15px] text-white outline-none transition-colors hover:bg-white/[0.09] focus-visible:ring-2 focus-visible:ring-[#a98fff] aria-expanded:bg-white/[0.09]"
       >
-        <span className="truncate">{selected?.label ?? `Choose a ${noun}`}</span>
+        <span className="truncate">{selected?.label ?? text.choose}</span>
         <ChevronDownIcon className="size-4 shrink-0 text-white/50 transition-transform duration-200 group-aria-expanded:rotate-180" />
       </button>
 
@@ -164,8 +168,8 @@ export function SearchSelect({
               aria-controls={`${id}-list`}
               aria-autocomplete="list"
               aria-activedescendant={results[active] ? `${id}-option-${active}` : undefined}
-              aria-label={`Search ${noun}s`}
-              placeholder={`Search ${options.length} ${noun}s`}
+              aria-label={text.search}
+              placeholder={format(text.placeholder, { n: options.length })}
               autoComplete="off"
               spellCheck={false}
               value={query}
@@ -210,7 +214,7 @@ export function SearchSelect({
             </ul>
           ) : (
             <p className="px-2.5 py-6 text-center text-sm text-white/50">
-              No {noun} matches &ldquo;{query.trim()}&rdquo;. Pick the closest one you can find.
+              {format(text.none, { query: query.trim() })}
             </p>
           )}
         </div>
