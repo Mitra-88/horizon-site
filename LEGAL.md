@@ -20,10 +20,12 @@ cookies. The only requests to other hosts are the browser's calls to `api.github
 
 | File | Source | Licence |
 | --- | --- | --- |
-| `public/fonts/Geist-Regular.woff2`, `Geist-Medium.woff2`, `Geist-SemiBold.woff2`, `GeistMono-Regular.woff2` | Geist and Geist Mono, from `crates/horizon-theme/fonts` (converted from TTF to WOFF2) | SIL Open Font License 1.1, shipped as `public/fonts/OFL-Geist.txt` |
-| `public/fonts/PixelifySans-Medium.woff2`, `PixelifySans-SemiBold.woff2`, `PixelifySans-Bold.woff2` | Pixelify Sans by The Pixelify Sans Project Authors (github.com/eifetx/Pixelify-Sans), from `crates/horizon-theme/fonts` (converted from TTF to WOFF2) | SIL Open Font License 1.1, shipped as `public/fonts/OFL-PixelifySans.txt` |
+| Geist and Geist Mono (body text and code, `app/layout.tsx`) | Geist by The Geist Project Authors (github.com/vercel/geist-font), through `next/font/google` | SIL Open Font License 1.1 |
+| Bricolage Grotesque (headings, `app/layout.tsx`) | Bricolage Grotesque by The Bricolage Grotesque Project Authors (github.com/ateliertriay/bricolage), through `next/font/google` | SIL Open Font License 1.1 |
+| `assets/fonts/BricolageGrotesque-Medium.ttf`, `BricolageGrotesque-SemiBold.ttf` (share cards, `components/og-card.tsx`) | Bricolage Grotesque 1.001, as published on Google Fonts | SIL Open Font License 1.1, shipped as `assets/fonts/OFL-BricolageGrotesque.txt` |
 
-The fonts are self-hosted; nothing is fetched from a font service.
+The fonts are self-hosted: `next/font` downloads them when the site is built and serves them from playhorizon.dev, so
+browsers fetch nothing from a font service.
 
 ## Icons and the social preview
 

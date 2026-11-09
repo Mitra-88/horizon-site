@@ -67,7 +67,7 @@ export function SiteFooter() {
             <Heading>Licences</Heading>
             <p className="mt-3">
               Horizon&apos;s original work is under the <Out href={`${GITHUB_URL}/blob/main/LICENSE`}>MIT licence</Out>
-              . The fonts are Geist and Geist Mono, under the{" "}
+              . The fonts are Geist, Geist Mono and Bricolage Grotesque, under the{" "}
               <Out href="https://openfontlicense.org">SIL Open Font License</Out>. Every asset on this site is listed
               in LEGAL.md.
             </p>
