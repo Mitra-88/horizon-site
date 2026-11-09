@@ -715,5 +715,42 @@
       "playersTitle": "Players",
       "officialHistory": "On the Official Horizon SMP"
     }
+  },
+  "artists": {
+    "meta": {
+      "title": "3D artists · Horizon",
+      "description": "Horizon welcomes 3D artists to make cosmetics for its players: hats, back items, shoulder pets, trails and emotes in a blocky style. Say hello on Discord."
+    },
+    "kicker": "3D artists",
+    "titleA": "We're looking for",
+    "titleB": "3D artists.",
+    "lead": "Horizon welcomes 3D artists to make cosmetics for Horizon players: things players wear and carry that other Horizon players see in every world and on every server. If you like making small, blocky models, we'd like to hear from you.",
+    "make": {
+      "title": "What we'd make together",
+      "items": [
+        "Hats and other head pieces.",
+        "Back items, such as backpacks or rigid wings.",
+        "Small pets that ride on a player's shoulder, or companions that float beside them.",
+        "Auras and trails made of a few particles.",
+        "Emotes: short animations for the player's own model."
+      ],
+      "note": "Cosmetics only change how a player looks, never how the game plays."
+    },
+    "fits": {
+      "title": "What fits",
+      "items": [
+        "Low-poly models in Minecraft's blocky style, built from a few dozen cubes, with small pixel textures (16 to 64 pixels).",
+        "Your own designs. No copies of Minecraft's mobs and items, or of anyone else's work.",
+        "Art for every age, that still reads at a distance.",
+        "No capes, or anything that hangs from the shoulders like one.",
+        "Blockbench is welcome. Animation is a plus, not a requirement."
+      ]
+    },
+    "contact": {
+      "title": "Get in touch",
+      "body": "Join Horizon's Discord and say you're a 3D artist, with a few pieces you've made: links or pictures are fine. If you'd rather write privately, write through <link>lu4ovic.com</link>.",
+      "discord": "Join the Discord"
+    },
+    "newTab": " (opens in a new tab)"
   }
 }

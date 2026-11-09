@@ -715,5 +715,42 @@
       "playersTitle": "Jugadores",
       "officialHistory": "En el Official Horizon SMP"
     }
+  },
+  "artists": {
+    "meta": {
+      "title": "Artistas 3D · Horizon",
+      "description": "Horizon da la bienvenida a artistas 3D para crear cosméticos para sus jugadores: sombreros, objetos para la espalda, mascotas para el hombro, estelas y gestos con estilo de bloques. Saluda en Discord."
+    },
+    "kicker": "Artistas 3D",
+    "titleA": "Buscamos",
+    "titleB": "artistas 3D.",
+    "lead": "Horizon da la bienvenida a artistas 3D para crear cosméticos para los jugadores de Horizon: cosas que llevan puestas o encima y que los demás jugadores de Horizon ven en cada mundo y en cada servidor. Si te gusta hacer modelos pequeños y de bloques, nos encantaría saber de ti.",
+    "make": {
+      "title": "Lo que haríamos juntos",
+      "items": [
+        "Sombreros y otras piezas para la cabeza.",
+        "Objetos para la espalda, como mochilas o alas rígidas.",
+        "Pequeñas mascotas que van sobre el hombro del jugador, o compañeros que flotan a su lado.",
+        "Auras y estelas hechas de unas pocas partículas.",
+        "Gestos: animaciones cortas para el propio modelo del jugador."
+      ],
+      "note": "Los cosméticos solo cambian el aspecto de un jugador, nunca cómo se juega."
+    },
+    "fits": {
+      "title": "Lo que encaja",
+      "items": [
+        "Modelos low-poly con el estilo de bloques de Minecraft, hechos con unas pocas docenas de cubos y con texturas pequeñas de píxeles (de 16 a 64 píxeles).",
+        "Tus propios diseños. Nada de copias de las criaturas y los objetos de Minecraft, ni del trabajo de nadie más.",
+        "Arte para todas las edades, que se siga entendiendo a distancia.",
+        "Nada de capas, ni nada que cuelgue de los hombros como una.",
+        "Blockbench es bienvenido. La animación es un plus, no un requisito."
+      ]
+    },
+    "contact": {
+      "title": "Ponte en contacto",
+      "body": "Únete al Discord de Horizon y di que eres artista 3D, con algunas piezas que hayas hecho: valen enlaces o imágenes. Si prefieres escribir en privado, hazlo a través de <link>lu4ovic.com</link>.",
+      "discord": "Únete al Discord"
+    },
+    "newTab": " (se abre en una pestaña nueva)"
   }
 }
