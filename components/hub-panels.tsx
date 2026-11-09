@@ -641,7 +641,7 @@ const TIER_TEXT: Record<string, { title: string; about: string; empty?: string }
   support: {
     title: "🤝 Support",
     about: "Help players in #horizon-support and mark their posts solved.",
-    empty: "Nobody yet. Want to help players? Run /apply on Discord.",
+    empty: "Nobody yet.",
   },
 };
 

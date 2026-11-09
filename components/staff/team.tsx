@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useCallback, useEffect, useState, type FormEvent, type ReactNode } from "react";
 import { Applications } from "@/components/staff/applications";
+import { APPLICATIONS_ON } from "@/components/staff/flags";
 import {
   ApiError,
   api,
@@ -43,7 +44,7 @@ import {
   Tabs,
 } from "@/components/staff/ui";
 
-const IDS = ["inbox", "applications", "board", "roadmap", "decisions", "stats", "data"];
+const IDS = ["inbox", ...(APPLICATIONS_ON ? ["applications"] : []), "board", "roadmap", "decisions", "stats", "data"];
 const COLUMNS: [Column, string][] = [
   ["todo", "To do"],
   ["doing", "Doing"],
@@ -780,7 +781,10 @@ function Data({ data, stats }: { data: Overview; stats: TeamStats | null }) {
 }
 
 const fetchTeam = () =>
-  Promise.all([api<Overview>("GET", "team/overview"), api<{ applications: Application[]; people?: People }>("GET", "team/applications")]);
+  Promise.all([
+    api<Overview>("GET", "team/overview"),
+    APPLICATIONS_ON ? api<{ applications: Application[]; people?: People }>("GET", "team/applications") : Promise.resolve({ applications: [] as Application[], people: {} }),
+  ]);
 
 export function TeamDashboard({ who }: { who: Who }) {
   const hash = useHash();
@@ -825,7 +829,7 @@ export function TeamDashboard({ who }: { who: Who }) {
   const count = inboxCount(inboxGroups({ apps, cards: data.cards, decisions: data.decisions, me: who.user, names, act: () => {} }).groups);
   const tabs = [
     { id: "inbox", label: "Inbox", count },
-    { id: "applications", label: "Applications" },
+    ...(APPLICATIONS_ON ? [{ id: "applications", label: "Applications" }] : []),
     { id: "board", label: "Board" },
     { id: "roadmap", label: "Roadmap" },
     { id: "decisions", label: "Decisions" },
@@ -861,9 +865,11 @@ export function TeamDashboard({ who }: { who: Who }) {
           <Inbox dashboard="team" apps={apps} cards={data.cards} decisions={data.decisions} me={who.user} names={names} onDone={reload} />
         </Guard>
       </Panel>
-      <Panel id="applications" active={tab}>
-        <Applications apps={apps} people={people} dashboard="team" onDone={reload} />
-      </Panel>
+      {APPLICATIONS_ON ? (
+        <Panel id="applications" active={tab}>
+          <Applications apps={apps} people={people} dashboard="team" onDone={reload} />
+        </Panel>
+      ) : null}
       <Panel id="board" active={tab}>
         <Guard what="The board">
           <Board ctx={ctx} />

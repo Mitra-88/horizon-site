@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { Applications } from "@/components/staff/applications";
+import { APPLICATIONS_ON } from "@/components/staff/flags";
 import { Cases } from "@/components/staff/cases";
 import { api, type Application, type People, type Who } from "@/components/staff/api";
 import { BarChart, DataSet, Tile, fmt, type Row } from "@/components/staff/charts";
@@ -10,7 +11,7 @@ import { selectTab, tabFromHash, useHash, useScrollToHash } from "@/components/s
 import { Inbox, inboxCount, inboxGroups } from "@/components/staff/inbox";
 import { Guard, Panel, Tabs } from "@/components/staff/ui";
 
-const IDS = ["inbox", "cases", "applications", "stats"];
+const IDS = ["inbox", "cases", ...(APPLICATIONS_ON ? ["applications"] : []), "stats"];
 const LABELS: Record<string, string> = {
   reports: "Reports",
   modmail: "Mod-mail threads",
@@ -55,11 +56,13 @@ function Stats({ s }: { s: ModStats }) {
         />
         <Tile value={`${fmt(s.last7.kicks)} / ${fmt(s.last7.bans)}`} label="kicks / bans, last 7 days" note={`${fmt(s.last30.kicks)} / ${fmt(s.last30.bans)} in 30 days`} />
         <Tile value={fmt(s.last7.automod)} label="AutoMod actions, last 7 days" note={`${fmt(s.last30.automod)} in 30 days`} />
-        <Tile
-          value={`${fmt(a.open.mod)} / ${fmt(a.open.support)}`}
-          label="Mod / Support applications waiting"
-          note={`${fmt(a.accepted30)} accepted, ${fmt(a.declined30)} declined in 30 days`}
-        />
+        {APPLICATIONS_ON ? (
+          <Tile
+            value={`${fmt(a.open.mod)} / ${fmt(a.open.support)}`}
+            label="Mod / Support applications waiting"
+            note={`${fmt(a.accepted30)} accepted, ${fmt(a.declined30)} declined in 30 days`}
+          />
+        ) : null}
       </div>
       <p className="text-xs text-white/45">Counts only: Kira stores no list of who or what.</p>
       <div className="grid gap-4 lg:grid-cols-2">
@@ -74,7 +77,8 @@ function Stats({ s }: { s: ModStats }) {
   );
 }
 
-const fetchApplications = () => api<{ applications: Application[]; people?: People }>("GET", "mod/applications");
+const fetchApplications = () =>
+  APPLICATIONS_ON ? api<{ applications: Application[]; people?: People }>("GET", "mod/applications") : Promise.resolve({ applications: [] as Application[], people: {} });
 
 export function ModDashboard({ who }: { who: Who }) {
   const hash = useHash();
@@ -107,7 +111,7 @@ export function ModDashboard({ who }: { who: Who }) {
   const tabs = [
     { id: "inbox", label: "Inbox", count },
     { id: "cases", label: "Cases" },
-    { id: "applications", label: "Applications" },
+    ...(APPLICATIONS_ON ? [{ id: "applications", label: "Applications" }] : []),
     { id: "stats", label: "Stats" },
   ];
 
@@ -135,9 +139,11 @@ export function ModDashboard({ who }: { who: Who }) {
           <Panel id="cases" active={tab}>
             <Guard what="The cases">{tab === "cases" ? <Cases /> : null}</Guard>
           </Panel>
-          <Panel id="applications" active={tab}>
-            <Applications apps={apps} people={people} dashboard="mod" onDone={load} />
-          </Panel>
+          {APPLICATIONS_ON ? (
+            <Panel id="applications" active={tab}>
+              <Applications apps={apps} people={people} dashboard="mod" onDone={load} />
+            </Panel>
+          ) : null}
           <Panel id="stats" active={tab}>
             {statsError ? (
               <p className="text-[15px] text-white/70">{statsError}</p>

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState, useSyncExternalStore, type FormEvent, type ReactNode } from "react";
 import { HubStaffBar, STAFF_TABS, useStaffTabs } from "@/components/hub-shell";
 import { ApiError, api, rememberStaff, setCsrf, type Dashboard, type Who } from "@/components/staff/api";
+import { APPLICATIONS_ON } from "@/components/staff/flags";
 import { ModDashboard } from "@/components/staff/mod";
 import { TeamDashboard } from "@/components/staff/team";
 import { CARD, Field, GHOST_SM, INPUT, LINK, PRIMARY, SECONDARY_SM, Status } from "@/components/staff/ui";
@@ -212,6 +213,8 @@ function Help() {
           "A session ends after 12 hours without use, and after 7 days at most. “Sign out everywhere” ends every session you have. If you lose the Team or Mod role, your sessions end at once.",
         ]}
       />
+      {APPLICATIONS_ON ? (
+        <>
       <h2 id="applications" className={h2}>
         Applications and the vote
       </h2>
@@ -256,6 +259,8 @@ function Help() {
           "A Team acceptance gives only the Discord role. Access to the GitHub organisation is Ludovic's to give, by hand.",
         ]}
       />
+        </>
+      ) : null}
       <h2 id="log" className={h2}>
         What is stored, and for how long
       </h2>
