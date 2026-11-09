@@ -8,7 +8,8 @@ const KIRA = (process.env.KIRA_URL || "https://kira-production-500e.up.railway.a
 export type OrgPerson = { name: string; username: string; avatar: string | null; github: string | null; job: string | null };
 export type OrgTier = { key: string; post: string; people: OrgPerson[] };
 
-const TIER_KEYS = ["owner", "team", "chiefmod", "mod", "support"];
+// "council" comes once Kira's governance is on (GOVERNANCE.md); until then Kira never sends it.
+const TIER_KEYS = ["owner", "council", "team", "chiefmod", "mod", "support"];
 // next.config.ts lets next/image load these two forms only.
 const AVATAR = /^https:\/\/cdn\.discordapp\.com\/(avatars\/\d{5,25}\/\w{1,64}\.png\?size=128|embed\/avatars\/\d\.png)$/;
 const LOGIN = /^[a-z\d](?:[a-z\d-]{0,38})$/i;

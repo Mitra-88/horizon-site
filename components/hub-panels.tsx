@@ -624,9 +624,17 @@ export function ContributePanel({
   );
 }
 
+// Once the council runs Horizon (Kira sends a "council" tier), bans go through the council and the Chief of Mods.
+const GOVERNED_TEXT: Record<string, { title: string; about: string; empty?: string }> = {
+  chiefmod: { title: "🛡️ Chief of Mods", about: "Leads the moderators and can ban: the first person to reach for moderation questions." },
+  mod: { title: "🛡️ Mods", about: "Keep the Discord server friendly: they time out members and delete messages. Bans go through the council and the Chief of Mods." },
+};
+
 // The People tab: the Discord server's staff roles, top to bottom, as Kira reads them (components/org-chart.ts).
 const TIER_TEXT: Record<string, { title: string; about: string; empty?: string }> = {
   owner: { title: "👑 Owner", about: "Started Horizon and owns the Discord server." },
+  founder: { title: "👑 Founder", about: "Started Horizon. A title only: on the council, his vote counts like everyone else's." },
+  council: { title: "🏛️ Council", about: "Equals who decide by public 24-hour polls: rules, members, money and the project's direction." },
   team: { title: "🌌 Horizon Team", about: "Maintainers and core contributors: they review and merge pull requests, and moderate too." },
   chiefmod: { title: "🛡️ Chief of Mods", about: "Leads the moderators: the first person to reach for moderation questions." },
   mod: { title: "🛡️ Mods", about: "Keep the Discord server friendly: they time out members and delete messages. Bans go through the Horizon Team." },
@@ -675,6 +683,7 @@ function PersonCard({ person }: { person: OrgPerson }) {
 }
 
 export function PeoplePanel({ tiers }: { tiers: OrgTier[] | null }) {
+  const governed = !!tiers?.some((tier) => tier.key === "council");
   return (
     <Panel id="people">
       <Block title="Who runs Horizon">
@@ -685,7 +694,8 @@ export function PeoplePanel({ tiers }: { tiers: OrgTier[] | null }) {
         {tiers ? (
           <ol className="mt-8 ml-1 border-l border-white/[0.1]">
             {tiers.map((tier) => {
-              const t = TIER_TEXT[tier.key] ?? { title: tier.post, about: "" };
+              const key = tier.key === "owner" && tier.post === "Founder" ? "founder" : tier.key;
+              const t = (governed && GOVERNED_TEXT[key]) || TIER_TEXT[key] || { title: tier.post, about: "" };
               return (
                 <li key={tier.key} id={`people-${tier.key}`} className="relative scroll-mt-40 pb-10 pl-6 last:pb-0 sm:pl-8">
                   <span aria-hidden className="absolute top-2 -left-[5px] size-2.5 rounded-full bg-[#a98fff] ring-4 ring-background" />
