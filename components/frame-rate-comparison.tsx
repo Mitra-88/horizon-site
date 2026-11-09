@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
+import type { Messages } from "@/components/i18n";
+import { rich } from "@/components/i18n-text";
 import { HorizonMark, MinecraftIcon } from "@/components/icons";
 
 const FPS = { horizon: 150, standard: 50 };
@@ -81,7 +83,7 @@ function Readout({
   );
 }
 
-export function FrameRateComparison() {
+export function FrameRateComparison({ t }: { t: Messages["home"]["frameRate"] }) {
   const [standard, setStandard] = useState(FPS.standard);
   const [noise, setNoise] = useState(1);
 
@@ -104,13 +106,11 @@ export function FrameRateComparison() {
 
   return (
     <div id="benchmarks" className="rise w-full max-w-2xl scroll-mt-24 rounded-2xl bg-white/[0.04] p-6 backdrop-blur-xl ring-inset sm:p-8 lg:justify-self-end" style={{ "--delay": "320ms" } as Vars}>
-      <p className="text-sm font-medium text-white/60">Benchmarks</p>
+      <p className="text-sm font-medium text-white/60">{t.eyebrow}</p>
       <h2 className="mt-4 font-display text-[2rem] leading-[1.1] font-semibold tracking-[-0.02em] text-white">
-        <span className="text-accent">{Math.round(RATIO)}×</span> the frame rate.
+        {rich(t.title.replace("{ratio}", String(Math.round(RATIO))), { accent: (chunks) => <span className="text-accent">{chunks}</span> })}
       </h2>
-      <p className="mt-3 text-[15px] leading-relaxed text-pretty text-white/60">
-        Average frames per second in vanilla 26.3 with no mods installed.
-      </p>
+      <p className="mt-3 text-[15px] leading-relaxed text-pretty text-white/60">{t.lead}</p>
 
       <div className="mt-10 space-y-8">
         <div>
@@ -146,7 +146,7 @@ export function FrameRateComparison() {
         </div>
 
         <div>
-          <Readout icon={<MinecraftIcon className="size-4" />} label="Standard launcher" value={standard} />
+          <Readout icon={<MinecraftIcon className="size-4" />} label={t.standard} value={standard} />
           <div className="relative mt-3 h-2 rounded-[2px] bg-white/[0.07]">
             <div
               className="stat-bar absolute inset-0 rounded-[2px] bg-white/30"
@@ -159,7 +159,7 @@ export function FrameRateComparison() {
               step={5}
               value={standard}
               onChange={(e) => setStandard(Math.max(10, Number(e.target.value)))}
-              aria-label="Standard launcher frame rate"
+              aria-label={t.sliderLabel}
               aria-valuetext={`${standard} fps`}
               className="fps-range absolute inset-x-0 top-1/2 h-6 w-full -translate-y-1/2"
               style={{ "--delay": `${INTRO.delay + INTRO.duration}ms` } as Vars}
@@ -169,7 +169,7 @@ export function FrameRateComparison() {
       </div>
 
       <p className="mt-8 text-xs leading-relaxed text-white/50">
-        Drag the standard launcher bar to try your own frame rate. Results vary with hardware.
+        {t.hint}
       </p>
     </div>
   );

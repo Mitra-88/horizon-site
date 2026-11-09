@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { ComponentType, SVGProps } from "react";
+import { getMessages, rich, type Locale, type Messages } from "@/components/i18n";
 import { DiscordIcon, DollarIcon, GitHubIcon, ShieldIcon } from "@/components/icons";
 import { BUILD_URL, DISCORD_URL, GITHUB_URL, SPONSOR_URL } from "@/components/links";
 import { PixelAurora } from "@/components/pixel-aurora";
@@ -26,27 +27,21 @@ const LIGHT = {
 };
 
 type Card = {
-  title: string;
-  body: string;
+  key: keyof Messages["home"]["community"]["links"];
   href: string;
   icon: ComponentType<SVGProps<SVGSVGElement>>;
   tone: typeof GLASS;
 };
 
 const LINKS: Card[] = [
-  { title: "Discord", body: "Questions, bug reports and screenshots.", href: DISCORD_URL, icon: DiscordIcon, tone: DISCORD },
-  { title: "Sponsor", body: "Sponsors on GitHub fund the next release.", href: SPONSOR_URL, icon: DollarIcon, tone: GLASS },
-  { title: "Source", body: "Issues and pull requests are welcome.", href: GITHUB_URL, icon: GitHubIcon, tone: LIGHT },
-  {
-    title: "How it's built",
-    body: "Who writes it, how changes are checked, why it's safe to run.",
-    href: BUILD_URL,
-    icon: ShieldIcon,
-    tone: GLASS,
-  },
+  { key: "discord", href: DISCORD_URL, icon: DiscordIcon, tone: DISCORD },
+  { key: "sponsor", href: SPONSOR_URL, icon: DollarIcon, tone: GLASS },
+  { key: "source", href: GITHUB_URL, icon: GitHubIcon, tone: LIGHT },
+  { key: "build", href: BUILD_URL, icon: ShieldIcon, tone: GLASS },
 ];
 
-export function Community() {
+export function Community({ locale }: { locale: Locale }) {
+  const t = getMessages(locale).home.community;
   return (
     <section
       id="community"
@@ -57,41 +52,43 @@ export function Community() {
 
       <div className="mx-auto w-full max-w-6xl px-6 lg:px-10">
         <div className="reveal">
-          <p className="text-sm font-medium text-white/60">Community</p>
+          <p className="text-sm font-medium text-white/60">{t.eyebrow}</p>
           <h2
             id="community-title"
             className="mt-5 font-display text-[clamp(2rem,3.6vw,3rem)] leading-[1.08] font-semibold tracking-[-0.03em] text-balance text-white"
           >
-            Built in the open.
+            {t.title}
           </h2>
           <p className="mt-4 max-w-md text-[15px] leading-relaxed text-pretty text-white/60">
-            Every change lands on GitHub in public. Come ask questions, report bugs or send a pull request.
+            {t.lead}
           </p>
         </div>
 
         <ul className="mt-8 grid gap-3 sm:mt-10 sm:grid-cols-2 lg:grid-cols-4">
-          {LINKS.map(({ title, body, href, icon: Icon, tone }) => (
-            <li key={title} className="flex">
+          {LINKS.map(({ key, href, icon: Icon, tone }) => (
+            <li key={key} className="flex">
               <a
                 href={href}
                 className={`group flex w-full flex-col rounded-xl p-6 transition outline-none focus-visible:ring-2 motion-safe:hover:-translate-y-0.5 ${tone.card}`}
               >
                 <span className={`flex items-center gap-2.5 text-[17px] font-medium ${tone.title}`}>
                   <Icon className={`size-5 shrink-0 transition-colors ${tone.icon}`} />
-                  {title}
+                  {t.links[key].title}
                 </span>
-                <span className={`mt-2 text-sm leading-relaxed text-pretty ${tone.body}`}>{body}</span>
+                <span className={`mt-2 text-sm leading-relaxed text-pretty ${tone.body}`}>{t.links[key].body}</span>
               </a>
             </li>
           ))}
         </ul>
 
         <p className="mt-6 text-sm text-white/60">
-          Do you make 3D models?{" "}
-          <Link href="/artists" className="font-medium text-white/85 underline decoration-white/25 underline-offset-4 transition-colors hover:text-white hover:decoration-white/60">
-            Horizon is looking for 3D artists
-          </Link>
-          .
+          {rich(t.artists, {
+            link: (chunks) => (
+              <Link href="/artists" className="font-medium text-white/85 underline decoration-white/25 underline-offset-4 transition-colors hover:text-white hover:decoration-white/60">
+                {chunks}
+              </Link>
+            ),
+          })}
         </p>
       </div>
     </section>

@@ -43,5 +43,164 @@
     "home": "Back home",
     "docs": "The docs",
     "mods": "Mods"
+  },
+  "home": {
+    "hero": {
+      "writtenIn": "Written in <rust>Rust</rust>",
+      "title": "The game you know,",
+      "titleAccent": "rebuilt in Rust.",
+      "lead": "The Minecraft: Java Edition 26.3 client and its game logic, rewritten in Rust and checked against the vanilla game by differential harnesses.",
+      "download": "Download the launcher",
+      "github": "View on GitHub",
+      "launcher": "Launcher {version}",
+      "downloadsTitle": "Downloads of the launcher from GitHub, all versions, updates included",
+      "downloads": "<n>{n}</n> downloads"
+    },
+    "frameRate": {
+      "eyebrow": "Benchmarks",
+      "title": "<accent>{ratio}×</accent> the frame rate.",
+      "lead": "Average frames per second in vanilla 26.3 with no mods installed.",
+      "standard": "Standard launcher",
+      "sliderLabel": "Standard launcher frame rate",
+      "hint": "Drag the standard launcher bar to try your own frame rate. Results vary with hardware."
+    },
+    "about": {
+      "eyebrow": "What it is",
+      "title": "Same inputs, identical outputs.",
+      "lead": "Horizon, sometimes called Minecraft Rust Edition, rebuilds Minecraft: Java Edition 26.3 in Rust, one subsystem at a time, and holds every piece to the same inputs as the vanilla game until the outputs are identical.",
+      "contributors": "Visit contributors",
+      "imageAlt": "A Minecraft windmill above a field of lavender",
+      "points": {
+        "copy": {
+          "title": "Your own copy",
+          "body": "Install Java Edition with the official launcher and play 26.3 once. Horizon builds its resources from those files on your machine, and never downloads or shares game files."
+        },
+        "native": {
+          "title": "Native on three platforms",
+          "body": "Linux, macOS on Apple Silicon or Intel, and Windows on x64 or ARM. Worlds come from a Rust port of the vanilla generators, drawn with vanilla's block models, lighting, sky and fog."
+        },
+        "open": {
+          "title": "Open source",
+          "body": "Horizon's code is MIT. It contains no Minecraft code, assets or data; those belong to Mojang and Microsoft under the Minecraft EULA."
+        }
+      }
+    },
+    "sponsor": {
+      "title": "Your Minecraft<br/>Server, <accent>24/7 Online.</accent>",
+      "lead": "Get your server now in under ~60 seconds!",
+      "cta": "Get my server",
+      "copy": "Copy code {code}",
+      "copied": "Coupon copied to clipboard",
+      "selected": "Selected: press Ctrl+C to copy",
+      "hide": "Hide this partner"
+    },
+    "community": {
+      "eyebrow": "Community",
+      "title": "Built in the open.",
+      "lead": "Every change lands on GitHub in public. Come ask questions, report bugs or send a pull request.",
+      "links": {
+        "discord": { "title": "Discord", "body": "Questions, bug reports and screenshots." },
+        "sponsor": { "title": "Sponsor", "body": "Sponsors on GitHub fund the next release." },
+        "source": { "title": "Source", "body": "Issues and pull requests are welcome." },
+        "build": { "title": "How it's built", "body": "Who writes it, how changes are checked, why it's safe to run." }
+      },
+      "artists": "Do you make 3D models? <link>Horizon is looking for 3D artists</link>."
+    },
+    "gallery": {
+      "eyebrow": "Drawn by",
+      "title": "The same game you love, <accent>6× faster.</accent>",
+      "lead": "Every frame here was rendered by Horizon, with vanilla's block models, lighting, sky and fog.",
+      "shots": {
+        "nether": "A piglin with a golden sword in a crimson forest above a sea of lava in the Nether",
+        "village": "A savanna village of thatched houses among acacia trees under a blue sky",
+        "night": "A torch-lit village under a square moon and a starry night sky",
+        "ocean": "Tropical fish swimming over a coral reef in a warm ocean"
+      }
+    },
+    "contributors": {
+      "eyebrow": "Contributors",
+      "title": "Built by {n} people.",
+      "claude": "…and<claude/>Claude too",
+      "titleFallback": "Built by its contributors.",
+      "lead": "Everyone with commits in {repo}, most commits first, and the people behind this site.",
+      "all": "All contributors on GitHub",
+      "oneCommit": "1 commit",
+      "commits": "{n} commits",
+      "webDeveloper": "Website Developer"
+    },
+    "parity": {
+      "harnesses": "differential harnesses when we started: each drives the same inputs through Horizon and through the vanilla client and server, and compares what comes out.",
+      "title": "Where the project started.",
+      "lead": "Below is the project's first audit of each subsystem: what its harnesses compared then, and how much of it they covered. It is not a parity claim: players still find differences, and parity work on 26.3 continues, redstone first.",
+      "audited": "Audited <date/><dot/>players still find differences: <link>the open reports</link>",
+      "passed": "Passed its harnesses",
+      "scored": "Scored {score}: {label}",
+      "scaleTitle": "Each subsystem scored",
+      "scale": {
+        "0": "absent",
+        "0.25": "started",
+        "0.5": "playable, major features missing",
+        "0.75": "mostly complete",
+        "1": "its harnesses cover it and pass"
+      },
+      "subsystems": {
+        "loop": {
+          "name": "Window, input and game loop",
+          "detail": "The game loop, options, camera, auto-jump, toggle sprint/sneak, local input and the frame limiter match vanilla."
+        },
+        "assets": {
+          "name": "Assets and resources",
+          "detail": "Item models match vanilla over 196,290 stacks and the client draws every item through them; the resource pack screen matches vanilla's drawing over 3,000 sessions of clicks, scrolling and searching, its incompatibility confirmation included."
+        },
+        "network": {
+          "name": "Network protocol and multiplayer",
+          "detail": "Joins vanilla servers; the dedicated server (--dedicated) matches vanilla's files, status ping, login, configuration, play, chunks, chat, recipes, advancements and command tree, a client built from vanilla's packet code joins it, Horizon joins a vanilla server, and LAN discovery matches over 462 cases (offline mode only)."
+        },
+        "chunks": {
+          "name": "Chunk storage and palettes",
+          "detail": "Client and saves share paletted containers, identical to vanilla over 266 scenarios."
+        },
+        "meshing": {
+          "name": "Section meshing",
+          "detail": "112 scenes and over a million quads identical to vanilla."
+        },
+        "rendering": {
+          "name": "Rendering",
+          "detail": "Entity models, block entity renderers (407 cases, End portals, gateways and the loom's banner preview included) and their animations (296 cases, End gateway beams included), the HUD overlays (2,200 states), the recipe book (600 states), the player list, subtitles and the world border match vanilla."
+        },
+        "lighting": {
+          "name": "Lighting",
+          "detail": "Saved and relit light matches vanilla, slabs and stairs included."
+        },
+        "worldgen": {
+          "name": "World generation",
+          "detail": "2,352 whole chunks over 225 structure sites, in all three dimensions, identical to vanilla."
+        },
+        "saves": {
+          "name": "Region files and saves",
+          "detail": "Saves round-trip with vanilla, and worlds from 1.8 to 26.2 upgrade as vanilla's DataFixers do, superflat worlds included; old options.txt and hotbar.nbt files are upgraded too."
+        },
+        "entities": {
+          "name": "Entities and physics",
+          "detail": "Attributes, dimensions, death loot, spawn rules, natural spawning (15,500 cases), raids and patrols (1,900 cases), spawned mobs' gear, enchantments and state (finalizeSpawn, 24,000 cases) and mob AI (92 scenarios: villager breeding and gossip, the warden, ghastlings and copper golems included) match vanilla."
+        },
+        "inventory": {
+          "name": "Interaction and inventory",
+          "detail": "Menu clicks match over 8,000 click sequences, the loom and the crafter included; recipe book placement (6,000 cases), its buttons (1,200), the saved book (1,500) and the loom and crafter screens (1,600) match vanilla."
+        },
+        "menus": {
+          "name": "Menus, HUD and chat",
+          "detail": "Every command runs as vanilla (758 commands over 39,685 parsed inputs), scoreboards and teams match (81,000 operations), the player list matches over 872,000 draw calls with heads drawn from players' skins (authlib's textures, SkinManager's lookup, legacy skin conversion), and the chat matches focused and scrolled; the resource pack screen (selection over 4,000 cases, drawing and its incompatibility confirmation over 3,000 sessions) and the chat input with its command suggestions, usage lines, Tab completion and history (3,000 sessions on vanilla's client command tree) match vanilla."
+        },
+        "audio": {
+          "name": "Audio",
+          "detail": "The sound engine, sound events, music, situational music, ambience and subtitles match vanilla."
+        },
+        "blocks": {
+          "name": "Block behaviours and ticking",
+          "detail": "Block updates, random ticks, redstone, dispensers (6,000 cases), crafters (4,000 crafts), block entity removal (containers spill, 4,000 cases), copper golem chest sorting and the sculk family (435 scenarios: shrieker warnings and warden summoning included) match vanilla."
+        }
+      }
+    }
   }
 }

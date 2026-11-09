@@ -4,6 +4,7 @@ import { FrameRateComparison } from "@/components/frame-rate-comparison";
 import { HorizonScene } from "@/components/horizon-scene";
 import { AppleIcon, DownloadIcon, GitHubIcon, LinuxIcon, RustIcon, WindowsIcon } from "@/components/icons";
 import { getLauncherDownloads, getReleases, launcherBuild } from "@/components/github-releases";
+import { format, getMessages, NUMBER_LOCALE, rich, type Locale } from "@/components/i18n";
 import { LauncherLink, LauncherMeta } from "@/components/launcher-download";
 import { GITHUB_URL, RUST_WIKI_URL } from "@/components/links";
 
@@ -17,7 +18,9 @@ function Dot({ className = "mx-2" }: { className?: string }) {
   );
 }
 
-export async function Hero() {
+export async function Hero({ locale }: { locale: Locale }) {
+  const { home } = getMessages(locale);
+  const t = home.hero;
   const [releases, downloads] = await Promise.all([getReleases(), getLauncherDownloads()]);
   const launcher = launcherBuild(releases);
   return (
@@ -36,15 +39,18 @@ export async function Hero() {
             <span className="inline-flex items-center gap-2">
               <RustIcon className="size-4" />
               <span>
-                Written in{" "}
-                <a
-                  href={RUST_WIKI_URL}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="text-white/80 underline decoration-white/25 underline-offset-4 transition-colors hover:text-white hover:decoration-white/60"
-                >
-                  Rust
-                </a>
+                {rich(t.writtenIn, {
+                  rust: (chunks) => (
+                    <a
+                      href={RUST_WIKI_URL}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="text-white/80 underline decoration-white/25 underline-offset-4 transition-colors hover:text-white hover:decoration-white/60"
+                    >
+                      {chunks}
+                    </a>
+                  ),
+                })}
               </span>
             </span>
           </p>
@@ -54,13 +60,12 @@ export async function Hero() {
             style={delay(80)}
           >
             <span className="sr-only">Horizon: </span>
-            <span className="block">The game you know,</span>
-            <span className="text-accent block pb-1">rebuilt in Rust.</span>
+            <span className="block">{t.title}</span>
+            <span className="text-accent block pb-1">{t.titleAccent}</span>
           </h1>
 
           <p className="rise mt-6 max-w-xl text-lg leading-relaxed text-white/70" style={delay(160)}>
-            The Minecraft: Java Edition 26.3 client and its game logic, rewritten in Rust and checked against the
-            vanilla game by differential harnesses.
+            {t.lead}
           </p>
 
           <div className="rise mt-9 flex flex-col gap-3 sm:flex-row sm:items-center" style={delay(240)}>
@@ -69,14 +74,14 @@ export async function Hero() {
               className="inline-flex h-12 items-center justify-center gap-2.5 rounded-[10px] bg-[#6b4bff] px-5 text-[15px] font-medium text-white transition-colors hover:bg-[#7a5dff]"
             >
               <DownloadIcon className="size-[18px]" />
-              Download the launcher
+              {t.download}
             </LauncherLink>
             <a
               href={GITHUB_URL}
               className="inline-flex h-12 items-center justify-center gap-2.5 rounded-[10px] bg-white/[0.08] px-5 text-[15px] font-medium text-white backdrop-blur-sm transition-colors hover:bg-white/[0.14]"
             >
               <GitHubIcon className="size-[17px]" />
-              View on GitHub
+              {t.github}
             </a>
           </div>
 
@@ -97,12 +102,14 @@ export async function Hero() {
             </span>
             <span className="basis-full whitespace-nowrap sm:basis-auto">
               <Dot className="mr-2 hidden sm:inline" />
-              <LauncherMeta build={launcher} dot={<Dot />} />
+              <LauncherMeta build={launcher} label={t.launcher} dot={<Dot />} />
               {downloads !== null && (
                 <>
                   {launcher && <Dot />}
-                  <span title="Downloads of the launcher from GitHub, all versions, updates included">
-                    <span className="tabular-nums">{downloads.toLocaleString("en-US")}</span> downloads
+                  <span title={t.downloadsTitle}>
+                    {rich(format(t.downloads, { n: downloads.toLocaleString(NUMBER_LOCALE[locale]) }), {
+                      n: (chunks) => <span className="tabular-nums">{chunks}</span>,
+                    })}
                   </span>
                 </>
               )}
@@ -110,7 +117,7 @@ export async function Hero() {
           </div>
         </div>
 
-        <FrameRateComparison />
+        <FrameRateComparison t={home.frameRate} />
       </div>
 
       <div aria-hidden className="h-[clamp(180px,30svh,320px)] shrink-0" />

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import type { Messages } from "@/components/i18n";
 import { CheckIcon, TagIcon } from "@/components/icons";
 
 const CONFETTI = ["#5cc9f2", "#86d8f6", "#ffffff", "#ff9ec4", "#f2c46b"];
@@ -41,7 +42,9 @@ function burst(from: HTMLElement) {
   }
 }
 
-export function CopyCode({ code, className = "" }: { code: string; className?: string }) {
+type CopyText = Pick<Messages["home"]["sponsor"], "copy" | "copied" | "selected">;
+
+export function CopyCode({ code, t, className = "" }: { code: string; t: CopyText; className?: string }) {
   const codeRef = useRef<HTMLSpanElement>(null);
   const [state, setState] = useState<"idle" | "copied" | "selected">("idle");
 
@@ -63,11 +66,11 @@ export function CopyCode({ code, className = "" }: { code: string; className?: s
   };
 
   const Icon = state === "copied" ? CheckIcon : TagIcon;
-  const message = state === "copied" ? "Coupon copied to clipboard" : state === "selected" ? "Selected: press Ctrl+C to copy" : "";
+  const message = state === "copied" ? t.copied : state === "selected" ? t.selected : "";
 
   return (
     <span className="relative inline-flex">
-      <button type="button" onClick={(e) => copy(e.currentTarget)} aria-label={`Copy code ${code}`} className={className}>
+      <button type="button" onClick={(e) => copy(e.currentTarget)} aria-label={t.copy.replace("{code}", code)} className={className}>
         <Icon className="size-[18px] shrink-0" />
         <span ref={codeRef}>
           {code}
@@ -79,7 +82,7 @@ export function CopyCode({ code, className = "" }: { code: string; className?: s
           message ? "translate-y-0 opacity-100" : "translate-y-1 opacity-0"
         }`}
       >
-        {message || "Coupon copied to clipboard"}
+        {message || t.copied}
       </span>
       <span className="sr-only" aria-live="polite">
         {message}

@@ -81,13 +81,13 @@ export default async function Home() {
           ],
         }}
       />
-      <Hero />
-      <About />
-      <Sponsor />
-      <Community />
-      <Gallery />
-      <Contributors />
-      <Parity />
+      <Hero locale="en" />
+      <About locale="en" />
+      <Sponsor locale="en" />
+      <Community locale="en" />
+      <Gallery locale="en" />
+      <Contributors locale="en" />
+      <Parity locale="en" />
     </main>
   );
 }

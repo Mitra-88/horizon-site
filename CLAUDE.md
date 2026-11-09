@@ -47,7 +47,7 @@ deployment live. After a deploy, check https://playhorizon.dev (/, /hub, /mods, 
 
 ## Text and translations
 
-The text of the header, the footer and the 404 page lives in `messages/en.json`, read through `components/i18n.ts`
+The text of the header, the footer, the 404 page and the home page lives in `messages/en.json`, read through `components/i18n.ts`
 (`getMessages`, `rich` for text with links in it, `format` for `{values}`). Pages move there one by one as they are
 translated: the plan, the routes (`/es/...`) and what stays English are in horizon-site#29. Moving text there must
 not change the rendered page: compare the built HTML and screenshots before and after.

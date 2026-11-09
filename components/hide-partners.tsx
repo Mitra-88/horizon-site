@@ -39,9 +39,9 @@ export function PartnersGate({ children }: { children: ReactNode }) {
   return hidden ? null : children;
 }
 
-export function HideButton({ className = "" }: { className?: string }) {
+export function HideButton({ label, className = "" }: { label: string; className?: string }) {
   return (
-    <button type="button" onClick={hide} aria-label="Hide this partner" className={className}>
+    <button type="button" onClick={hide} aria-label={label} className={className}>
       <XIcon className="size-4" />
     </button>
   );

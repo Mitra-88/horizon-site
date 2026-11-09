@@ -79,14 +79,15 @@ export function LauncherLink({
   );
 }
 
-export function LauncherMeta({ build, dot }: { build: LauncherBuild | null; dot: ReactNode }) {
+// `label` is "Launcher {version}" in the page's language.
+export function LauncherMeta({ build, label, dot }: { build: LauncherBuild | null; label: string; dot: ReactNode }) {
   const detected = useDesktopOs();
   const target = useLauncherTarget(detected);
   if (!build) return null;
   const file = (target && build.files[target]) ?? build.files[detected ?? "windows"] ?? build.files.windows;
   return (
     <>
-      Launcher {build.version}
+      {label.replace("{version}", build.version)}
       {file && (
         <>
           {dot}
