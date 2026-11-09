@@ -1,5 +1,6 @@
 import Image from "next/image";
 import { GitHubIcon } from "@/components/icons";
+import { format } from "@/components/i18n-text";
 import { count, type Rating } from "@/components/mods-logic";
 
 const INKS = ["#a98fff", "#8be0b4", "#f2c46b", "#f07a6a"];
@@ -65,16 +66,26 @@ export function ModIcon({ id, icon, size = 48, className = "" }: { id: string; i
   );
 }
 
-export function Stars({ rating, className = "" }: { rating: Rating; className?: string }) {
+/** The words of Stars and GitHubStars; pages that aren't translated use English. */
+export type StarsText = { title: string; titleOne: string; rated: string; github: string; githubOne: string };
+const STARS_EN: StarsText = {
+  title: "{mean} out of 5 from {n} ratings",
+  titleOne: "{mean} out of 5 from {n} rating",
+  rated: "Rated {mean} out of 5",
+  github: "{n} stars on GitHub",
+  githubOne: "{n} star on GitHub",
+};
+
+export function Stars({ rating, className = "", t = STARS_EN, comma = false }: { rating: Rating; className?: string; t?: StarsText; comma?: boolean }) {
   const on = Math.min(5, Math.max(0, Math.round(rating.average)));
-  const mean = rating.average.toFixed(1);
+  const mean = comma ? rating.average.toFixed(1).replace(".", ",") : rating.average.toFixed(1);
   return (
-    <span className={`inline-flex items-center gap-1.5 ${className}`} title={`${mean} out of 5 from ${rating.count} rating${rating.count === 1 ? "" : "s"}`}>
+    <span className={`inline-flex items-center gap-1.5 ${className}`} title={format(rating.count === 1 ? t.titleOne : t.title, { mean, n: rating.count })}>
       <span aria-hidden className="tracking-[0.05em]">
         <span className="text-[#f2c46b]">{"★".repeat(on)}</span>
         <span className="text-white/20">{"★".repeat(5 - on)}</span>
       </span>
-      <span className="sr-only">Rated {mean} out of 5</span>
+      <span className="sr-only">{format(t.rated, { mean })}</span>
       <span className="tabular-nums">
         {mean} ({rating.count})
       </span>
@@ -83,8 +94,18 @@ export function Stars({ rating, className = "" }: { rating: Rating; className?: 
 }
 
 /** A project's GitHub stars: GitHub's mark, a star and how many, as its repository shows them. */
-export function GitHubStars({ stars, className = "" }: { stars: number; className?: string }) {
-  const label = `${stars.toLocaleString("en-US")} star${stars === 1 ? "" : "s"} on GitHub`;
+export function GitHubStars({
+  stars,
+  className = "",
+  t = STARS_EN,
+  numberLocale = "en-US",
+}: {
+  stars: number;
+  className?: string;
+  t?: StarsText;
+  numberLocale?: string;
+}) {
+  const label = format(stars === 1 ? t.githubOne : t.github, { n: stars.toLocaleString(numberLocale) });
   return (
     <span className={`inline-flex items-center gap-1 ${className}`} title={label}>
       <GitHubIcon className="size-3.5 opacity-80" />
@@ -92,7 +113,7 @@ export function GitHubStars({ stars, className = "" }: { stars: number; classNam
         ★
       </span>
       <span aria-hidden className="tabular-nums">
-        {count(stars)}
+        {count(stars, numberLocale !== "en-US")}
       </span>
       <span className="sr-only">{label}</span>
     </span>

@@ -2,15 +2,16 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
+import type { Messages } from "@/components/i18n";
+import { format } from "@/components/i18n-text";
 import { SearchIcon } from "@/components/icons";
 import {
   CATEGORIES,
-  KIND_NAMES,
   KINDS,
   SORTS,
   SUBMIT_URL,
   categoryLabel,
-  downloadsText,
+  count,
   matches,
   ratingOf,
   sorted,
@@ -51,7 +52,13 @@ function toAddress(kind: string, category: string, text: string, order: Sort) {
   if (url !== `${window.location.pathname}${window.location.search}${window.location.hash}`) window.history.replaceState(window.history.state, "", url);
 }
 
-export function ModsList({ projects, ratings }: { projects: ModSummary[]; ratings: Ratings | null }) {
+type T = Messages["mods"]["list"];
+
+export function ModsList({ projects, ratings, t, numberLocale }: { projects: ModSummary[]; ratings: Ratings | null; t: T; numberLocale: string }) {
+  const comma = numberLocale !== "en-US";
+  const kindName = (kind: string) => t.kindNames[kind as keyof T["kindNames"]] as string | undefined;
+  const label = (slug: string) => t.categories[slug as keyof T["categories"]] ?? categoryLabel(slug);
+  const downloads = (n: number) => format(n === 1 ? t.download : t.downloads, { n: count(n, comma) });
   const [kind, setKind] = useState("all");
   const [category, setCategory] = useState("");
   const [text, setText] = useState("");
@@ -99,8 +106,8 @@ export function ModsList({ projects, ratings }: { projects: ModSummary[]; rating
             type="search"
             value={text}
             onChange={(e) => setText(e.target.value)}
-            placeholder={`Search ${projects.length} projects`}
-            aria-label="Search mods"
+            placeholder={format(t.search, { n: projects.length })}
+            aria-label={t.searchLabel}
             autoComplete="off"
             spellCheck={false}
             className="h-full w-full min-w-0 bg-transparent text-[15px] text-white outline-none placeholder:text-white/35"
@@ -108,42 +115,42 @@ export function ModsList({ projects, ratings }: { projects: ModSummary[]; rating
         </label>
         <div className="flex shrink-0 flex-wrap items-center gap-2">
           <Link href="/mods/policy" className="inline-flex h-11 items-center px-2 text-[15px] font-medium text-white/60 transition-colors hover:text-white">
-            Mod policy
+            {t.policy}
           </Link>
           <Link
             href="/docs/make-a-mod"
             className="inline-flex h-11 items-center rounded-lg bg-white/10 px-4 text-[15px] font-medium text-white transition-colors outline-none hover:bg-white/15 focus-visible:ring-2 focus-visible:ring-[#a98fff]"
           >
-            Make a mod
+            {t.make}
           </Link>
           <Link
             href="/mods/mine"
             className="inline-flex h-11 items-center rounded-lg bg-white/10 px-4 text-[15px] font-medium text-white transition-colors outline-none hover:bg-white/15 focus-visible:ring-2 focus-visible:ring-[#a98fff]"
           >
-            Your mods
+            {t.mine}
           </Link>
           <Link
             href={SUBMIT_URL}
             className="inline-flex h-11 items-center gap-2 rounded-lg bg-white px-4 text-[15px] font-medium text-[#100a1f] transition-colors outline-none hover:bg-white/90 focus-visible:ring-2 focus-visible:ring-[#a98fff]"
           >
-            Submit yours
+            {t.submit}
           </Link>
         </div>
       </div>
 
       <div className="mt-3 flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
-        <div role="group" aria-label="Kind" className="flex flex-wrap gap-1 rounded-lg bg-white/[0.06] p-1 sm:w-fit">
-          {[["all", "All"] as const, ...KINDS].map(([value, label]) => (
+        <div role="group" aria-label={t.kindGroup} className="flex flex-wrap gap-1 rounded-lg bg-white/[0.06] p-1 sm:w-fit">
+          {[["all", t.all] as const, ...KINDS.map(([value]) => [value, t.kinds[value]] as const)].map(([value, label]) => (
             <button key={value} type="button" aria-pressed={kind === value} onClick={() => pickKind(value)} className={segment(kind === value)}>
               {label}{" "}
               <span className="ml-1 tabular-nums opacity-55">{tally[value] ?? 0}</span>
             </button>
           ))}
         </div>
-        <div role="group" aria-label="Order" className="flex w-fit rounded-lg bg-white/[0.06] p-1">
-          {SORTS.map(([value, label]) => (
+        <div role="group" aria-label={t.orderGroup} className="flex w-fit rounded-lg bg-white/[0.06] p-1">
+          {SORTS.map(([value]) => (
             <button key={value} type="button" aria-pressed={order === value} onClick={() => setOrder(value)} className={segment(order === value)}>
-              {label}
+              {t.sorts[value]}
             </button>
           ))}
         </div>
@@ -151,18 +158,18 @@ export function ModsList({ projects, ratings }: { projects: ModSummary[]; rating
 
       {categories.length > 0 && (
         <label className="mt-3 flex w-full items-center gap-2.5 text-sm text-white/60 sm:w-fit">
-          Category
+          {t.category}
           <select
             value={category}
             onChange={(e) => setCategory(e.target.value)}
             className="h-10 min-w-0 flex-1 rounded-lg bg-white/[0.06] px-3 text-[15px] text-white outline-none focus-visible:ring-2 focus-visible:ring-[#a98fff] sm:w-64 sm:flex-none"
           >
             <option value="" className="bg-[#18112c]">
-              Every category
+              {t.everyCategory}
             </option>
             {categories.map((c) => (
               <option key={c} value={c} className="bg-[#18112c]">
-                {categoryLabel(c)} ({inCategory[c] ?? 0})
+                {label(c)} ({inCategory[c] ?? 0})
               </option>
             ))}
           </select>
@@ -170,7 +177,7 @@ export function ModsList({ projects, ratings }: { projects: ModSummary[]; rating
       )}
 
       <p className="mt-5 text-sm text-white/50" aria-live="polite">
-        {shown.length === projects.length ? `${projects.length} projects` : `${shown.length} of ${projects.length} projects`}
+        {shown.length === projects.length ? format(t.count, { n: projects.length }) : format(t.countOf, { shown: shown.length, n: projects.length })}
       </p>
 
       {shown.length ? (
@@ -192,20 +199,20 @@ export function ModsList({ projects, ratings }: { projects: ModSummary[]; rating
                     <span className="flex flex-wrap items-center gap-x-1.5 sm:justify-end">
                       {rating && (
                         <>
-                          <Stars rating={rating} className="text-white/70" />
+                          <Stars rating={rating} className="text-white/70" t={t.stars} comma={comma} />
                           <span aria-hidden>·</span>
                         </>
                       )}
                       {p.stars > 0 && (
                         <>
-                          <GitHubStars stars={p.stars} className="text-white/70" />
+                          <GitHubStars stars={p.stars} className="text-white/70" t={t.stars} numberLocale={numberLocale} />
                           <span aria-hidden>·</span>
                         </>
                       )}
-                      <span className="tabular-nums">{downloadsText(p.downloads)}</span>
+                      <span className="tabular-nums">{downloads(p.downloads)}</span>
                     </span>
                     <span className="mt-1 block">
-                      {KIND_NAMES[p.kind] ?? p.kind} · {p.version}
+                      {kindName(p.kind) ?? p.kind} · {p.version}
                       {p.authors.length ? ` · ${p.authors.join(", ")}` : ""}
                     </span>
                   </span>
@@ -217,19 +224,18 @@ export function ModsList({ projects, ratings }: { projects: ModSummary[]; rating
       ) : (
         <div className="mt-3 rounded-2xl bg-[#18112c] px-5 py-10 text-center">
           <p className="text-[15px] text-white/70">
-            {text.trim() ? (
-              <>
-                No project matches &ldquo;{text.trim()}&rdquo;{kind !== "all" ? ` in ${KINDS.find(([k]) => k === kind)?.[1].toLowerCase()}` : ""}
-                {category ? `, ${categoryLabel(category).toLowerCase()}` : ""}.
-              </>
-            ) : category ? (
-              `No ${KIND_NAMES[kind]?.toLowerCase() ?? "project"} in ${categoryLabel(category).toLowerCase()} yet.`
-            ) : (
-              "Nothing here yet."
-            )}
+            {text.trim()
+              ? format(t.noMatch, {
+                  query: text.trim(),
+                  inKind: kind !== "all" ? format(t.inKind, { kind: (t.kinds[kind as keyof T["kinds"]] ?? kind).toLowerCase() }) : "",
+                  inCategory: category ? format(t.inCategory, { category: label(category).toLowerCase() }) : "",
+                })
+              : category
+                ? format(t.noneInCategory, { kind: kindName(kind)?.toLowerCase() ?? t.project, category: label(category).toLowerCase() })
+                : t.nothing}
           </p>
           <Link href={SUBMIT_URL} className="mt-3 inline-flex text-sm font-medium text-[#c4b5ff] underline underline-offset-4 hover:text-white">
-            Submit yours
+            {t.submit}
           </Link>
         </div>
       )}

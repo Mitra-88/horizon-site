@@ -193,10 +193,12 @@ export const screenshotsOf = (p: ModProject) => strings(p.screenshots).filter((u
 
 export const fileSize = (bytes: number) => (bytes >= 1 << 20 ? `${(bytes / (1 << 20)).toFixed(1)} MB` : `${Math.max(1, Math.round(bytes / 1024))} KB`);
 
-export function count(n: number) {
+/** 950, 1.2k, 3.4M; `comma` writes the decimal mark as a comma (1,2k). */
+export function count(n: number, comma = false) {
+  const one = (x: number) => (comma ? x.toFixed(1).replace(".", ",") : x.toFixed(1));
   if (n < 1000) return String(n);
-  if (n < 1e6) return `${(n / 1e3).toFixed(1)}k`;
-  return `${(n / 1e6).toFixed(1)}M`;
+  if (n < 1e6) return `${one(n / 1e3)}k`;
+  return `${one(n / 1e6)}M`;
 }
 
 export const safeDownloads = (n?: number) => (Number.isSafeInteger(n) && (n as number) > 0 ? (n as number) : 0);

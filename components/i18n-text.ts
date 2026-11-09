@@ -8,7 +8,7 @@ export const LOCALES = ["en", "es"] as const;
 export type Locale = (typeof LOCALES)[number];
 
 // The pages that exist in every language, by their English path. A page joins when its text is translated.
-export const TRANSLATED_PATHS = ["/", "/releases", "/benchmarks"];
+export const TRANSLATED_PATHS = ["/", "/releases", "/benchmarks", "/mods"];
 
 // A page's English path from its path in any language: "/es" → "/", "/es/releases" → "/releases".
 export function englishPath(pathname: string): string {
