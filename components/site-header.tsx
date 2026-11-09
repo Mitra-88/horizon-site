@@ -5,22 +5,26 @@ import { usePathname } from "next/navigation";
 import { Suspense, useEffect, useState, useSyncExternalStore } from "react";
 import { GitHubIcon, HorizonMark, MenuIcon, XIcon } from "@/components/icons";
 import type { LauncherBuild } from "@/components/github-releases";
+import type { Messages } from "@/components/i18n";
+import { format } from "@/components/i18n-text";
 import { LauncherLink } from "@/components/launcher-download";
 import { GITHUB_URL } from "@/components/links";
 import { useUnseenCount } from "@/components/release-seen";
 
-const NAV = [
-  { label: "About", href: "/#about" },
-  { label: "Hub", href: "/hub" },
-  { label: "Benchmarks", href: "/benchmarks" },
-  { label: "Mods", href: "/mods" },
-  { label: "Releases", href: "/releases" },
-  { label: "Docs", href: "/docs" },
-  { label: "Players", href: "/stats" },
+type NavKey = keyof Messages["header"]["nav"];
+
+const NAV: { key: NavKey; href: string }[] = [
+  { key: "about", href: "/#about" },
+  { key: "hub", href: "/hub" },
+  { key: "benchmarks", href: "/benchmarks" },
+  { key: "mods", href: "/mods" },
+  { key: "releases", href: "/releases" },
+  { key: "docs", href: "/docs" },
+  { key: "players", href: "/stats" },
 ];
 
 // The shop's entry, shown while something is on sale or the founder claim is open (components/shop-data.ts).
-const SHOP = { label: "Shop", href: "/shop" };
+const SHOP: { key: NavKey; href: string } = { key: "shop", href: "/shop" };
 
 const NAV_LINK = "inline-flex items-center gap-1.5 transition-colors hover:text-white";
 
@@ -29,7 +33,7 @@ const subscribe = (onChange: () => void) => {
   return () => window.removeEventListener("scroll", onChange);
 };
 
-type SiteHeaderProps = { releaseIds?: number[]; launcher?: LauncherBuild | null; shop?: boolean };
+type SiteHeaderProps = { t: Messages["header"]; releaseIds?: number[]; launcher?: LauncherBuild | null; shop?: boolean };
 
 // The current path is runtime data: read outside <Suspense> it stops Next.js from rendering pages that aren't
 // prerendered (CLIENT_HOOK_DYNAMIC). The fallback is the same header with no link marked as current.
@@ -45,7 +49,7 @@ function SiteHeaderAtPath(props: SiteHeaderProps) {
   return <SiteHeaderView {...props} pathname={usePathname()} />;
 }
 
-function SiteHeaderView({ releaseIds = [], launcher = null, shop = false, pathname }: SiteHeaderProps & { pathname: string }) {
+function SiteHeaderView({ t, releaseIds = [], launcher = null, shop = false, pathname }: SiteHeaderProps & { pathname: string }) {
   const nav = shop ? [...NAV, SHOP] : NAV;
   const scrolled = useSyncExternalStore(
     subscribe,
@@ -81,7 +85,7 @@ function SiteHeaderView({ releaseIds = [], launcher = null, shop = false, pathna
         </Link>
 
         {/* With the shop's entry the row is one link longer: tighter gaps below xl keep Download inside 1024 px. */}
-        <nav aria-label="Main" className={`hidden items-center text-sm text-white/65 lg:flex ${shop ? "gap-5 xl:gap-8" : "gap-8"}`}>
+        <nav aria-label={t.mainNav} className={`hidden items-center text-sm text-white/65 lg:flex ${shop ? "gap-5 xl:gap-8" : "gap-8"}`}>
           {nav.map((item) => (
             <Link
               key={item.href}
@@ -89,7 +93,7 @@ function SiteHeaderView({ releaseIds = [], launcher = null, shop = false, pathna
               aria-current={isCurrent(item.href) ? "page" : undefined}
               className={isCurrent(item.href) ? `${NAV_LINK} text-white` : NAV_LINK}
             >
-              {item.label}
+              {t.nav[item.key]}
               {item.href === "/releases" && unseen > 0 && (
                 <>
                   <span
@@ -98,7 +102,7 @@ function SiteHeaderView({ releaseIds = [], launcher = null, shop = false, pathna
                   >
                     {unseen > 9 ? "9+" : unseen}
                   </span>
-                  <span className="sr-only">, {unseen} new</span>
+                  <span className="sr-only">{format(t.unseen, { n: unseen })}</span>
                 </>
               )}
             </Link>
@@ -117,13 +121,13 @@ function SiteHeaderView({ releaseIds = [], launcher = null, shop = false, pathna
             build={launcher}
             className="inline-flex h-9 items-center rounded-lg bg-white/10 px-4 text-sm font-medium text-white transition-colors hover:bg-white/15"
           >
-            Download
+            {t.download}
           </LauncherLink>
           <button
             type="button"
             aria-expanded={menuOpen}
             aria-controls="mobile-menu"
-            aria-label={menuOpen ? "Close the menu" : "Open the menu"}
+            aria-label={menuOpen ? t.closeMenu : t.openMenu}
             onClick={() => {
               setMenuOpen((o) => !o);
               setMenuPath(pathname);
@@ -136,7 +140,7 @@ function SiteHeaderView({ releaseIds = [], launcher = null, shop = false, pathna
       </div>
 
       {menuOpen && (
-        <nav id="mobile-menu" aria-label="Main" className="mx-auto h-[calc(100dvh-4.5rem)] w-full max-w-6xl overflow-y-auto px-6 pt-2 pb-6 lg:hidden">
+        <nav id="mobile-menu" aria-label={t.mainNav} className="mx-auto h-[calc(100dvh-4.5rem)] w-full max-w-6xl overflow-y-auto px-6 pt-2 pb-6 lg:hidden">
           <ul className="grid gap-0.5">
             {nav.map((item) => (
               <li key={item.href}>
@@ -148,8 +152,10 @@ function SiteHeaderView({ releaseIds = [], launcher = null, shop = false, pathna
                     isCurrent(item.href) ? "bg-white/[0.06] text-white" : "text-white/75"
                   }`}
                 >
-                  {item.label}
-                  {item.href === "/releases" && unseen > 0 && <span className="text-sm text-[#c4b5ff]">{unseen > 9 ? "9+" : unseen} new</span>}
+                  {t.nav[item.key]}
+                  {item.href === "/releases" && unseen > 0 && (
+                    <span className="text-sm text-[#c4b5ff]">{format(t.unseenMenu, { n: unseen > 9 ? "9+" : unseen })}</span>
+                  )}
                 </Link>
               </li>
             ))}

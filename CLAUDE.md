@@ -45,6 +45,13 @@ the site is redeployed from source: for now by `~/code/horizon-parity/tools/site
 deployment live. After a deploy, check https://playhorizon.dev (/, /hub, /mods, /docs, /releases, /benchmarks,
 /data/roadmap.json, /data/journal.json).
 
+## Text and translations
+
+The text of the header, the footer and the 404 page lives in `messages/en.json`, read through `components/i18n.ts`
+(`getMessages`, `rich` for text with links in it, `format` for `{values}`). Pages move there one by one as they are
+translated: the plan, the routes (`/es/...`) and what stays English are in horizon-site#29. Moving text there must
+not change the rendered page: compare the built HTML and screenshots before and after.
+
 ## Rules
 
 - Branch work in a worktree under `.claude/worktrees/<name>`; keep the main checkout on `main`.

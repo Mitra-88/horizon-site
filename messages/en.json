@@ -1,0 +1,47 @@
+{
+  "common": {
+    "newTab": "(opens in a new tab)"
+  },
+  "header": {
+    "nav": {
+      "about": "About",
+      "hub": "Hub",
+      "benchmarks": "Benchmarks",
+      "mods": "Mods",
+      "releases": "Releases",
+      "docs": "Docs",
+      "players": "Players",
+      "shop": "Shop"
+    },
+    "mainNav": "Main",
+    "download": "Download",
+    "openMenu": "Open the menu",
+    "closeMenu": "Close the menu",
+    "unseen": ", {n} new",
+    "unseenMenu": "{n} new"
+  },
+  "footer": {
+    "disclaimer": "Not an official Minecraft product. Not approved by or associated with Mojang or Microsoft.",
+    "whoTitle": "Who makes it",
+    "who": "Horizon is made by Ludovic Marie; reach him through <lu4ovic>lu4ovic.com</lu4ovic>. This site is developed by Anthony S of <dezerx>DezerX</dezerx>, who is responsible for it. Horizon contains no Minecraft code, assets or data, and this site offers no game files: you need your own legally obtained copy of Minecraft: Java Edition. Minecraft is a trademark of Mojang Synergies AB. Horizon's cosmetics are sold by Ludovic Marie through Paddle.com, the merchant of record.",
+    "licencesTitle": "Licences",
+    "licences": "Horizon's original work is under the <mit>MIT licence</mit>. The fonts are Geist, Geist Mono and Bricolage Grotesque, under the <ofl>SIL Open Font License</ofl>. Every asset on this site is listed in LEGAL.md.",
+    "privacyTitle": "Privacy",
+    "privacy": "This site sets no cookies, has no analytics or trackers and loads nothing from third parties except GitHub. When you open a release, the server keeps a one-way hash of your IP address so that release counts each visitor once; the address itself is never stored. To show the latest releases, patch notes, links and contributors, your browser asks api.github.com and raw.githubusercontent.com for them, and avatars.githubusercontent.com for the contributors' pictures; <github>GitHub's privacy statement</github> covers those requests. The launcher sends nothing unless you allow it: <telemetry>what it can send, and how to delete it</telemetry>.",
+    "legal": {
+      "privacy": "Privacy policy",
+      "terms": "Terms of sale",
+      "refunds": "Refunds",
+      "shop": "Shop"
+    },
+    "madeInRust": "Made in the open, in Rust."
+  },
+  "notFound": {
+    "title": "Nothing",
+    "titleAccent": "at this address.",
+    "body": "The page moved, or never was. These are the places most people look for.",
+    "home": "Back home",
+    "docs": "The docs",
+    "mods": "Mods"
+  }
+}

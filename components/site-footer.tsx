@@ -1,19 +1,20 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { GitHubIcon, HorizonMark, MicrosoftIcon, MojangIcon, RustIcon } from "@/components/icons";
+import { getMessages, rich, type Locale } from "@/components/i18n";
 import { GITHUB_URL } from "@/components/links";
 
 // Paddle's website review and Mojang's guidelines want these reachable from every page.
 const LEGAL = [
-  { href: "/privacy", label: "Privacy policy" },
-  { href: "/terms", label: "Terms of sale" },
-  { href: "/refunds", label: "Refunds" },
-  { href: "/shop", label: "Shop" },
-];
+  { href: "/privacy", key: "privacy" },
+  { href: "/terms", key: "terms" },
+  { href: "/refunds", key: "refunds" },
+  { href: "/shop", key: "shop" },
+] as const;
 
 const GITHUB_PRIVACY_URL = "https://docs.github.com/site-policy/privacy-policies/github-general-privacy-statement";
 
-function Out({ href, children }: { href: string; children: ReactNode }) {
+function Out({ href, newTab, children }: { href: string; newTab: string; children: ReactNode }) {
   return (
     <a
       href={href}
@@ -22,7 +23,7 @@ function Out({ href, children }: { href: string; children: ReactNode }) {
       className="text-white/70 underline decoration-white/20 underline-offset-4 transition-colors hover:text-white hover:decoration-white/60"
     >
       {children}
-      <span className="sr-only"> (opens in a new tab)</span>
+      <span className="sr-only"> {newTab}</span>
     </a>
   );
 }
@@ -31,7 +32,16 @@ function Heading({ children }: { children: ReactNode }) {
   return <h2 className="text-sm font-medium text-white/80">{children}</h2>;
 }
 
-export function SiteFooter() {
+export function SiteFooter({ locale }: { locale: Locale }) {
+  const { common, footer: t } = getMessages(locale);
+  const out = (href: string) =>
+    function OutLink(chunks: string) {
+      return (
+        <Out href={href} newTab={common.newTab}>
+          {chunks}
+        </Out>
+      );
+    };
   return (
     <footer className="mt-auto border-t border-white/[0.08]">
       <div className="mx-auto w-full max-w-6xl px-6 pt-14 pb-10 lg:px-10">
@@ -41,9 +51,7 @@ export function SiteFooter() {
             <span className="font-display text-[19px] font-semibold tracking-[-0.02em]">Horizon</span>
           </Link>
           <div className="flex max-w-xl items-center gap-4 md:flex-row-reverse md:text-right">
-            <p className="text-[15px] leading-relaxed font-medium text-pretty text-white/80">
-              Not an official Minecraft product. Not approved by or associated with Mojang or Microsoft.
-            </p>
+            <p className="text-[15px] leading-relaxed font-medium text-pretty text-white/80">{t.disclaimer}</p>
             <span className="flex shrink-0 items-center gap-3 text-white/45">
               <MojangIcon className="size-6" />
               <MicrosoftIcon className="size-5" />
@@ -53,44 +61,28 @@ export function SiteFooter() {
 
         <div className="mt-12 grid gap-10 text-sm leading-relaxed text-pretty text-white/50 md:grid-cols-3 md:gap-12">
           <div>
-            <Heading>Who makes it</Heading>
+            <Heading>{t.whoTitle}</Heading>
+            <p className="mt-3">{rich(t.who, { lu4ovic: out("https://lu4ovic.com"), dezerx: out("https://dezerx.com") })}</p>
+          </div>
+          <div>
+            <Heading>{t.licencesTitle}</Heading>
             <p className="mt-3">
-              Horizon is made by Ludovic Marie; reach him through <Out href="https://lu4ovic.com">lu4ovic.com</Out>. This
-              site is developed by Anthony S of <Out href="https://dezerx.com">DezerX</Out>, who is responsible for it. Horizon
-              contains no Minecraft code, assets or data,
-              and this site offers no game files: you need your own legally obtained copy of Minecraft: Java Edition.
-              Minecraft is a trademark of Mojang Synergies AB. Horizon&apos;s cosmetics are sold by Ludovic Marie through
-              Paddle.com, the merchant of record.
+              {rich(t.licences, { mit: out(`${GITHUB_URL}/blob/main/LICENSE`), ofl: out("https://openfontlicense.org") })}
             </p>
           </div>
           <div>
-            <Heading>Licences</Heading>
+            <Heading>{t.privacyTitle}</Heading>
             <p className="mt-3">
-              Horizon&apos;s original work is under the <Out href={`${GITHUB_URL}/blob/main/LICENSE`}>MIT licence</Out>
-              . The fonts are Geist, Geist Mono and Bricolage Grotesque, under the{" "}
-              <Out href="https://openfontlicense.org">SIL Open Font License</Out>. Every asset on this site is listed
-              in LEGAL.md.
-            </p>
-          </div>
-          <div>
-            <Heading>Privacy</Heading>
-            <p className="mt-3">
-              This site sets no cookies, has no analytics or trackers and loads nothing from third parties except
-              GitHub. When you open a release, the server keeps a one-way hash of your IP address so that release counts
-              each visitor once; the address itself is never stored. To show the latest releases, patch notes, links and contributors, your browser asks
-              api.github.com and raw.githubusercontent.com for them, and avatars.githubusercontent.com for the
-              contributors&apos; pictures; <Out href={GITHUB_PRIVACY_URL}>GitHub&apos;s privacy statement</Out> covers
-              those requests. The launcher sends nothing unless you allow it:{" "}
-              <Out href={`${GITHUB_URL}/blob/main/docs/telemetry.md`}>what it can send, and how to delete it</Out>.
+              {rich(t.privacy, { github: out(GITHUB_PRIVACY_URL), telemetry: out(`${GITHUB_URL}/blob/main/docs/telemetry.md`) })}
             </p>
             <p className="mt-3 flex flex-wrap gap-x-4 gap-y-1">
-              {LEGAL.map(({ href, label }) => (
+              {LEGAL.map(({ href, key }) => (
                 <Link
                   key={href}
                   href={href}
                   className="font-medium text-white/80 underline decoration-white/25 underline-offset-4 transition-colors hover:text-white hover:decoration-white/60"
                 >
-                  {label}
+                  {t.legal[key]}
                 </Link>
               ))}
             </p>
@@ -99,7 +91,7 @@ export function SiteFooter() {
 
         <div className="mt-12 flex flex-col gap-4 border-t border-white/[0.08] pt-6 text-sm text-white/50 sm:flex-row sm:items-center sm:justify-between">
           <p className="flex items-center gap-2">
-            Made in the open, in Rust.
+            {t.madeInRust}
             <RustIcon className="size-4" />
           </p>
           <a href={GITHUB_URL} className="inline-flex items-center gap-2 transition-colors hover:text-white">
