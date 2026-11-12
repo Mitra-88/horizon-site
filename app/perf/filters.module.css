@@ -1,0 +1,252 @@
+/* The shared filter bar and its timeline: it reads the tokens .page defines in page.module.css. */
+
+.bar {
+  display: grid;
+  gap: 10px;
+  margin-bottom: 20px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  background: var(--surface);
+}
+
+.head {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  align-items: center;
+}
+
+.title {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.rangeText {
+  flex: 1;
+  color: var(--muted);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+
+.timeline {
+  display: block;
+  width: 100%;
+  height: 48px;
+  border-radius: 8px;
+  background: var(--well);
+  cursor: crosshair;
+  touch-action: none;
+}
+
+.timelineArea {
+  fill: color-mix(in srgb, var(--bar) 55%, transparent);
+}
+
+.timelineMark {
+  stroke: var(--warn);
+  stroke-width: 2;
+  vector-effect: non-scaling-stroke;
+  opacity: 0.8;
+}
+
+.timelineRange {
+  fill: color-mix(in srgb, var(--accent) 28%, transparent);
+  stroke: var(--accent);
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+}
+
+.hint {
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 16px;
+  align-items: end;
+}
+
+.rangeControls,
+.contextRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: end;
+}
+
+.contextAdd {
+  display: contents;
+}
+
+.control {
+  display: grid;
+  gap: 4px;
+}
+
+.controlLabel {
+  color: rgb(255 255 255 / 0.55);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.number,
+.input {
+  height: 34px;
+  border: 0;
+  border-radius: 8px;
+  padding: 0 10px;
+  background: rgb(255 255 255 / 0.06);
+  color: var(--ink);
+  font: inherit;
+  font-size: 13px;
+}
+
+.number {
+  width: 92px;
+  font-variant-numeric: tabular-nums;
+}
+
+.input {
+  width: 180px;
+}
+
+.number:focus,
+.input:focus {
+  background: rgb(255 255 255 / 0.09);
+}
+
+.input::placeholder {
+  color: rgb(255 255 255 / 0.4);
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.chip {
+  display: inline-flex;
+  gap: 4px;
+  align-items: center;
+  padding: 3px 4px 3px 10px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--primary) 30%, var(--plate-soft));
+  color: var(--ink);
+  font-size: 12px;
+}
+
+.chipRemove {
+  display: inline-grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border: 0;
+  border-radius: 999px;
+  padding: 0;
+  background: transparent;
+  color: var(--ink-soft);
+  cursor: pointer;
+}
+
+.chipRemove:hover {
+  background: rgb(255 255 255 / 0.16);
+  color: var(--ink);
+}
+
+/* Under the tabs: which filters a view ignores, and the menu of its queries. */
+
+.top {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.top:empty {
+  display: none;
+}
+
+.ignored {
+  margin: 0;
+  color: var(--warn);
+  font-size: 12px;
+}
+
+.queryMenu {
+  position: relative;
+  margin-left: auto;
+}
+
+.queryMenu > summary {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+  height: 30px;
+  border-radius: 8px;
+  padding: 0 10px;
+  background: rgb(255 255 255 / 0.07);
+  color: rgb(255 255 255 / 0.85);
+  font-size: 13px;
+  font-weight: 500;
+  list-style: none;
+  cursor: pointer;
+}
+
+.queryMenu > summary::-webkit-details-marker {
+  display: none;
+}
+
+.queryMenu > summary:hover {
+  background: rgb(255 255 255 / 0.12);
+}
+
+.queryList {
+  position: absolute;
+  right: 0;
+  z-index: 6;
+  display: grid;
+  gap: 4px;
+  width: min(560px, 90vw);
+  max-height: 60vh;
+  margin: 6px 0 0;
+  padding: 8px;
+  overflow: auto;
+  border-radius: 12px;
+  background: var(--plate-soft);
+  box-shadow: 0 12px 32px rgb(0 0 0 / 0.45);
+  list-style: none;
+}
+
+.queryItem {
+  display: grid;
+  gap: 4px;
+  padding: 8px;
+  border-radius: 8px;
+  background: var(--surface);
+}
+
+.queryName {
+  overflow: hidden;
+  color: var(--ink);
+  font-family: var(--mono);
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.queryButtons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}

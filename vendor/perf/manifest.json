@@ -1,0 +1,15 @@
+{
+  "repository": "https://github.com/horizon-rust/horizon",
+  "revision": "f24ee1accf1c816736e6e067939d04f3853f474e",
+  "files": {
+    "public/perf/horizon_perf.wasm": "179fd7c34fa08eb17434e9a9ac80feb2635ed53c08696e0dcaac9a261fdc7a8c",
+    "lib/perf/generated/horizon_perf.js": "782cdf8e0e01857b0c3ccec2066f1272fb463afdddf1889d3f9507e734f93594",
+    "public/perf/horizon-64.png": "1017decdf41f0dba0113dcc02e65845456ae07ed6ce419b71723e7e50a1e3f67",
+    "public/perf/fonts/OFL-Geist.txt": "c683bfbcc7e087f5d37a54ef628f10387c451a83ddc459b151403a164ac46c90",
+    "public/perf/fonts/Geist-Regular.ttf": "5c8968eafb98a4c4f47033daf29e38e284a6f2a82eb017d171ab040fe7c4b615",
+    "public/perf/fonts/Geist-Medium.ttf": "0090e004725f6f64b841715b4167920580f883fcf9b67fc6d744089103fec101",
+    "public/perf/fonts/Geist-SemiBold.ttf": "612ec98df33935354f39e81e54101656961ab6e5549f64b63eb57868ba7bab8d",
+    "public/perf/fonts/GeistMono-Regular.ttf": "42d8ad2e610238e64e8abfcde3037c63f7850a73928742b7ab7229d897bcb155",
+    "vendor/perf/source.patch": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  }
+}

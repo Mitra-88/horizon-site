@@ -38,6 +38,8 @@ app/staff/api/          the staff dashboards' proxy to Kira's service
 app/data/               /data/roadmap.json and /data/journal.json, which Kira reads
 app/sitemap.ts, robots.ts, manifest.ts, opengraph-image.tsx, llms.txt/, og/docs/
                         search and sharing: sitemap, robots, share cards, the summary for AI search
+app/perf/, lib/perf/     /perf: the performance capture viewer (its own root layout; strings in messages/perf/)
+vendor/perf/            the pinned reader bundle's provenance and checksums
 components/             every section, page part and data loader
 components/site.ts      the canonical address (SITE_URL), titles, descriptions and pageMetadata()
 content/docs/           the player docs (*.md) and their navigation (nav.json)
@@ -48,6 +50,76 @@ Dockerfile, railway.json   the Railway service
 ```
 
 The `/docs/api/*` pages come from `docs/api/` in the game's repository, read from GitHub.
+
+## The performance viewer
+
+`/perf` opens `.hzperf` captures recorded by the game's `/profiler`, `horizon-ctl profile` or a server's `profile`
+command. The file is read in the browser by the game's capture reader, built to WebAssembly: pick a file, paste or
+drop one. Compare takes a second capture the same ways. The game's **[Open]** (and `horizon-perf open`) serves the
+file once on 127.0.0.1 behind a random token and opens `/perf#local=http://127.0.0.1:<port>/<token>`: the viewer
+checks the address has exactly that form, drops the fragment, fetches the file once and opens it like a dropped one.
+Only `/perf`'s CSP allows `connect-src` to `http://127.0.0.1:*` and `http://localhost:*`. The Ticks, Spans, Functions, GPU, Memory, Network and World
+tabs read the same capture.
+
+The reader is not built here. `public/perf/horizon_perf.wasm` and its wrapper `lib/perf/generated/horizon_perf.js`
+are checked in with the fonts and icon, so a build needs only Node. `vendor/perf/manifest.json` records the game
+revision they were built from and each file's checksum; `vendor/perf/source.patch` holds any reader change that was
+not committed when the bundle was imported. `npm run perf:check` verifies the bundle and runs before `dev` and
+`build`. To update it, check out the game revision, then:
+
+```sh
+cargo xtask perf-wasm                                   # in the game repository
+npm run perf:import -- /path/to/horizon /path/to/perf-wasm-output
+npm test && npm run typecheck && npm run lint && npm run build
+```
+
+Import the wasm and its wrapper together. `npm test` runs the viewer's unit tests (`lib/perf/**/*.test.ts`).
+
+### Sharing a capture
+
+**Share** shows what a capture can contain and asks before uploading; it is the only upload, and a link opens at
+`/perf/c/<id>`. The upload API keeps the original bytes in an S3-compatible bucket and its metadata in SQLite
+(`node:sqlite`); both need persistent storage, backed up together.
+
+| Method | Path | Result |
+| --- | --- | --- |
+| POST | `/api/perf/captures` | Validates the raw bytes, stores them unchanged; returns an id, a temporary link and a delete token |
+| GET | `/api/perf/captures/<id>` | The original bytes, cached as immutable |
+| GET | `/api/perf/captures/<id>/meta` | Size, creation, expiry, share state and a summary from the reader |
+| POST | `/api/perf/captures/<id>/share` | Keeps it for `PERF_SHARED_DAYS`; needs `Authorization: Bearer <delete_token>` |
+| DELETE | `/api/perf/captures/<id>` | Deletes it; needs the same token |
+| POST | `/api/perf/sweep` | Removes expired or abandoned uploads; needs `Authorization: Bearer $PERF_SWEEP_TOKEN` |
+
+An upload is validated by the same bundled reader in a worker, with a timeout and bounded inflation, at most two at a
+time. Unshared uploads expire after an hour; sharing keeps one for 30 days from the first share. Expired links stop
+answering at once; call the sweep endpoint every few minutes to free their bytes. New uploads stop at 90% of
+`PERF_STORAGE_BYTES`, and shared captures are never evicted early. Replies: 415 not a capture, 422 a newer format,
+413 too large, 403 wrong token, 507 storage full, 429 too many uploads. JSON replies are `no-store`.
+
+| Variable | Default or requirement |
+| --- | --- |
+| `PERF_S3_ENDPOINT`, `PERF_S3_BUCKET` | Required |
+| `PERF_S3_ACCESS_KEY`, `PERF_S3_SECRET_KEY` | Required |
+| `PERF_S3_REGION` | `us-east-1` |
+| `PERF_PUBLIC_URL` | The public origin for share links; falls back to `SITE_URL` |
+| `PERF_DATABASE` | `.data/perf.sqlite` |
+| `PERF_MAX_BYTES` | `67108864` (64 MiB per capture) |
+| `PERF_STORAGE_BYTES` | `1073741824` (1 GiB of captures in all) |
+| `PERF_SHARED_DAYS` | `30` |
+| `PERF_HOURLY_UPLOADS` | `20` uploads per address an hour |
+| `PERF_TRUST_PROXY` | `false`; `true` only behind a proxy that sets `X-Forwarded-For` (its last entry is the client) |
+| `PERF_SWEEP_TOKEN` | Required by `/api/perf/sweep` |
+
+Without the `PERF_S3_*` variables the viewer still opens local files; only the API answers 503.
+`npm run test:api` runs the built standalone server (`.next/standalone`, with `public/` and `.next/static` copied in)
+against the S3 endpoint in those variables: it uploads, reads, shares, deletes and rejects bad captures.
+
+### Timing lows
+
+The summary shows 1% and 0.1% lows for frames and ticks, and the mean of each slow tail. A low is 1000 divided by the
+mean duration of the slowest `ceil(count × fraction)` frames or ticks; tick lows are work-based TPS capped at 20. The
+count and the rounding are shown so a short capture is not read as a large sample. Captures from before the recorder
+kept every duration (`SpanSummary.timing`) show the lows as unavailable: the viewer never estimates them.
 
 ## Where the data comes from
 

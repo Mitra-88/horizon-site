@@ -7,9 +7,17 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "i18n:unreviewed": "node scripts/i18n-unreviewed.mjs"
+    "i18n:unreviewed": "node scripts/i18n-unreviewed.mjs",
+    "perf:import": "node scripts/perf-assets.mjs import",
+    "perf:check": "node scripts/perf-assets.mjs verify",
+    "predev": "npm run perf:check",
+    "prebuild": "npm run perf:check",
+    "typecheck": "next typegen && tsc --noEmit",
+    "test": "node --experimental-strip-types --test 'lib/perf/**/*.test.ts'",
+    "test:api": "node scripts/perf-api-test.mjs"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1165.0",
     "@hugeicons/core-free-icons": "^4.4.0",
     "@hugeicons/react": "^1.1.10",
     "next": "16.4.3",
@@ -18,7 +26,7 @@
   },
   "devDependencies": {
     "@tailwindcss/turbopack": "^4",
-    "@types/node": "^20",
+    "@types/node": "^24.19.2",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",

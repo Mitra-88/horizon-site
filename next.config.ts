@@ -1,7 +1,22 @@
 import type { NextConfig } from "next";
 
+const development = process.env.NODE_ENV !== "production";
+const perfCsp = [
+  "default-src 'self'",
+  `script-src 'self' 'wasm-unsafe-eval' 'unsafe-inline'${development ? " 'unsafe-eval'" : ""}`,
+  "style-src 'self' 'unsafe-inline'",
+  "img-src 'self' data:",
+  "connect-src 'self' http://127.0.0.1:* http://localhost:*",
+  "base-uri 'self'",
+  "form-action 'self'",
+  "frame-ancestors 'none'",
+].join("; ");
+
 const nextConfig: NextConfig = {
   output: "standalone",
+  outputFileTracingIncludes: {
+    "/api/perf/**": ["./scripts/perf-validate.mjs", "./lib/perf/generated/horizon_perf.js", "./public/perf/horizon_perf.wasm"],
+  },
   allowedDevOrigins: ["202.61.226.46"],
   images: {
     remotePatterns: [
@@ -38,6 +53,7 @@ const nextConfig: NextConfig = {
       { key: "X-Content-Type-Options", value: "nosniff" },
     ];
     return [
+      { source: "/perf/:path*", headers: [{ key: "Content-Security-Policy", value: perfCsp }] },
       { source: "/staff/:path*", headers: privateHeaders },
       { source: "/hub/:view(team|mod|sign-in|setup|staff-help)", headers: privateHeaders },
       { source: "/apply", headers: privateHeaders },
@@ -51,6 +67,7 @@ const nextConfig: NextConfig = {
   turbopack: {
     rules: {
       "*.css": {
+        condition: { not: { path: /\.module\.css$/ } },
         loaders: ["@tailwindcss/turbopack"],
         as: "*.css",
       },
